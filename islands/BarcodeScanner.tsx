@@ -70,9 +70,10 @@ export default function BarcodeScanner({ onBookFound }: Props) {
           type: "LiveStream",
           target: videoRef.current,
           constraints: {
-            width: 640,
-            height: 480,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
             facingMode: "environment",
+            focusMode: "continuous",
           },
         },
         locator: {
@@ -305,8 +306,8 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       )}
 
       {isScanning && (
-        <div class="relative rounded-lg overflow-hidden shadow-2xl bg-black">
-          <div ref={videoRef} class="w-full aspect-video" />
+        <div class="relative rounded-lg overflow-hidden shadow-2xl bg-black h-[70vh] min-h-[500px]">
+          <div ref={videoRef} class="w-full h-full" />
           <div class="absolute inset-0 pointer-events-none">
             <div class="absolute inset-0 border-4 border-primary opacity-50"></div>
             <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-primary animate-pulse"></div>
