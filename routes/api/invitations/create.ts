@@ -33,21 +33,53 @@ export const handler: Handlers = {
         });
       }
 
-      const token = generateToken();
+      const kv = await getKv();
+
+      // Check if invitation already exists (resend case)
+      const existingInvitations = await kv.list<Invitation>({ prefix: ["invitations:teacher", user.id] });
+      let existingInvite: Invitation | null = null;
+
+      for await (const entry of existingInvitations) {
+        if (entry.value.email === email.toLowerCase() && !entry.value.used) {
+          existingInvite = entry.value;
+          break;
+        }
+      }
+
+      // Rate limit check: 10 minutes between resends
+      if (existingInvite) {
+        const lastSent = new Date(existingInvite.lastSentAt);
+        const now = new Date();
+        const minutesSinceLastSend = (now.getTime() - lastSent.getTime()) / (1000 * 60);
+
+        if (minutesSinceLastSend < 10) {
+          const minutesRemaining = Math.ceil(10 - minutesSinceLastSend);
+          return new Response(JSON.stringify({
+            error: `Please wait ${minutesRemaining} more minute${minutesRemaining !== 1 ? 's' : ''} before resending to this email.`
+          }), {
+            status: 429,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      const token = existingInvite?.token || generateToken();
+      const now = new Date().toISOString();
+
       const invitation: Invitation = {
         id: token,
         token,
         teacherId: user.id,
         teacherName: user.displayName,
         email: email.toLowerCase(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         used: false,
         usedBy: null,
         usedAt: null,
-        createdAt: new Date().toISOString(),
+        createdAt: existingInvite?.createdAt || now,
+        lastSentAt: now,
       };
 
-      const kv = await getKv();
       await kv.set(["invitations", token], invitation);
       await kv.set(["invitations:teacher", user.id, token], invitation);
 

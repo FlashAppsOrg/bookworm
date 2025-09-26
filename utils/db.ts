@@ -49,6 +49,7 @@ export interface Invitation {
   usedBy: string | null; // userId who used it
   usedAt: string | null;
   createdAt: string;
+  lastSentAt: string; // Track last email send for rate limiting
 }
 
 // Deno KV instance

@@ -439,12 +439,24 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                           </p>
                         </div>
                         <div class="flex gap-2">
-                          <button
-                            onClick={() => resendInvite(inv.email)}
-                            class="px-3 py-1 text-sm rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
-                          >
-                            Resend
-                          </button>
+                          {(() => {
+                            const lastSent = new Date(inv.lastSentAt);
+                            const now = new Date();
+                            const minutesSince = (now.getTime() - lastSent.getTime()) / (1000 * 60);
+                            const canResend = minutesSince >= 10;
+                            const minutesRemaining = canResend ? 0 : Math.ceil(10 - minutesSince);
+
+                            return (
+                              <button
+                                onClick={() => resendInvite(inv.email)}
+                                disabled={!canResend}
+                                class="px-3 py-1 text-sm rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={!canResend ? `Wait ${minutesRemaining} more minute${minutesRemaining !== 1 ? 's' : ''}` : ''}
+                              >
+                                {canResend ? 'Resend' : `Wait ${minutesRemaining}m`}
+                              </button>
+                            );
+                          })()}
                           <button
                             onClick={() => revokeInvite(inv.token)}
                             class="px-3 py-1 text-sm rounded bg-error/10 hover:bg-error/20 text-error font-semibold transition-all"
