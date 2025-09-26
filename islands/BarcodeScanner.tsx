@@ -4,6 +4,7 @@ import type { BookInfo } from "../routes/api/lookup.ts";
 
 interface Props {
   onBookFound: (book: BookInfo) => void;
+  initialMode: 'camera' | 'manual';
 }
 
 declare global {
@@ -12,7 +13,7 @@ declare global {
   }
 }
 
-export default function BarcodeScanner({ onBookFound }: Props) {
+export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
   console.log("BarcodeScanner component rendering");
   const videoRef = useRef<HTMLDivElement>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -40,7 +41,12 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     };
 
     checkQuagga();
-  }, []);
+
+    // Auto-start based on initialMode
+    if (initialMode === 'manual') {
+      setShowManualInput(true);
+    }
+  }, [initialMode]);
 
   const startCamera = () => {
     console.log("startCamera clicked, quaggaReady:", quaggaReady);
@@ -55,6 +61,12 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     lastScanTime.current = 0;
     setIsScanning(true);
   };
+
+  useEffect(() => {
+    if (initialMode === 'camera' && quaggaReady && !isScanning) {
+      startCamera();
+    }
+  }, [quaggaReady, initialMode]);
 
   useEffect(() => {
     if (!isScanning || !quaggaReady || !window.Quagga || !videoRef.current) {
@@ -185,31 +197,6 @@ export default function BarcodeScanner({ onBookFound }: Props) {
 
   return (
     <div class="max-w-2xl mx-auto">
-      {!isScanning && !showManualInput && (
-        <div class="space-y-4">
-          <button
-            onClick={() => {
-              console.log("Start Camera button clicked!");
-              startCamera();
-            }}
-            class="w-full py-4 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95"
-            aria-label="Start camera to scan barcode"
-          >
-            📸 Start Camera Scanner
-          </button>
-          <button
-            onClick={() => {
-              console.log("Manual search button clicked!");
-              setShowManualInput(true);
-            }}
-            class="w-full py-4 px-6 rounded-lg bg-secondary hover:bg-secondary-dark text-gray-900 font-semibold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95"
-            aria-label="Search by ISBN, title, or author"
-          >
-            🔍 Search by ISBN, Title, or Author
-          </button>
-        </div>
-      )}
-
       {showManualInput && !isScanning && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 animate-fade-in">
           <h3 class="text-2xl font-bold text-primary mb-4">Search for a Book</h3>

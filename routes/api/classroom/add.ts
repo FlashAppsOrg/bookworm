@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
-import { addBookToClassroom } from "../../../utils/db-helpers.ts";
+import { addBookToClassroom, findBookByISBN } from "../../../utils/db-helpers.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -28,6 +28,20 @@ export const handler: Handlers = {
       const targetUserId = user.role === "delegate" && user.delegatedToUserId
         ? user.delegatedToUserId
         : user.id;
+
+      // Check if this ISBN already exists in this classroom
+      const existingBook = await findBookByISBN(targetUserId, isbn);
+
+      if (existingBook) {
+        return new Response(JSON.stringify({
+          duplicate: true,
+          existingBook,
+          message: `You already have ${existingBook.quantity} cop${existingBook.quantity === 1 ? 'y' : 'ies'} of "${existingBook.title}"`
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
       const book = await addBookToClassroom(targetUserId, {
         isbn,

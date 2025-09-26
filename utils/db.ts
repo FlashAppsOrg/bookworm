@@ -29,6 +29,7 @@ export interface ClassroomBook {
   thumbnail: string | null;
   publisher: string | null;
   publishedDate: string | null;
+  quantity: number;
   dateAdded: string;
 }
 

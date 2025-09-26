@@ -96,18 +96,47 @@ export async function getUserBooks(userId: string): Promise<ClassroomBook[]> {
   return books.sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime());
 }
 
-export async function addBookToClassroom(userId: string, book: Omit<ClassroomBook, "id" | "userId" | "dateAdded">): Promise<ClassroomBook> {
+export async function findBookByISBN(userId: string, isbn: string): Promise<ClassroomBook | null> {
+  const kv = await getKv();
+  const iter = kv.list<ClassroomBook>({ prefix: ["classroomBooks", userId] });
+
+  for await (const entry of iter) {
+    if (entry.value.isbn === isbn) {
+      return entry.value;
+    }
+  }
+
+  return null;
+}
+
+export async function addBookToClassroom(userId: string, book: Omit<ClassroomBook, "id" | "userId" | "dateAdded" | "quantity">): Promise<ClassroomBook> {
   const kv = await getKv();
   const id = generateId();
   const newBook: ClassroomBook = {
     ...book,
     id,
     userId,
+    quantity: 1,
     dateAdded: new Date().toISOString(),
   };
 
   await kv.set(["classroomBooks", userId, id], newBook);
   return newBook;
+}
+
+export async function updateBookQuantity(userId: string, bookId: string, quantity: number): Promise<ClassroomBook | null> {
+  const kv = await getKv();
+  const result = await kv.get<ClassroomBook>(["classroomBooks", userId, bookId]);
+
+  if (!result.value) return null;
+
+  const updatedBook: ClassroomBook = {
+    ...result.value,
+    quantity,
+  };
+
+  await kv.set(["classroomBooks", userId, bookId], updatedBook);
+  return updatedBook;
 }
 
 export async function removeBookFromClassroom(userId: string, bookId: string): Promise<void> {

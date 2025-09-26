@@ -14,9 +14,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [backingUp, setBackingUp] = useState(false);
+  const [scannerMode, setScannerMode] = useState<'camera' | 'manual' | null>(null);
   const [showInvitations, setShowInvitations] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [delegates, setDelegates] = useState<User[]>([]);
@@ -170,8 +168,33 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
 
       if (response.ok) {
         const data = await response.json();
-        setBooks([data.book, ...books]);
-        setCurrentBook(null);
+
+        if (data.duplicate) {
+          const increaseQuantity = confirm(
+            `${data.message}\n\nIncrease quantity to ${data.existingBook.quantity + 1}?`
+          );
+
+          if (increaseQuantity) {
+            const updateResponse = await fetch("/api/classroom/update-quantity", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                bookId: data.existingBook.id,
+                quantity: data.existingBook.quantity + 1,
+              }),
+            });
+
+            if (updateResponse.ok) {
+              const updateData = await updateResponse.json();
+              setBooks(books.map(b => b.id === updateData.book.id ? updateData.book : b));
+            }
+          }
+
+          setCurrentBook(null);
+        } else {
+          setBooks([data.book, ...books]);
+          setCurrentBook(null);
+        }
       }
     } catch (err) {
       console.error("Failed to add book:", err);
@@ -191,47 +214,6 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
       }
     } catch (err) {
       console.error("Failed to remove book:", err);
-    }
-  };
-
-  const handleExport = async () => {
-    setExporting(true);
-    try {
-      const response = await fetch("/api/classroom/export");
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${user.username}-books.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch (err) {
-      console.error("Failed to export:", err);
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  const handleBackupToSheet = async () => {
-    setBackingUp(true);
-    try {
-      const response = await fetch("/api/classroom/backup-to-sheet", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert(`✓ ${data.message}`);
-      } else {
-        alert(`✗ ${data.error}`);
-      }
-    } catch (err) {
-      alert("✗ Network error. Please try again.");
-    } finally {
-      setBackingUp(false);
     }
   };
 
@@ -305,36 +287,24 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
             </div>
             <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
               <button
-                onClick={() => setShowScanner(!showScanner)}
+                onClick={() => setScannerMode(scannerMode === 'camera' ? null : 'camera')}
                 class="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"
               >
-                📷 {showScanner ? "Hide" : "Scan"}
+                📷 {scannerMode === 'camera' ? "Hide" : "Scan"}
+              </button>
+              <button
+                onClick={() => setScannerMode(scannerMode === 'manual' ? null : 'manual')}
+                class="px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"
+              >
+                🔍 {scannerMode === 'manual' ? "Hide" : "Lookup"}
               </button>
               {user.role === "teacher" && (
-                <>
-                  <button
-                    onClick={handleExport}
-                    disabled={exporting || books.length === 0}
-                    class="px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
-                  >
-                    📄 {exporting ? "Exporting..." : "Export"}
-                  </button>
-                  {user.googleSheetUrl && (
-                    <button
-                      onClick={handleBackupToSheet}
-                      disabled={backingUp || books.length === 0}
-                      class="px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
-                    >
-                      📊 {backingUp ? "Backing Up..." : "Backup"}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setShowInvitations(!showInvitations)}
-                    class="px-4 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all text-sm whitespace-nowrap"
-                  >
-                    👥 Helpers
-                  </button>
-                </>
+                <button
+                  onClick={() => setShowInvitations(!showInvitations)}
+                  class="px-4 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all text-sm whitespace-nowrap"
+                >
+                  👥 Helpers
+                </button>
               )}
             </div>
           </div>
@@ -476,7 +446,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
             </div>
           )}
 
-          {showScanner && (
+          {scannerMode && (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
               {currentBook ? (
                 <div>
@@ -497,7 +467,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                   <BookDisplay book={currentBook} onScanAnother={() => setCurrentBook(null)} />
                 </div>
               ) : (
-                <BarcodeScanner onBookFound={handleBookFound} />
+                <BarcodeScanner onBookFound={handleBookFound} initialMode={scannerMode} />
               )}
             </div>
           )}
@@ -523,6 +493,11 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                     by {book.authors.join(", ")}
                   </p>
                 )}
+                {book.quantity > 1 && (
+                  <p class="text-sm font-semibold text-primary dark:text-primary-light mb-2">
+                    Quantity: {book.quantity}
+                  </p>
+                )}
                 <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                   ISBN: {book.isbn}
                 </p>
@@ -538,7 +513,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
             ))}
           </div>
 
-          {books.length === 0 && !showScanner && (
+          {books.length === 0 && !scannerMode && (
             <div class="text-center py-12">
               <div class="text-6xl mb-4">📚</div>
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -548,7 +523,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                 Start scanning books to build your classroom library
               </p>
               <button
-                onClick={() => setShowScanner(true)}
+                onClick={() => setScannerMode('camera')}
                 class="px-6 py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-lg shadow-lg transition-all"
               >
                 Scan Your First Book

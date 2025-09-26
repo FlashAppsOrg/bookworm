@@ -36,6 +36,8 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
   const [saveMessage, setSaveMessage] = useState<string>("");
   const [schoolSaving, setSchoolSaving] = useState<boolean>(false);
   const [schoolMessage, setSchoolMessage] = useState<string>("");
+  const [exporting, setExporting] = useState<boolean>(false);
+  const [backingUp, setBackingUp] = useState<boolean>(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("bookworm-theme") || "teal";
@@ -96,6 +98,49 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
       setSaveMessage("✗ Network error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const response = await fetch("/api/classroom/export");
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${user.username}-books.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Failed to export:", err);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleBackupToSheet() {
+    setBackingUp(true);
+    setSaveMessage("");
+    try {
+      const response = await fetch("/api/classroom/backup-to-sheet", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSaveMessage(`✓ ${data.message}`);
+        setTimeout(() => setSaveMessage(""), 5000);
+      } else {
+        setSaveMessage(`✗ ${data.error}`);
+      }
+    } catch (err) {
+      setSaveMessage("✗ Network error. Please try again.");
+    } finally {
+      setBackingUp(false);
     }
   }
 
@@ -269,10 +314,24 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
 
       {user.role === "teacher" && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
-          <h3 class="text-2xl font-semibold mb-4 dark:text-white">Google Sheets Backup</h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
-            Optionally backup your classroom books to a Google Sheet. This provides a redundant copy of your data.
+          <h3 class="text-2xl font-semibold mb-4 dark:text-white">Export & Backup</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
+            Export your classroom books to CSV or backup to Google Sheets for a redundant copy.
           </p>
+
+          <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <h4 class="text-lg font-semibold dark:text-white mb-3">Export to CSV</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Download your entire classroom library as a CSV file that you can open in Excel, Google Sheets, or any spreadsheet application.
+            </p>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? "📄 Exporting..." : "📄 Export CSV"}
+            </button>
+          </div>
 
           <div class="space-y-4">
             <div>
@@ -301,7 +360,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
               </ol>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
               <button
                 onClick={saveSheetUrl}
                 disabled={saving}
@@ -309,6 +368,15 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
               >
                 {saving ? "Saving..." : "Save Sheet URL"}
               </button>
+              {sheetUrl && (
+                <button
+                  onClick={handleBackupToSheet}
+                  disabled={backingUp || !sheetUrl}
+                  class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {backingUp ? "📆 Backing Up..." : "📆 Backup Now"}
+                </button>
+              )}
               {saveMessage && (
                 <span class={`text-sm font-medium ${saveMessage.startsWith("✓") ? "text-green-600" : "text-red-600"}`}>
                   {saveMessage}
