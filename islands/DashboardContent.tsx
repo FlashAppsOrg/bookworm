@@ -19,6 +19,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
   const [backingUp, setBackingUp] = useState(false);
   const [showInvitations, setShowInvitations] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [delegates, setDelegates] = useState<User[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [inviteError, setInviteError] = useState("");
@@ -26,6 +27,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
   useEffect(() => {
     if (user.role === "teacher") {
       fetchInvitations();
+      fetchDelegates();
     }
   }, []);
 
@@ -38,6 +40,18 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
       }
     } catch (err) {
       console.error("Failed to fetch invitations:", err);
+    }
+  };
+
+  const fetchDelegates = async () => {
+    try {
+      const response = await fetch("/api/delegates/list");
+      if (response.ok) {
+        const data = await response.json();
+        setDelegates(data.delegates || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch delegates:", err);
     }
   };
 
@@ -85,6 +99,48 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
         alert(`✓ Invitation resent to ${email}`);
       } else {
         alert(`✗ ${data.error}`);
+      }
+    } catch (err) {
+      alert("✗ Network error");
+    }
+  };
+
+  const revokeInvite = async (token: string) => {
+    if (!confirm("Are you sure you want to revoke this invitation?")) return;
+
+    try {
+      const response = await fetch("/api/invitations/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
+      if (response.ok) {
+        await fetchInvitations();
+        alert("✓ Invitation revoked");
+      } else {
+        alert("✗ Failed to revoke invitation");
+      }
+    } catch (err) {
+      alert("✗ Network error");
+    }
+  };
+
+  const removeDelegate = async (delegateId: string, name: string) => {
+    if (!confirm(`Remove ${name} as a helper? This will delete their account.`)) return;
+
+    try {
+      const response = await fetch("/api/delegates/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delegateId }),
+      });
+
+      if (response.ok) {
+        await fetchDelegates();
+        alert(`✓ ${name} has been removed`);
+      } else {
+        alert("✗ Failed to remove helper");
       }
     } catch (err) {
       alert("✗ Network error");
@@ -329,37 +385,81 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                 </p>
               </form>
 
-              <div>
-                <h3 class="font-bold text-gray-900 dark:text-white mb-3">
-                  Active Invitations ({invitations.filter(i => !i.used).length})
-                </h3>
-                <div class="space-y-2">
-                  {invitations.filter(i => !i.used).map((inv) => (
-                    <div
-                      key={inv.id}
-                      class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                    >
-                      <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-gray-900 dark:text-white">
-                          {inv.email}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                          Expires {new Date(inv.expiresAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => resendInvite(inv.email)}
-                        class="px-3 py-1 text-sm rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+              <div class="space-y-6">
+                <div>
+                  <h3 class="font-bold text-gray-900 dark:text-white mb-3">
+                    Active Helpers ({delegates.length})
+                  </h3>
+                  <div class="space-y-2">
+                    {delegates.map((delegate) => (
+                      <div
+                        key={delegate.id}
+                        class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg"
                       >
-                        Resend Email
-                      </button>
-                    </div>
-                  ))}
-                  {invitations.filter(i => !i.used).length === 0 && (
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">
-                      No active invitations
-                    </p>
-                  )}
+                        <div class="flex-1 min-w-0">
+                          <p class="font-semibold text-gray-900 dark:text-white">
+                            {delegate.displayName}
+                          </p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {delegate.email}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => removeDelegate(delegate.id, delegate.displayName)}
+                          class="px-3 py-1 text-sm rounded bg-error/10 hover:bg-error/20 text-error font-semibold transition-all"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    {delegates.length === 0 && (
+                      <p class="text-gray-500 dark:text-gray-400 text-sm">
+                        No active helpers
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 class="font-bold text-gray-900 dark:text-white mb-3">
+                    Pending Invitations ({invitations.filter(i => !i.used).length})
+                  </h3>
+                  <div class="space-y-2">
+                    {invitations.filter(i => !i.used).map((inv) => (
+                      <div
+                        key={inv.id}
+                        class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                      >
+                        <div class="flex-1 min-w-0">
+                          <p class="font-semibold text-gray-900 dark:text-white">
+                            {inv.email}
+                          </p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div class="flex gap-2">
+                          <button
+                            onClick={() => resendInvite(inv.email)}
+                            class="px-3 py-1 text-sm rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+                          >
+                            Resend
+                          </button>
+                          <button
+                            onClick={() => revokeInvite(inv.token)}
+                            class="px-3 py-1 text-sm rounded bg-error/10 hover:bg-error/20 text-error font-semibold transition-all"
+                          >
+                            Revoke
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {invitations.filter(i => !i.used).length === 0 && (
+                      <p class="text-gray-500 dark:text-gray-400 text-sm">
+                        No pending invitations
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
