@@ -30,13 +30,13 @@ export default {
       "--color-secondary-dark": "#059669",
       "--color-secondary-light": "#34D399",
     },
-    ".theme-blue": {
-      "--color-primary": "#4F46E5",
-      "--color-primary-dark": "#3730A3",
-      "--color-primary-light": "#6366F1",
-      "--color-secondary": "#EC4899",
-      "--color-secondary-dark": "#DB2777",
-      "--color-secondary-light": "#F472B6",
+    ".theme-green": {
+      "--color-primary": "#059669",
+      "--color-primary-dark": "#047857",
+      "--color-primary-light": "#10B981",
+      "--color-secondary": "#3B82F6",
+      "--color-secondary-dark": "#2563EB",
+      "--color-secondary-light": "#60A5FA",
     },
   },
   theme: {

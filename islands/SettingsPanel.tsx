@@ -11,10 +11,10 @@ const themes = {
     primary: "#4F46E5",
     secondary: "#10B981",
   },
-  blue: {
-    name: "Ocean Blue",
-    primary: "#4F46E5",
-    secondary: "#EC4899",
+  green: {
+    name: "Forest Green",
+    primary: "#059669",
+    secondary: "#3B82F6",
   },
 };
 
