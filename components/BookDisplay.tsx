@@ -60,10 +60,6 @@ export default function BookDisplay({ book, onScanAnother }: Props) {
           )}
         </div>
       </div>
-
-      <button onClick={onScanAnother} class="w-full py-4 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95">
-        📚 Scan Another Book
-      </button>
     </div>
   );
 }

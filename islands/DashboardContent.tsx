@@ -481,13 +481,21 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
               {currentBook ? (
                 <div>
+                  <div class="flex gap-3 mb-6">
+                    <button
+                      onClick={handleAddToClassroom}
+                      class="flex-1 py-4 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                    >
+                      ✓ Add to Classroom
+                    </button>
+                    <button
+                      onClick={() => setCurrentBook(null)}
+                      class="px-6 py-4 rounded-lg bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold transition-all"
+                    >
+                      ↻ Scan Another
+                    </button>
+                  </div>
                   <BookDisplay book={currentBook} onScanAnother={() => setCurrentBook(null)} />
-                  <button
-                    onClick={handleAddToClassroom}
-                    class="w-full mt-4 py-3 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-lg shadow-lg transition-all"
-                  >
-                    Add to My Classroom
-                  </button>
                 </div>
               ) : (
                 <BarcodeScanner onBookFound={handleBookFound} />
