@@ -83,9 +83,11 @@ export async function sendVerificationEmail(
   const resend = new Resend(apiKey);
   const verifyUrl = `${Deno.env.get("APP_URL") || "http://localhost:8000"}/verify?token=${token}`;
 
+  const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
+
   try {
     await resend.emails.send({
-      from: "BookWorm <noreply@flashapps.dev>",
+      from: `BookWorm <${fromEmail}>`,
       to: email,
       subject: "Verify your BookWorm account",
       html: `
