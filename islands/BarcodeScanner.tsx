@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { extractISBNFromBarcode } from "../utils/isbn.ts";
-import { detectBarcode, isBarcodeDetectorSupported } from "../utils/barcode.ts";
+import { detectBarcode } from "../utils/barcode.ts";
 import type { BookInfo } from "../routes/api/lookup.ts";
 
 interface Props {
@@ -83,17 +83,13 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     try {
-      if (isBarcodeDetectorSupported()) {
-        const barcodes = await detectBarcode(canvas);
+      const barcodes = await detectBarcode(canvas);
 
-        if (barcodes.length > 0) {
-          const isbn = extractISBNFromBarcode(barcodes[0].rawValue);
-          if (isbn) {
-            await lookupBook(isbn);
-          }
+      if (barcodes.length > 0) {
+        const isbn = extractISBNFromBarcode(barcodes[0].rawValue);
+        if (isbn) {
+          await lookupBook(isbn);
         }
-      } else {
-        setError("Barcode detection not supported. Please use manual input.");
       }
     } catch (err) {
       console.error("Scan error:", err);

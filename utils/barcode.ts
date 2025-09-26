@@ -1,28 +1,41 @@
+import Quagga from "quagga";
+
 export interface BarcodeFormat {
   format: string;
   rawValue: string;
 }
 
-export function isBarcodeDetectorSupported(): boolean {
-  return 'BarcodeDetector' in globalThis;
+interface QuaggaResult {
+  codeResult?: {
+    format: string;
+    code: string;
+  };
 }
 
-export async function detectBarcode(
-  imageData: ImageData | HTMLImageElement | HTMLVideoElement | HTMLCanvasElement
+export function isBarcodeDetectorSupported(): boolean {
+  return true;
+}
+
+export function detectBarcode(
+  canvas: HTMLCanvasElement
 ): Promise<BarcodeFormat[]> {
-  if (!isBarcodeDetectorSupported()) {
-    throw new Error('BarcodeDetector not supported');
-  }
-
-  const BarcodeDetector = (globalThis as any).BarcodeDetector;
-  const detector = new BarcodeDetector({
-    formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e']
+  return new Promise((resolve) => {
+    Quagga.decodeSingle({
+      src: canvas.toDataURL(),
+      numOfWorkers: 0,
+      decoder: {
+        readers: ["ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader"]
+      },
+      locate: true,
+    }, (result: QuaggaResult) => {
+      if (result && result.codeResult) {
+        resolve([{
+          format: result.codeResult.format,
+          rawValue: result.codeResult.code
+        }]);
+      } else {
+        resolve([]);
+      }
+    });
   });
-
-  const barcodes = await detector.detect(imageData);
-
-  return barcodes.map((barcode: any) => ({
-    format: barcode.format,
-    rawValue: barcode.rawValue
-  }));
 }
