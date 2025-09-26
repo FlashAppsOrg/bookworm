@@ -135,4 +135,41 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+export async function getTeachersBySchoolId(schoolId: string): Promise<User[]> {
+  const kv = await getKv();
+  const teachers: User[] = [];
+  const iter = kv.list<User>({ prefix: ["users:id"] });
+
+  for await (const entry of iter) {
+    if (entry.value.schoolId === schoolId && entry.value.role === "teacher") {
+      teachers.push(entry.value);
+    }
+  }
+
+  return teachers.sort((a, b) => a.displayName.localeCompare(b.displayName));
+}
+
+export interface SchoolBookWithTeacher extends ClassroomBook {
+  teacherName: string;
+  teacherUsername: string;
+}
+
+export async function getSchoolBooksWithTeachers(schoolId: string): Promise<SchoolBookWithTeacher[]> {
+  const teachers = await getTeachersBySchoolId(schoolId);
+  const booksWithTeachers: SchoolBookWithTeacher[] = [];
+
+  for (const teacher of teachers) {
+    const books = await getUserBooks(teacher.id);
+    for (const book of books) {
+      booksWithTeachers.push({
+        ...book,
+        teacherName: teacher.displayName,
+        teacherUsername: teacher.username,
+      });
+    }
+  }
+
+  return booksWithTeachers.sort((a, b) => a.title.localeCompare(b.title));
+}
+
 export { slugify };

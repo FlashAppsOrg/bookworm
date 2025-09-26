@@ -2,45 +2,93 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_school_username_ from "./routes/[school]/[username].tsx";
+import * as $_school_index from "./routes/[school]/index.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
+import * as $api_auth_resend_verification from "./routes/api/auth/resend-verification.ts";
 import * as $api_auth_signup from "./routes/api/auth/signup.ts";
 import * as $api_auth_verify from "./routes/api/auth/verify.ts";
+import * as $api_classroom_add from "./routes/api/classroom/add.ts";
+import * as $api_classroom_backup_to_sheet from "./routes/api/classroom/backup-to-sheet.ts";
+import * as $api_classroom_export from "./routes/api/classroom/export.ts";
+import * as $api_classroom_remove from "./routes/api/classroom/remove.ts";
+import * as $api_delegates_list from "./routes/api/delegates/list.ts";
+import * as $api_delegates_remove from "./routes/api/delegates/remove.ts";
+import * as $api_invitations_accept from "./routes/api/invitations/accept.ts";
+import * as $api_invitations_create from "./routes/api/invitations/create.ts";
+import * as $api_invitations_list from "./routes/api/invitations/list.ts";
+import * as $api_invitations_revoke from "./routes/api/invitations/revoke.ts";
 import * as $api_lookup from "./routes/api/lookup.ts";
+import * as $api_schools from "./routes/api/schools.ts";
+import * as $api_settings_update_school from "./routes/api/settings/update-school.ts";
+import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
+import * as $dashboard from "./routes/dashboard.tsx";
+import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
 import * as $settings from "./routes/settings.tsx";
+import * as $setup from "./routes/setup.tsx";
 import * as $signup from "./routes/signup.tsx";
 import * as $verify from "./routes/verify.tsx";
 import * as $App from "./islands/App.tsx";
 import * as $BarcodeScanner from "./islands/BarcodeScanner.tsx";
+import * as $DashboardContent from "./islands/DashboardContent.tsx";
+import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
+import * as $SchoolCatalog from "./islands/SchoolCatalog.tsx";
 import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
+import * as $SetupForm from "./islands/SetupForm.tsx";
 import * as $SignupForm from "./islands/SignupForm.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/[school]/[username].tsx": $_school_username_,
+    "./routes/[school]/index.tsx": $_school_index,
     "./routes/_app.tsx": $_app,
+    "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
+    "./routes/api/auth/resend-verification.ts": $api_auth_resend_verification,
     "./routes/api/auth/signup.ts": $api_auth_signup,
     "./routes/api/auth/verify.ts": $api_auth_verify,
+    "./routes/api/classroom/add.ts": $api_classroom_add,
+    "./routes/api/classroom/backup-to-sheet.ts": $api_classroom_backup_to_sheet,
+    "./routes/api/classroom/export.ts": $api_classroom_export,
+    "./routes/api/classroom/remove.ts": $api_classroom_remove,
+    "./routes/api/delegates/list.ts": $api_delegates_list,
+    "./routes/api/delegates/remove.ts": $api_delegates_remove,
+    "./routes/api/invitations/accept.ts": $api_invitations_accept,
+    "./routes/api/invitations/create.ts": $api_invitations_create,
+    "./routes/api/invitations/list.ts": $api_invitations_list,
+    "./routes/api/invitations/revoke.ts": $api_invitations_revoke,
     "./routes/api/lookup.ts": $api_lookup,
+    "./routes/api/schools.ts": $api_schools,
+    "./routes/api/settings/update-school.ts": $api_settings_update_school,
+    "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
+    "./routes/dashboard.tsx": $dashboard,
+    "./routes/delegate-signup.tsx": $delegate_signup,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
     "./routes/settings.tsx": $settings,
+    "./routes/setup.tsx": $setup,
     "./routes/signup.tsx": $signup,
     "./routes/verify.tsx": $verify,
   },
   islands: {
     "./islands/App.tsx": $App,
     "./islands/BarcodeScanner.tsx": $BarcodeScanner,
+    "./islands/DashboardContent.tsx": $DashboardContent,
+    "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/ScanHistory.tsx": $ScanHistory,
+    "./islands/SchoolCatalog.tsx": $SchoolCatalog,
     "./islands/SettingsPanel.tsx": $SettingsPanel,
+    "./islands/SetupForm.tsx": $SetupForm,
     "./islands/SignupForm.tsx": $SignupForm,
   },
   baseUrl: import.meta.url,

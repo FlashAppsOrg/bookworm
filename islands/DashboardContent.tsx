@@ -172,7 +172,6 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
         const data = await response.json();
         setBooks([data.book, ...books]);
         setCurrentBook(null);
-        setShowScanner(false);
       }
     } catch (err) {
       console.error("Failed to add book:", err);
