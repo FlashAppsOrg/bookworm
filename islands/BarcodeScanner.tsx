@@ -13,6 +13,7 @@ declare global {
 }
 
 export default function BarcodeScanner({ onBookFound }: Props) {
+  console.log("BarcodeScanner component rendering");
   const videoRef = useRef<HTMLDivElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,14 +133,20 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       {!isScanning && !showManualInput && (
         <div class="scanner-controls">
           <button
-            onClick={startCamera}
+            onClick={() => {
+              console.log("Start Camera button clicked!");
+              startCamera();
+            }}
             class="btn btn-primary"
             aria-label="Start camera to scan barcode"
           >
             Start Camera Scanner
           </button>
           <button
-            onClick={() => setShowManualInput(true)}
+            onClick={() => {
+              console.log("Manual input button clicked!");
+              setShowManualInput(true);
+            }}
             class="btn btn-secondary"
             aria-label="Enter ISBN manually"
           >
