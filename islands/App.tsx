@@ -40,10 +40,7 @@ export default function App() {
       <header class="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div class="container mx-auto px-4">
           <div class="flex items-center justify-center h-16">
-            <div class="flex items-center space-x-3">
-              <img src="/lightning-bolt-logo.svg" alt="FlashApps" class="w-8 h-8" />
-              <span class="text-2xl font-bold text-primary">BookWorm</span>
-            </div>
+            <span class="text-2xl font-bold text-primary">BookWorm</span>
           </div>
         </div>
       </header>
@@ -62,8 +59,11 @@ export default function App() {
       </main>
 
       <footer class="text-center py-8">
-        <div>
-          <div class="text-2xl font-bold text-primary dark:text-primary-light">BookWorm</div>
+        <div class="flex flex-col items-center gap-2">
+          <div class="flex items-center space-x-2">
+            <img src="/lightning-bolt-logo.svg" alt="FlashApps" class="w-6 h-6" />
+            <div class="text-2xl font-bold text-primary dark:text-primary-light">BookWorm</div>
+          </div>
           <div class="text-sm text-gray-600 dark:text-gray-400">by FlashApps</div>
         </div>
       </footer>
