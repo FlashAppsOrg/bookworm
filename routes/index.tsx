@@ -1,5 +1,5 @@
 import { Head } from "$fresh/runtime.ts";
-import BarcodeScanner from "../islands/BarcodeScanner.tsx";
+import App from "../islands/App.tsx";
 
 export default function Home() {
   return (
@@ -13,20 +13,7 @@ export default function Home() {
         <link rel="manifest" href="/manifest.json" />
       </Head>
 
-      <div class="app-container">
-        <header class="app-header">
-          <h1>📚 BookWorm</h1>
-          <p class="tagline">Scan barcodes, discover books</p>
-        </header>
-
-        <main class="app-main">
-          <BarcodeScanner onBookFound={(book) => console.log("Book found:", book)} />
-        </main>
-
-        <footer class="app-footer">
-          <p>Powered by Google Books API</p>
-        </footer>
-      </div>
+      <App />
     </>
   );
 }

@@ -22,6 +22,8 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   const [showManualInput, setShowManualInput] = useState(false);
   const [quaggaReady, setQuaggaReady] = useState(false);
   const [lastScanned, setLastScanned] = useState<string>("");
+  const lastScanTime = useRef<number>(0);
+  const processingRef = useRef<boolean>(false);
 
   useEffect(() => {
     console.log("BarcodeScanner mounted");
@@ -47,6 +49,9 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     }
 
     setError(null);
+    setLastScanned("");
+    processingRef.current = false;
+    lastScanTime.current = 0;
     setIsScanning(true);
   };
 
@@ -100,18 +105,25 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   }, [isScanning, quaggaReady]);
 
   const handleDetection = (result: any) => {
-    console.log("Barcode detected:", result);
+    if (processingRef.current) {
+      return;
+    }
+
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;
-      console.log("Code:", code);
+      const now = Date.now();
+
+      if (now - lastScanTime.current < 2000) {
+        return;
+      }
+
+      lastScanTime.current = now;
       setLastScanned(code);
 
       if (code.length >= 10 && code.length <= 13 && /^\d+$/.test(code)) {
-        console.log("Valid length barcode, attempting lookup:", code);
+        processingRef.current = true;
+        stopCamera();
         lookupBook(code);
-      } else {
-        setError(`Scanned: ${code} - Too short/long for an ISBN`);
-        setTimeout(() => setError(null), 3000);
       }
     }
   };
@@ -134,13 +146,14 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch book information");
+        throw new Error(data.error || "Book not found");
       }
 
       onBookFound(data);
-      stopCamera();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
+      setError(err instanceof Error ? err.message : "Book not found");
+      processingRef.current = false;
+      setIsScanning(false);
     } finally {
       setIsLoading(false);
     }
