@@ -304,36 +304,36 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                 {books.length} book{books.length !== 1 ? "s" : ""} cataloged
               </p>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setShowScanner(!showScanner)}
-                class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+                class="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"
               >
-                {showScanner ? "Hide Scanner" : "Scan Book"}
+                📷 {showScanner ? "Hide" : "Scan"}
               </button>
               {user.role === "teacher" && (
                 <>
                   <button
                     onClick={handleExport}
                     disabled={exporting || books.length === 0}
-                    class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
                   >
-                    {exporting ? "Exporting..." : "Export CSV"}
+                    📄 {exporting ? "Exporting..." : "Export"}
                   </button>
                   {user.googleSheetUrl && (
                     <button
                       onClick={handleBackupToSheet}
                       disabled={backingUp || books.length === 0}
-                      class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
                     >
-                      {backingUp ? "Backing Up..." : "📊 Backup to Sheet"}
+                      📊 {backingUp ? "Backing Up..." : "Backup"}
                     </button>
                   )}
                   <button
                     onClick={() => setShowInvitations(!showInvitations)}
-                    class="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all"
+                    class="px-4 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all text-sm whitespace-nowrap"
                   >
-                    👥 Manage Helpers
+                    👥 Helpers
                   </button>
                 </>
               )}
