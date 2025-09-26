@@ -59,8 +59,8 @@ export default function App() {
       </main>
 
       <footer class="text-center py-8">
-        <div class="flex flex-col items-center gap-4">
-          <div class="text-2xl font-bold text-primary dark:text-primary-light">BookWorm</div>
+        <div class="flex flex-col items-center">
+          <div class="text-2xl font-bold text-primary dark:text-primary-light mb-1">BookWorm</div>
           <img src="/flash-apps-horizontal.svg" alt="by FlashApps" class="w-full max-w-md px-4" />
         </div>
       </footer>
