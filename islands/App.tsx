@@ -42,10 +42,7 @@ export default function App() {
           <div class="flex items-center justify-center h-16">
             <div class="flex items-center space-x-3">
               <img src="/lightning-bolt-logo.svg" alt="FlashApps" class="w-8 h-8" />
-              <div>
-                <span class="text-2xl font-bold text-primary">BookWorm</span>
-                <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">by FlashApps</span>
-              </div>
+              <span class="text-2xl font-bold text-primary">BookWorm</span>
             </div>
           </div>
         </div>
