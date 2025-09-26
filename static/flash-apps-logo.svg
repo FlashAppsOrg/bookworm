@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- Flash Apps Logo with Text -->
+  <defs>
+    <filter id="neonFlash">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g transform="skewX(-20) translate(130, 0)">
+    <!-- 5 columns for F-L-A-S-H -->
+    <rect x="30" y="60" width="40" height="80" fill="#00D4FF" filter="url(#neonFlash)"/>
+    <rect x="70" y="60" width="40" height="80" fill="#00AAFF" filter="url(#neonFlash)"/>
+    <rect x="110" y="60" width="40" height="80" fill="#FFD700" filter="url(#neonFlash)"/>
+    <rect x="150" y="60" width="40" height="80" fill="#FFB700" filter="url(#neonFlash)"/>
+    <rect x="190" y="60" width="40" height="80" fill="#FF6B35" filter="url(#neonFlash)"/>
+    
+    <rect x="10" y="140" width="40" height="80" fill="#00D4FF" filter="url(#neonFlash)"/>
+    <rect x="50" y="140" width="40" height="80" fill="#00AAFF" filter="url(#neonFlash)"/>
+    <rect x="90" y="140" width="40" height="80" fill="#FFD700" filter="url(#neonFlash)"/>
+    <rect x="130" y="140" width="40" height="80" fill="#FFB700" filter="url(#neonFlash)"/>
+    <rect x="170" y="140" width="40" height="80" fill="#FF6B35" filter="url(#neonFlash)"/>
+    
+    <!-- Letters - centered, italic, solid black -->
+    <text x="49" y="110" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">F</text>
+    <text x="89" y="110" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">L</text>
+    <text x="130" y="110" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">A</text>
+    <text x="168" y="110" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">S</text>
+    <text x="209" y="110" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">H</text>
+    
+    <!-- Lightning bolt in first blue card - ivory -->
+    <path d="M 40 157 L 20 182 L 28 182 L 20 202 L 40 177 L 32 177 Z" fill="#FFFFF0"/>
+    <text x="70" y="190" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">A</text>
+    <text x="108" y="190" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">P</text>
+    <text x="148" y="190" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">P</text>
+    <text x="188" y="190" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" font-style="italic" fill="#000" text-anchor="middle">S</text>
+  </g>
+</svg>

@@ -36,25 +36,39 @@ export default function App() {
   };
 
   return (
-    <div class="app-container">
-      <header class="app-header">
-        <h1>📚 BookWorm</h1>
-        <p class="tagline">Scan barcodes, discover books</p>
+    <div class="min-h-screen flex flex-col">
+      <header class="bg-white dark:bg-gray-800 shadow-md transition-colors">
+        <div class="container mx-auto px-4">
+          <div class="flex items-center justify-center h-16">
+            <div class="flex items-center space-x-3">
+              <img src="/lightning-bolt-logo.svg" alt="FlashApps" class="w-8 h-8" />
+              <div>
+                <span class="text-2xl font-bold text-primary">BookWorm</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">by FlashApps</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
-      <main class="app-main">
-        {currentBook ? (
-          <BookDisplay book={currentBook} onScanAnother={handleScanAnother} />
-        ) : (
-          <>
-            <BarcodeScanner onBookFound={handleBookFound} />
-            <ScanHistory onSelectBook={handleSelectFromHistory} />
-          </>
-        )}
+      <main class="flex-1 container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+          {currentBook ? (
+            <BookDisplay book={currentBook} onScanAnother={handleScanAnother} />
+          ) : (
+            <>
+              <BarcodeScanner onBookFound={handleBookFound} />
+              <ScanHistory onSelectBook={handleSelectFromHistory} />
+            </>
+          )}
+        </div>
       </main>
 
-      <footer class="app-footer">
-        <p>Powered by Google Books API</p>
+      <footer class="text-center py-8">
+        <div>
+          <div class="text-2xl font-bold text-primary dark:text-primary-light">BookWorm</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">by FlashApps</div>
+        </div>
       </footer>
     </div>
   );

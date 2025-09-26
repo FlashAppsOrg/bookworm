@@ -173,53 +173,53 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   };
 
   return (
-    <div class="scanner-container">
+    <div class="max-w-2xl mx-auto">
       {!isScanning && !showManualInput && (
-        <div class="scanner-controls">
+        <div class="space-y-4">
           <button
             onClick={() => {
               console.log("Start Camera button clicked!");
               startCamera();
             }}
-            class="btn btn-primary"
+            class="w-full py-4 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95"
             aria-label="Start camera to scan barcode"
           >
-            Start Camera Scanner
+            📸 Start Camera Scanner
           </button>
           <button
             onClick={() => {
               console.log("Manual input button clicked!");
               setShowManualInput(true);
             }}
-            class="btn btn-secondary"
+            class="w-full py-4 px-6 rounded-lg bg-secondary hover:bg-secondary-dark text-gray-900 font-semibold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95"
             aria-label="Enter ISBN manually"
           >
-            Enter ISBN Manually
+            ✏️ Enter ISBN Manually
           </button>
         </div>
       )}
 
       {showManualInput && !isScanning && (
-        <div class="manual-input">
-          <h3>Enter ISBN</h3>
-          <form onSubmit={handleManualSubmit}>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 animate-fade-in">
+          <h3 class="text-2xl font-bold text-primary mb-4">Enter ISBN</h3>
+          <form onSubmit={handleManualSubmit} class="space-y-4">
             <input
               type="text"
               value={manualISBN}
               onInput={(e) => setManualISBN((e.target as HTMLInputElement).value)}
               placeholder="Enter ISBN (10 or 13 digits)"
               pattern="[0-9]{10,13}"
-              class="isbn-input"
+              class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white text-lg"
               aria-label="ISBN number input"
             />
-            <div class="button-group">
-              <button type="submit" class="btn btn-primary" disabled={isLoading}>
+            <div class="flex gap-3">
+              <button type="submit" class="flex-1 py-3 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoading}>
                 {isLoading ? "Looking up..." : "Lookup"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowManualInput(false)}
-                class="btn btn-secondary"
+                class="flex-1 py-3 px-6 rounded-lg bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold shadow-lg transition-all"
               >
                 Cancel
               </button>
@@ -229,24 +229,13 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       )}
 
       {isScanning && (
-        <div class="video-container">
-          <div ref={videoRef} class="scanner-video" />
-          <div class="scan-overlay">
-            <div class="scan-line"></div>
+        <div class="relative rounded-lg overflow-hidden shadow-2xl bg-black">
+          <div ref={videoRef} class="w-full aspect-video" />
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute inset-0 border-4 border-primary opacity-50"></div>
+            <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-primary animate-pulse"></div>
           </div>
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.9)',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            textAlign: 'center',
-            maxWidth: '90%'
-          }}>
+          <div class="absolute top-3 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-90 text-white px-4 py-2 rounded-lg text-sm text-center max-w-[90%]">
             {lastScanned ? `Last: ${lastScanned}` : 'Scan the ISBN barcode (starts with 978 or 979)'}
           </div>
           <button
@@ -254,19 +243,23 @@ export default function BarcodeScanner({ onBookFound }: Props) {
               console.log("Stop button clicked!");
               stopCamera();
             }}
-            class="btn btn-stop"
+            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 py-3 px-8 rounded-lg bg-error hover:bg-red-600 text-white font-semibold shadow-lg transition-all"
             aria-label="Stop camera"
           >
-            Stop Scanning
+            ⏹️ Stop Scanning
           </button>
         </div>
       )}
 
-      {isLoading && <div class="loading">Looking up book...</div>}
+      {isLoading && (
+        <div class="mt-4 text-center py-4 px-6 bg-primary/10 text-primary rounded-lg font-semibold animate-pulse">
+          🔍 Looking up book...
+        </div>
+      )}
 
       {error && (
-        <div class="error" role="alert">
-          {error}
+        <div class="mt-4 bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg animate-fade-in" role="alert">
+          ⚠️ {error}
         </div>
       )}
     </div>

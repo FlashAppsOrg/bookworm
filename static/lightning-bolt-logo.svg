@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" width="320" height="300">
+  <!-- Lightning Bolt Cutout Logo -->
+  <defs>
+    <filter id="neonBolt">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Define lightning bolt as a cutout mask -->
+    <mask id="boltMask">
+      <rect x="0" y="0" width="320" height="300" fill="white"/>
+      <!-- Lightning bolt path - both triangles extended to overlap -->
+      <path d="M 190 60 L 135 150 L 165 150 L 140 220 L 200 130 L 170 130 Z" 
+            fill="black" transform="skewX(-20) translate(40, 0)"/>
+    </mask>
+  </defs>
+  <g mask="url(#boltMask)">
+    <g transform="skewX(-20) translate(125, 0)">
+      <rect x="30" y="60" width="40" height="80" fill="#00D4FF" filter="url(#neonBolt)"/>
+      <rect x="70" y="60" width="40" height="80" fill="#FFD700" filter="url(#neonBolt)"/>
+      <rect x="110" y="60" width="40" height="80" fill="#FF6B35" filter="url(#neonBolt)"/>
+      <rect x="10" y="140" width="40" height="80" fill="#00D4FF" filter="url(#neonBolt)"/>
+      <rect x="50" y="140" width="40" height="80" fill="#FFD700" filter="url(#neonBolt)"/>
+      <rect x="90" y="140" width="40" height="80" fill="#FF6B35" filter="url(#neonBolt)"/>
+    </g>
+  </g>
+</svg>
