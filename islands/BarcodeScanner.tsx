@@ -45,8 +45,14 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       return;
     }
 
+    if (!videoRef.current) {
+      setError("Video container not found");
+      return;
+    }
+
     try {
       setError(null);
+      setIsScanning(true);
 
       window.Quagga.init({
         inputStream: {
@@ -54,6 +60,8 @@ export default function BarcodeScanner({ onBookFound }: Props) {
           type: "LiveStream",
           target: videoRef.current,
           constraints: {
+            width: 640,
+            height: 480,
             facingMode: "environment",
           },
         },
@@ -61,19 +69,23 @@ export default function BarcodeScanner({ onBookFound }: Props) {
           readers: ["ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader"],
         },
       }, (err: any) => {
+        console.log("Quagga init callback, err:", err);
         if (err) {
-          console.error(err);
-          setError("Failed to start camera");
+          console.error("Quagga init error:", err);
+          setError(`Failed to start camera: ${err.message || err}`);
+          setIsScanning(false);
           return;
         }
 
+        console.log("Quagga initialized successfully, starting...");
         window.Quagga.onDetected(handleDetection);
         window.Quagga.start();
-        setIsScanning(true);
+        console.log("Quagga started");
       });
     } catch (err) {
+      console.error("Exception starting camera:", err);
       setError("Camera access denied. Please enable camera permissions.");
-      console.error(err);
+      setIsScanning(false);
     }
   };
 
