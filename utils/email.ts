@@ -218,3 +218,75 @@ export async function sendInvitationEmail(
     };
   }
 }
+
+export async function sendPasswordResetEmail(
+  email: string,
+  token: string
+): Promise<{ success: boolean; error?: string }> {
+  const apiKey = Deno.env.get("RESEND_API_KEY");
+  if (!apiKey) {
+    return {
+      success: false,
+      error: "Email service not configured. Please contact support.",
+    };
+  }
+
+  const resend = new Resend(apiKey);
+  const resetUrl = `${Deno.env.get("APP_URL") || "http://localhost:8000"}/reset-password?token=${token}`;
+
+  const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
+
+  try {
+    await resend.emails.send({
+      from: `BookWorm <${fromEmail}>`,
+      to: email,
+      subject: "Reset your BookWorm password",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; padding: 30px 0;">
+              <h1 style="color: #0D9488; margin: 0;">📚 BookWorm</h1>
+            </div>
+
+            <div style="background: #f9fafb; border-radius: 8px; padding: 30px; margin: 20px 0;">
+              <h2 style="margin-top: 0; color: #111827;">Reset Your Password</h2>
+              <p style="color: #4b5563; font-size: 16px;">
+                We received a request to reset your BookWorm password. Click the button below to create a new password.
+              </p>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}"
+                   style="display: inline-block; background: #0D9488; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  Reset Password
+                </a>
+              </div>
+
+              <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                Or copy and paste this link into your browser:<br>
+                <a href="${resetUrl}" style="color: #0D9488; word-break: break-all;">${resetUrl}</a>
+              </p>
+            </div>
+
+            <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+              <p>This link will expire in 1 hour.</p>
+              <p>If you didn't request a password reset, you can safely ignore this email.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    await incrementEmailCount();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Failed to send password reset email. Please try again later.",
+    };
+  }
+}

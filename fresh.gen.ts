@@ -8,10 +8,13 @@ import * as $_app from "./routes/_app.tsx";
 import * as $admin_usage from "./routes/admin/usage.tsx";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
+import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
 import * as $api_auth_resend_verification from "./routes/api/auth/resend-verification.ts";
+import * as $api_auth_reset_password from "./routes/api/auth/reset-password.ts";
 import * as $api_auth_signup from "./routes/api/auth/signup.ts";
+import * as $api_auth_update_password from "./routes/api/auth/update-password.ts";
 import * as $api_auth_verify from "./routes/api/auth/verify.ts";
 import * as $api_classroom_add from "./routes/api/classroom/add.ts";
 import * as $api_classroom_backup_to_sheet from "./routes/api/classroom/backup-to-sheet.ts";
@@ -30,8 +33,10 @@ import * as $api_settings_update_school from "./routes/api/settings/update-schoo
 import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
 import * as $dashboard from "./routes/dashboard.tsx";
 import * as $delegate_signup from "./routes/delegate-signup.tsx";
+import * as $forgot_password from "./routes/forgot-password.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $reset_password from "./routes/reset-password.tsx";
 import * as $select_classroom from "./routes/select-classroom.tsx";
 import * as $settings from "./routes/settings.tsx";
 import * as $setup from "./routes/setup.tsx";
@@ -59,10 +64,13 @@ const manifest = {
     "./routes/admin/usage.tsx": $admin_usage,
     "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
+    "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
     "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
     "./routes/api/auth/resend-verification.ts": $api_auth_resend_verification,
+    "./routes/api/auth/reset-password.ts": $api_auth_reset_password,
     "./routes/api/auth/signup.ts": $api_auth_signup,
+    "./routes/api/auth/update-password.ts": $api_auth_update_password,
     "./routes/api/auth/verify.ts": $api_auth_verify,
     "./routes/api/classroom/add.ts": $api_classroom_add,
     "./routes/api/classroom/backup-to-sheet.ts": $api_classroom_backup_to_sheet,
@@ -81,8 +89,10 @@ const manifest = {
     "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
     "./routes/dashboard.tsx": $dashboard,
     "./routes/delegate-signup.tsx": $delegate_signup,
+    "./routes/forgot-password.tsx": $forgot_password,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/reset-password.tsx": $reset_password,
     "./routes/select-classroom.tsx": $select_classroom,
     "./routes/settings.tsx": $settings,
     "./routes/setup.tsx": $setup,

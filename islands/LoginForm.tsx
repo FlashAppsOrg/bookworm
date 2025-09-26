@@ -123,6 +123,15 @@ export default function LoginForm() {
         />
       </div>
 
+      <div class="text-right">
+        <a
+          href="/forgot-password"
+          class="text-sm text-primary hover:text-primary-dark font-medium"
+        >
+          Forgot Password?
+        </a>
+      </div>
+
       <button
         type="submit"
         disabled={loading}

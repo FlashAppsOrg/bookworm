@@ -37,6 +37,11 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
   const [schoolSaving, setSchoolSaving] = useState<boolean>(false);
   const [schoolMessage, setSchoolMessage] = useState<string>("");
   const [exporting, setExporting] = useState<boolean>(false);
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [passwordSaving, setPasswordSaving] = useState<boolean>(false);
+  const [passwordMessage, setPasswordMessage] = useState<string>("");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("bookworm-theme") || "teal";
@@ -149,6 +154,50 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
   function copyPublicUrl() {
     navigator.clipboard.writeText(publicUrl);
     alert("Public classroom URL copied to clipboard!");
+  }
+
+  async function updatePassword() {
+    setPasswordSaving(true);
+    setPasswordMessage("");
+
+    if (newPassword.length < 8) {
+      setPasswordMessage("✗ Password must be at least 8 characters");
+      setPasswordSaving(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage("✗ Passwords do not match");
+      setPasswordSaving(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/update-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPasswordMessage("✓ Password updated successfully!");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setTimeout(() => setPasswordMessage(""), 3000);
+      } else {
+        setPasswordMessage(`✗ ${data.error || "Failed to update password"}`);
+      }
+    } catch (err) {
+      setPasswordMessage("✗ Network error");
+    } finally {
+      setPasswordSaving(false);
+    }
   }
 
   return (
@@ -285,6 +334,65 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
               />
             </button>
           </label>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
+        <h3 class="text-2xl font-semibold mb-4 dark:text-white">Change Password</h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
+          Update your password to keep your account secure.
+        </p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Current Password
+            </label>
+            <input
+              type="password"
+              value={currentPassword}
+              onInput={(e) => setCurrentPassword((e.target as HTMLInputElement).value)}
+              placeholder="Enter current password"
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              New Password
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onInput={(e) => setNewPassword((e.target as HTMLInputElement).value)}
+              placeholder="Enter new password (min 8 characters)"
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onInput={(e) => setConfirmPassword((e.target as HTMLInputElement).value)}
+              placeholder="Confirm new password"
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              onClick={updatePassword}
+              disabled={passwordSaving || !currentPassword || !newPassword || !confirmPassword}
+              class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {passwordSaving ? "Updating..." : "Update Password"}
+            </button>
+            {passwordMessage && (
+              <span class={`text-sm font-medium ${passwordMessage.startsWith("✓") ? "text-green-600" : "text-red-600"}`}>
+                {passwordMessage}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

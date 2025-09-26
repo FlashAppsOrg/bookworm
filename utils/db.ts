@@ -39,6 +39,13 @@ export interface VerificationToken {
   expiresAt: string;
 }
 
+export interface PasswordResetToken {
+  token: string;
+  email: string;
+  expiresAt: string;
+  used: boolean;
+}
+
 export interface Invitation {
   id: string;
   token: string;
