@@ -5,9 +5,11 @@
 import * as $_app from "./routes/_app.tsx";
 import * as $api_lookup from "./routes/api/lookup.ts";
 import * as $index from "./routes/index.tsx";
+import * as $settings from "./routes/settings.tsx";
 import * as $App from "./islands/App.tsx";
 import * as $BarcodeScanner from "./islands/BarcodeScanner.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
+import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -15,11 +17,13 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/api/lookup.ts": $api_lookup,
     "./routes/index.tsx": $index,
+    "./routes/settings.tsx": $settings,
   },
   islands: {
     "./islands/App.tsx": $App,
     "./islands/BarcodeScanner.tsx": $BarcodeScanner,
     "./islands/ScanHistory.tsx": $ScanHistory,
+    "./islands/SettingsPanel.tsx": $SettingsPanel,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

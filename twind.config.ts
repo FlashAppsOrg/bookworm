@@ -14,14 +14,29 @@ export default {
     "body": {
       transition: "background-color 0.3s ease",
     },
-    ".theme-bookworm": {
+    ".theme-teal": {
       "--color-primary": "#0D9488",
       "--color-primary-dark": "#0F766E",
       "--color-primary-light": "#14B8A6",
       "--color-secondary": "#F59E0B",
       "--color-secondary-dark": "#D97706",
       "--color-secondary-light": "#FBBF24",
-      "--color-accent": "#F59E0B",
+    },
+    ".theme-indigo": {
+      "--color-primary": "#4F46E5",
+      "--color-primary-dark": "#4338CA",
+      "--color-primary-light": "#6366F1",
+      "--color-secondary": "#10B981",
+      "--color-secondary-dark": "#059669",
+      "--color-secondary-light": "#34D399",
+    },
+    ".theme-purple": {
+      "--color-primary": "#7C3AED",
+      "--color-primary-dark": "#6D28D9",
+      "--color-primary-light": "#8B5CF6",
+      "--color-secondary": "#F59E0B",
+      "--color-secondary-dark": "#D97706",
+      "--color-secondary-light": "#FBBF24",
     },
   },
   theme: {

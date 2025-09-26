@@ -16,8 +16,28 @@ export default function App({ Component }: PageProps) {
           rel="stylesheet"
         />
         <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              const darkMode = localStorage.getItem('bookworm-dark-mode') === 'true';
+              if (darkMode) {
+                document.documentElement.classList.add('dark');
+              }
+
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                  const theme = localStorage.getItem('bookworm-theme') || 'teal';
+                  document.body.className = document.body.className + ' theme-' + theme;
+                });
+              } else {
+                const theme = localStorage.getItem('bookworm-theme') || 'teal';
+                document.body.className = document.body.className + ' theme-' + theme;
+              }
+            })();
+          `
+        }} />
       </Head>
-      <body class="min-h-screen transition-colors theme-bookworm">
+      <body class="min-h-screen transition-colors theme-teal">
         <div class="min-h-screen bg-gradient-to-br from-primary/20 via-white to-secondary/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
           <Component />
         </div>
