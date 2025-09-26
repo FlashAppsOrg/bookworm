@@ -12,6 +12,7 @@ interface SettingsData {
   schools: School[];
   serviceAccountEmail: string;
   publicUrl: string;
+  isAdmin: boolean;
 }
 
 export const handler: Handlers<SettingsData> = {
@@ -34,7 +35,10 @@ export const handler: Handlers<SettingsData> = {
       ? `${appUrl}/${currentSchool.slug}/${user.username}`
       : "";
 
-    return ctx.render({ user, currentSchool, schools, serviceAccountEmail, publicUrl });
+    const adminEmails = Deno.env.get("ADMIN_EMAILS")?.split(",").map(e => e.trim().toLowerCase()) || [];
+    const isAdmin = adminEmails.includes(user.email.toLowerCase());
+
+    return ctx.render({ user, currentSchool, schools, serviceAccountEmail, publicUrl, isAdmin });
   },
 };
 
@@ -65,7 +69,7 @@ export default function SettingsPage({ data }: PageProps<SettingsData>) {
               Settings
             </h1>
 
-            {data.user.role === "teacher" && (
+            {data.isAdmin && (
               <UsageStats />
             )}
 

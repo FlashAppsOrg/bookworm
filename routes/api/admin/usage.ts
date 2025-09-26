@@ -14,7 +14,9 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role !== "teacher") {
+      const adminEmails = Deno.env.get("ADMIN_EMAILS")?.split(",").map(e => e.trim().toLowerCase()) || [];
+
+      if (!adminEmails.includes(user.email.toLowerCase())) {
         return new Response(JSON.stringify({ error: "Admin access required" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
