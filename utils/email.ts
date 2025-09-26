@@ -2,7 +2,6 @@ import { Resend } from "resend";
 import { getKv } from "./db.ts";
 
 const MONTHLY_LIMIT = 2950;
-const WARNING_THRESHOLD = 2400;
 
 interface EmailStats {
   monthly: number;
@@ -46,16 +45,15 @@ export async function checkEmailLimit(): Promise<{ allowed: boolean; message?: s
   const stats = await getEmailStats();
 
   if (stats.monthly >= MONTHLY_LIMIT) {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const monthName = nextMonth.toLocaleString('en-US', { month: 'long' });
+    const day = nextMonth.getDate();
+
     return {
       allowed: false,
-      message: `Monthly email limit reached (${MONTHLY_LIMIT}). Service will resume next month.`,
+      message: `We've reached our signup limit for this month. Please check back on ${monthName} ${day}.`,
     };
-  }
-
-  if (stats.monthly >= WARNING_THRESHOLD) {
-    console.warn(
-      `⚠️  Email limit warning: ${stats.monthly}/${MONTHLY_LIMIT} emails sent this month`
-    );
   }
 
   return { allowed: true };
@@ -71,13 +69,11 @@ export async function sendVerificationEmail(
 ): Promise<{ success: boolean; error?: string }> {
   const limitCheck = await checkEmailLimit();
   if (!limitCheck.allowed) {
-    console.error("Email limit reached:", limitCheck.message);
     return { success: false, error: limitCheck.message };
   }
 
   const apiKey = Deno.env.get("RESEND_API_KEY");
   if (!apiKey) {
-    console.error("RESEND_API_KEY not configured");
     return {
       success: false,
       error: "Email service not configured. Please contact support.",
@@ -133,10 +129,8 @@ export async function sendVerificationEmail(
     });
 
     await incrementEmailCount();
-    console.log(`✅ Verification email sent to ${email}`);
     return { success: true };
   } catch (error) {
-    console.error("Failed to send verification email:", error);
     return {
       success: false,
       error: "Failed to send verification email. Please try again later.",

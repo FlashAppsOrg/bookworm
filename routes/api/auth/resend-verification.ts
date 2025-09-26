@@ -45,7 +45,6 @@ export const handler: Handlers = {
       const emailResult = await sendVerificationEmail(user.email, token);
 
       if (!emailResult.success) {
-        console.error("Failed to resend verification email:", emailResult.error);
         return new Response(JSON.stringify({
           error: emailResult.error || "Failed to send verification email. Please try again later.",
         }), {
