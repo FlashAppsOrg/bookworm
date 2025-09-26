@@ -1,5 +1,3 @@
-import Quagga from "quagga";
-
 export interface BarcodeFormat {
   format: string;
   rawValue: string;
@@ -16,11 +14,13 @@ export function isBarcodeDetectorSupported(): boolean {
   return true;
 }
 
-export function detectBarcode(
+export async function detectBarcode(
   canvas: HTMLCanvasElement
 ): Promise<BarcodeFormat[]> {
+  const Quagga = await import("quagga");
+
   return new Promise((resolve) => {
-    Quagga.decodeSingle({
+    Quagga.default.decodeSingle({
       src: canvas.toDataURL(),
       numOfWorkers: 0,
       decoder: {
