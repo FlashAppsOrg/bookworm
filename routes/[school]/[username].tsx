@@ -2,6 +2,7 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getSchoolBySlug, getUserBooks } from "../../utils/db-helpers.ts";
 import { getKv, User, ClassroomBook } from "../../utils/db.ts";
+import PublicClassroom from "../../islands/PublicClassroom.tsx";
 
 interface ClassroomData {
   teacher: User;
@@ -72,61 +73,11 @@ export default function ClassroomPage({ data }: PageProps<ClassroomData>) {
 
         <main class="flex-1 container mx-auto px-4 py-8">
           <div class="max-w-6xl mx-auto">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6 transition-colors">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {data.teacher.displayName}'s Classroom
-              </h1>
-              <p class="text-gray-600 dark:text-gray-400">
-                {data.schoolName} • {data.books.length} book{data.books.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-
-            {data.books.length > 0 ? (
-              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {data.books.map((book) => (
-                  <div
-                    key={book.id}
-                    class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-colors"
-                  >
-                    {book.thumbnail && (
-                      <img
-                        src={book.thumbnail}
-                        alt={book.title}
-                        class="w-full h-48 object-contain mb-3"
-                      />
-                    )}
-                    <h3 class="font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">
-                      {book.title}
-                    </h3>
-                    {book.authors && book.authors.length > 0 && (
-                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        by {book.authors.join(", ")}
-                      </p>
-                    )}
-                    {book.publisher && (
-                      <p class="text-xs text-gray-500 dark:text-gray-500">
-                        {book.publisher}
-                      </p>
-                    )}
-                    {book.publishedDate && (
-                      <p class="text-xs text-gray-500 dark:text-gray-500">
-                        {book.publishedDate}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
-                <div class="text-6xl mb-4">📚</div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  No books yet
-                </h2>
-                <p class="text-gray-600 dark:text-gray-400">
-                  This classroom's library is still being built
-                </p>
-              </div>
-            )}
+            <PublicClassroom
+              books={data.books}
+              teacherName={data.teacher.displayName}
+              schoolName={data.schoolName}
+            />
           </div>
         </main>
 

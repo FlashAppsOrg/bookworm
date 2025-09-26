@@ -1,12 +1,13 @@
 import { useState } from "preact/hooks";
-import { SchoolBookWithTeacher } from "../utils/db-helpers.ts";
+import { ClassroomBook } from "../utils/db.ts";
 
 interface Props {
-  books: SchoolBookWithTeacher[];
-  schoolSlug: string;
+  books: ClassroomBook[];
+  teacherName: string;
+  schoolName: string;
 }
 
-export default function SchoolCatalog({ books, schoolSlug }: Props) {
+export default function PublicClassroom({ books, teacherName, schoolName }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
@@ -16,14 +17,22 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
     const query = searchQuery.toLowerCase();
     const titleMatch = book.title.toLowerCase().includes(query);
     const authorMatch = book.authors.some(author => author.toLowerCase().includes(query));
-    const teacherMatch = book.teacherName.toLowerCase().includes(query);
     const isbnMatch = book.isbn?.toLowerCase().includes(query);
 
-    return titleMatch || authorMatch || teacherMatch || isbnMatch;
+    return titleMatch || authorMatch || isbnMatch;
   });
 
   return (
     <div class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 transition-colors">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          {teacherName}'s Classroom
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          {schoolName} • {books.length} book{books.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-colors">
         <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
           <div class="relative flex-1">
@@ -31,7 +40,7 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
               type="text"
               value={searchQuery}
               onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
-              placeholder="Search by title, author, teacher, or ISBN..."
+              placeholder="Search by title, author, or ISBN..."
               class="w-full px-4 py-3 pl-10 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white text-base"
               aria-label="Search books"
             />
@@ -100,7 +109,7 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
                     by {book.authors.join(", ")}
                   </p>
                 )}
-                <div class="space-y-1 text-xs text-gray-500 dark:text-gray-500 mb-3">
+                <div class="space-y-1 text-xs text-gray-500 dark:text-gray-500">
                   {book.publisher && <p>{book.publisher}</p>}
                   {book.publishedDate && <p>{book.publishedDate}</p>}
                   {book.isbn && (
@@ -109,29 +118,8 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
                     </p>
                   )}
                   <p class="text-primary dark:text-primary-light font-semibold">
-                    Qty: {book.quantity || 1}
+                    Quantity: {book.quantity || 1}
                   </p>
-                </div>
-                <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <a
-                    href={`/${schoolSlug}/${book.teacherUsername}`}
-                    class="text-sm text-primary hover:text-primary-dark dark:text-primary-light font-semibold flex items-center gap-1 group"
-                  >
-                    <span class="line-clamp-1">{book.teacherName}'s classroom</span>
-                    <svg
-                      class="w-4 h-4 transform transition-transform group-hover:translate-x-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </a>
                 </div>
               </div>
             ))}
@@ -148,7 +136,6 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Authors</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Publisher</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Published</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Classroom</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -172,14 +159,6 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
                       <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {book.publishedDate || "-"}
                       </td>
-                      <td class="px-4 py-3 text-sm">
-                        <a
-                          href={`/${schoolSlug}/${book.teacherUsername}`}
-                          class="text-primary hover:text-primary-dark dark:text-primary-light font-semibold"
-                        >
-                          {book.teacherName}
-                        </a>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -194,7 +173,7 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
             No books found
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
-            {searchQuery.trim() ? "Try a different search term" : "No books in this school yet"}
+            {searchQuery.trim() ? "Try a different search term" : "This classroom's library is still being built"}
           </p>
         </div>
       )}

@@ -41,6 +41,7 @@ import * as $BarcodeScanner from "./islands/BarcodeScanner.tsx";
 import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
+import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
 import * as $SchoolCatalog from "./islands/SchoolCatalog.tsx";
 import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
@@ -92,6 +93,7 @@ const manifest = {
     "./islands/DashboardContent.tsx": $DashboardContent,
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
+    "./islands/PublicClassroom.tsx": $PublicClassroom,
     "./islands/ScanHistory.tsx": $ScanHistory,
     "./islands/SchoolCatalog.tsx": $SchoolCatalog,
     "./islands/SettingsPanel.tsx": $SettingsPanel,
