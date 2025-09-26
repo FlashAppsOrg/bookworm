@@ -18,9 +18,9 @@ export default {
       "--color-primary": "#0D9488",
       "--color-primary-dark": "#0F766E",
       "--color-primary-light": "#14B8A6",
-      "--color-secondary": "#F59E0B",
-      "--color-secondary-dark": "#D97706",
-      "--color-secondary-light": "#FBBF24",
+      "--color-secondary": "#FF7F7F",
+      "--color-secondary-dark": "#FF6B6B",
+      "--color-secondary-light": "#FF9999",
     },
     ".theme-indigo": {
       "--color-primary": "#4F46E5",

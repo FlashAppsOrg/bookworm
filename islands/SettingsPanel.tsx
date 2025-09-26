@@ -4,7 +4,7 @@ const themes = {
   teal: {
     name: "Ocean Teal",
     primary: "#0D9488",
-    secondary: "#F59E0B",
+    secondary: "#FF7F7F",
   },
   indigo: {
     name: "Deep Indigo",
