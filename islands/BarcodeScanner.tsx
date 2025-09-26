@@ -20,6 +20,7 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
+  const [searchResults, setSearchResults] = useState<BookInfo[]>([]);
   const [quaggaReady, setQuaggaReady] = useState(false);
   const [lastScanned, setLastScanned] = useState<string>("");
   const lastScanTime = useRef<number>(0);
@@ -140,6 +141,7 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   const lookupBook = async (searchValue: string, isISBN: boolean = true) => {
     setIsLoading(true);
     setError(null);
+    setSearchResults([]);
 
     try {
       const queryParam = isISBN ? `isbn=${searchValue}` : `query=${encodeURIComponent(searchValue)}`;
@@ -150,7 +152,12 @@ export default function BarcodeScanner({ onBookFound }: Props) {
         throw new Error(data.error || "Book not found");
       }
 
-      onBookFound(data);
+      // Check if we got multiple results (text search) or single result (ISBN)
+      if (data.results) {
+        setSearchResults(data.results);
+      } else {
+        onBookFound(data);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Book not found");
       processingRef.current = false;
@@ -230,6 +237,70 @@ export default function BarcodeScanner({ onBookFound }: Props) {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {searchResults.length > 0 && (
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 animate-fade-in">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold text-primary">Select a Book</h3>
+            <button
+              onClick={() => {
+                setSearchResults([]);
+                setSearchText("");
+              }}
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              ✕
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Found {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}
+          </p>
+          <div class="space-y-3 max-h-96 overflow-y-auto">
+            {searchResults.map((book, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  onBookFound(book);
+                  setSearchResults([]);
+                  setSearchText("");
+                  setShowManualInput(false);
+                }}
+                class="w-full text-left p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+              >
+                <div class="flex gap-3">
+                  {book.thumbnail && (
+                    <img
+                      src={book.thumbnail}
+                      alt={book.title}
+                      class="w-16 h-24 object-contain"
+                    />
+                  )}
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-gray-900 dark:text-white line-clamp-2 mb-1">
+                      {book.title}
+                    </h4>
+                    {book.authors && book.authors.length > 0 && (
+                      <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mb-1">
+                        by {book.authors.join(", ")}
+                      </p>
+                    )}
+                    {book.publishedDate && (
+                      <p class="text-xs text-gray-500 dark:text-gray-500">
+                        {book.publishedDate}
+                      </p>
+                    )}
+                    {book.isbn && (
+                      <p class="text-xs text-gray-500 dark:text-gray-500">
+                        ISBN: {book.isbn}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

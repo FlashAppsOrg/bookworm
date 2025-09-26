@@ -117,11 +117,41 @@ export const handler: Handlers = {
         });
       }
 
+      // For text queries, return multiple results
+      if (!isbn) {
+        const results = data.items.slice(0, 10).map((book: any) => {
+          const volumeInfo = book.volumeInfo;
+
+          let bookIsbn = "";
+          if (volumeInfo.industryIdentifiers) {
+            const isbn13 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_13");
+            const isbn10 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
+            bookIsbn = isbn13?.identifier || isbn10?.identifier || "";
+          }
+
+          return {
+            isbn: bookIsbn,
+            title: volumeInfo.title || "Unknown Title",
+            authors: volumeInfo.authors || ["Unknown Author"],
+            publisher: volumeInfo.publisher,
+            publishedDate: volumeInfo.publishedDate,
+            description: volumeInfo.description,
+            thumbnail: volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
+            industryIdentifiers: volumeInfo.industryIdentifiers,
+          };
+        });
+
+        return new Response(JSON.stringify({ results }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // For ISBN, return single result
       const book = data.items[0];
       const volumeInfo = book.volumeInfo;
 
-      // Extract ISBN from book data
-      let bookIsbn = isbn || "";
+      let bookIsbn = isbn;
       if (!bookIsbn && volumeInfo.industryIdentifiers) {
         const isbn13 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_13");
         const isbn10 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
@@ -139,7 +169,7 @@ export const handler: Handlers = {
         industryIdentifiers: volumeInfo.industryIdentifiers,
       };
 
-      // Cache the result (only if we have an ISBN)
+      // Cache the result
       if (bookIsbn) {
         await cacheBook(bookIsbn, bookInfo);
       }
