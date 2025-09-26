@@ -5,6 +5,7 @@
 import * as $_school_username_ from "./routes/[school]/[username].tsx";
 import * as $_school_index from "./routes/[school]/index.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
@@ -44,6 +45,7 @@ import * as $SchoolCatalog from "./islands/SchoolCatalog.tsx";
 import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
 import * as $SetupForm from "./islands/SetupForm.tsx";
 import * as $SignupForm from "./islands/SignupForm.tsx";
+import * as $UsageStats from "./islands/UsageStats.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -51,6 +53,7 @@ const manifest = {
     "./routes/[school]/[username].tsx": $_school_username_,
     "./routes/[school]/index.tsx": $_school_index,
     "./routes/_app.tsx": $_app,
+    "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
@@ -92,6 +95,7 @@ const manifest = {
     "./islands/SettingsPanel.tsx": $SettingsPanel,
     "./islands/SetupForm.tsx": $SetupForm,
     "./islands/SignupForm.tsx": $SignupForm,
+    "./islands/UsageStats.tsx": $UsageStats,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

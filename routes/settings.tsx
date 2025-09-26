@@ -4,6 +4,7 @@ import { getUserFromSession } from "../utils/session.ts";
 import { getSchoolById, listSchools } from "../utils/db-helpers.ts";
 import { User, School } from "../utils/db.ts";
 import SettingsPanel from "../islands/SettingsPanel.tsx";
+import UsageStats from "../islands/UsageStats.tsx";
 
 interface SettingsData {
   user: User;
@@ -59,17 +60,24 @@ export default function SettingsPage({ data }: PageProps<SettingsData>) {
         </header>
 
         <main class="flex-1 container mx-auto px-4 py-8">
-          <div class="max-w-2xl mx-auto">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+          <div class="max-w-4xl mx-auto space-y-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
               Settings
             </h1>
-            <SettingsPanel
-              user={data.user}
-              currentSchool={data.currentSchool}
-              schools={data.schools}
-              serviceAccountEmail={data.serviceAccountEmail}
-              publicUrl={data.publicUrl}
-            />
+
+            {data.user.role === "teacher" && (
+              <UsageStats />
+            )}
+
+            <div class="max-w-2xl">
+              <SettingsPanel
+                user={data.user}
+                currentSchool={data.currentSchool}
+                schools={data.schools}
+                serviceAccountEmail={data.serviceAccountEmail}
+                publicUrl={data.publicUrl}
+              />
+            </div>
           </div>
         </main>
 
