@@ -1,7 +1,6 @@
 {
   "tasks": {
     "start": "deno run -A --watch=static/,routes/ main.ts",
-    "build": "deno run -A main.ts build",
     "preview": "deno run -A main.ts"
   },
   "imports": {
