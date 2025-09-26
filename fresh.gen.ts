@@ -9,11 +9,16 @@ import * as $api_auth_signup from "./routes/api/auth/signup.ts";
 import * as $api_auth_verify from "./routes/api/auth/verify.ts";
 import * as $api_lookup from "./routes/api/lookup.ts";
 import * as $index from "./routes/index.tsx";
+import * as $login from "./routes/login.tsx";
 import * as $settings from "./routes/settings.tsx";
+import * as $signup from "./routes/signup.tsx";
+import * as $verify from "./routes/verify.tsx";
 import * as $App from "./islands/App.tsx";
 import * as $BarcodeScanner from "./islands/BarcodeScanner.tsx";
+import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
 import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
+import * as $SignupForm from "./islands/SignupForm.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -25,13 +30,18 @@ const manifest = {
     "./routes/api/auth/verify.ts": $api_auth_verify,
     "./routes/api/lookup.ts": $api_lookup,
     "./routes/index.tsx": $index,
+    "./routes/login.tsx": $login,
     "./routes/settings.tsx": $settings,
+    "./routes/signup.tsx": $signup,
+    "./routes/verify.tsx": $verify,
   },
   islands: {
     "./islands/App.tsx": $App,
     "./islands/BarcodeScanner.tsx": $BarcodeScanner,
+    "./islands/LoginForm.tsx": $LoginForm,
     "./islands/ScanHistory.tsx": $ScanHistory,
     "./islands/SettingsPanel.tsx": $SettingsPanel,
+    "./islands/SignupForm.tsx": $SignupForm,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
