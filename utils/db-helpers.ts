@@ -19,6 +19,7 @@ export async function createUser(user: Omit<User, "id" | "createdAt">): Promise<
   const newUser: User = {
     ...user,
     id,
+    googleBooksApiKey: user.googleBooksApiKey || null,
     createdAt: new Date().toISOString(),
   };
 

@@ -8,6 +8,7 @@ export interface User {
   verified: boolean;
   role: "teacher" | "delegate";
   delegatedToUserId: string | null; // If delegate, which teacher's classroom they help with
+  googleBooksApiKey: string | null; // Optional per-teacher API key
   createdAt: string;
 }
 
@@ -59,6 +60,12 @@ export async function getKv(): Promise<Deno.Kv> {
   return kv;
 }
 
+export interface CachedBook {
+  isbn: string;
+  data: any; // BookInfo structure
+  cachedAt: string;
+}
+
 // Key patterns:
 // users:email:{email} -> User
 // users:id:{id} -> User
@@ -70,3 +77,4 @@ export async function getKv(): Promise<Deno.Kv> {
 // verificationTokens:{token} -> VerificationToken
 // invitations:token:{token} -> Invitation
 // invitations:teacher:{teacherId}:{invitationId} -> true (index for listing teacher's invitations)
+// books:isbn:{isbn} -> CachedBook (cached Google Books API responses)

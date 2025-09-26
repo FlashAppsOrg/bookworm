@@ -50,6 +50,7 @@ export const handler: Handlers = {
         verified: false,
         role: "teacher",
         delegatedToUserId: null,
+        googleBooksApiKey: null,
       });
 
       const token = generateToken();
