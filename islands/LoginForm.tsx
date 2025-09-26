@@ -5,10 +5,14 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     setError("");
+    setShowResend(false);
+    setResendSuccess(false);
     setLoading(true);
 
     try {
@@ -22,6 +26,9 @@ export default function LoginForm() {
 
       if (!response.ok) {
         setError(data.error || "Login failed");
+        if (data.error && data.error.includes("verify")) {
+          setShowResend(true);
+        }
         return;
       }
 
@@ -38,11 +45,53 @@ export default function LoginForm() {
     }
   };
 
+  const handleResend = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to resend email");
+        return;
+      }
+
+      setResendSuccess(true);
+      setShowResend(false);
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} class="space-y-4">
+      {resendSuccess && (
+        <div class="bg-primary/10 border-2 border-primary text-primary px-4 py-3 rounded-lg text-sm">
+          Verification email sent! Please check your inbox.
+        </div>
+      )}
+
       {error && (
         <div class="bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg text-sm">
           {error}
+          {showResend && (
+            <button
+              type="button"
+              onClick={handleResend}
+              class="mt-2 text-primary hover:text-primary-dark underline font-semibold block"
+            >
+              Resend verification email
+            </button>
+          )}
         </div>
       )}
 

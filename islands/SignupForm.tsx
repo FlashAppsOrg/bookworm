@@ -7,10 +7,12 @@ export default function SignupForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     setError("");
+    setShowResend(false);
     setLoading(true);
 
     try {
@@ -24,6 +26,35 @@ export default function SignupForm() {
 
       if (!response.ok) {
         setError(data.error || "Signup failed");
+        if (data.error === "Email already registered") {
+          setShowResend(true);
+        }
+        return;
+      }
+
+      setSuccess(true);
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to resend email");
         return;
       }
 
@@ -57,6 +88,15 @@ export default function SignupForm() {
       {error && (
         <div class="bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg text-sm">
           {error}
+          {showResend && (
+            <button
+              type="button"
+              onClick={handleResend}
+              class="mt-2 text-primary hover:text-primary-dark underline font-semibold"
+            >
+              Resend verification email
+            </button>
+          )}
         </div>
       )}
 
