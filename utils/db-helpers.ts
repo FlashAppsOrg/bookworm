@@ -114,3 +114,25 @@ export async function removeBookFromClassroom(userId: string, bookId: string): P
   const kv = await getKv();
   await kv.delete(["classroomBooks", userId, bookId]);
 }
+
+export async function isUsernameAvailable(schoolId: string, username: string): Promise<boolean> {
+  const kv = await getKv();
+  const result = await kv.get<string>(["usernames", schoolId, username.toLowerCase()]);
+  return result.value === null;
+}
+
+export async function reserveUsername(schoolId: string, username: string, userId: string): Promise<void> {
+  const kv = await getKv();
+  await kv.set(["usernames", schoolId, username.toLowerCase()], userId);
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export { slugify };
