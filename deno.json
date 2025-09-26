@@ -1,0 +1,38 @@
+{
+  "tasks": {
+    "start": "deno run -A --watch=static/,routes/ main.ts",
+    "build": "deno run -A dev.ts build",
+    "preview": "deno run -A main.ts"
+  },
+  "imports": {
+    "$fresh/": "https://deno.land/x/fresh@1.7.3/",
+    "preact": "https://esm.sh/preact@10.22.0",
+    "preact/": "https://esm.sh/preact@10.22.0/",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
+    "quagga": "https://esm.sh/@ericblade/quagga2@1.8.4"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "fresh",
+        "recommended"
+      ]
+    }
+  },
+  "exclude": [
+    "**/_fresh/*"
+  ],
+  "deploy": {
+    "project": "d6a52eb5-fe11-49a3-a171-73d368caa5c8",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
+  }
+}
