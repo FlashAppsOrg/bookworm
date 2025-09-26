@@ -77,7 +77,7 @@ export default function App() {
         </div>
       </header>
 
-      <main class="flex-1 container mx-auto px-4 py-8 pb-20 md:pb-8">
+      <main class="flex-1 container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
           {currentBook ? (
             <BookDisplay book={currentBook} onScanAnother={handleScanAnother} />
@@ -90,10 +90,10 @@ export default function App() {
         </div>
       </main>
 
-      <footer class="text-center py-2 md:py-8">
+      <footer class="text-center py-6 md:py-8">
         <div class="flex flex-col items-center">
-          <div class="relative w-full max-w-sm md:max-w-md px-4">
-            <div class="text-xl md:text-2xl font-bold text-primary dark:text-primary-light absolute top-0 left-1/2 transform -translate-x-1/2 z-10">BookWorm by</div>
+          <div class="relative w-full max-w-xs md:max-w-md px-4">
+            <div class="text-lg md:text-2xl font-bold text-primary dark:text-primary-light absolute top-0 left-1/2 transform -translate-x-1/2 z-10">BookWorm by</div>
             <img src="/flash-apps-horizontal.svg" alt="FlashApps" class="w-full" />
           </div>
         </div>
