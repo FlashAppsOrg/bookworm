@@ -68,9 +68,15 @@ export default function BarcodeScanner({ onBookFound }: Props) {
             facingMode: "environment",
           },
         },
+        locator: {
+          patchSize: "medium",
+          halfSample: true
+        },
+        numOfWorkers: 4,
         decoder: {
           readers: ["ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader"],
         },
+        locate: true
       }, (err: any) => {
         console.log("Quagga init callback, err:", err);
         if (err) {
@@ -92,21 +98,25 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     }
   }, [isScanning, quaggaReady]);
 
+  const handleDetection = (result: any) => {
+    console.log("Barcode detected:", result);
+    if (result && result.codeResult && result.codeResult.code) {
+      console.log("Code:", result.codeResult.code);
+      const isbn = extractISBNFromBarcode(result.codeResult.code);
+      console.log("Extracted ISBN:", isbn);
+      if (isbn) {
+        lookupBook(isbn);
+      }
+    }
+  };
+
   const stopCamera = () => {
+    console.log("Stopping camera");
     if (window.Quagga && isScanning) {
       window.Quagga.stop();
       window.Quagga.offDetected(handleDetection);
     }
     setIsScanning(false);
-  };
-
-  const handleDetection = (result: any) => {
-    if (result && result.codeResult && result.codeResult.code) {
-      const isbn = extractISBNFromBarcode(result.codeResult.code);
-      if (isbn) {
-        lookupBook(isbn);
-      }
-    }
   };
 
   const lookupBook = async (isbn: string) => {
@@ -206,7 +216,10 @@ export default function BarcodeScanner({ onBookFound }: Props) {
             <div class="scan-line"></div>
           </div>
           <button
-            onClick={stopCamera}
+            onClick={() => {
+              console.log("Stop button clicked!");
+              stopCamera();
+            }}
             class="btn btn-stop"
             aria-label="Stop camera"
           >
