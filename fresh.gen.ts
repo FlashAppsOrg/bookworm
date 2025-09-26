@@ -5,6 +5,7 @@
 import * as $_school_username_ from "./routes/[school]/[username].tsx";
 import * as $_school_index from "./routes/[school]/index.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $admin_usage from "./routes/admin/usage.tsx";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
@@ -55,6 +56,7 @@ const manifest = {
     "./routes/[school]/[username].tsx": $_school_username_,
     "./routes/[school]/index.tsx": $_school_index,
     "./routes/_app.tsx": $_app,
+    "./routes/admin/usage.tsx": $admin_usage,
     "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/login.ts": $api_auth_login,

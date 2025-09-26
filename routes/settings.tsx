@@ -4,7 +4,6 @@ import { getUserFromSession } from "../utils/session.ts";
 import { getSchoolById, listSchools } from "../utils/db-helpers.ts";
 import { User, School } from "../utils/db.ts";
 import SettingsPanel from "../islands/SettingsPanel.tsx";
-import UsageStats from "../islands/UsageStats.tsx";
 
 interface SettingsData {
   user: User;
@@ -12,7 +11,6 @@ interface SettingsData {
   schools: School[];
   serviceAccountEmail: string;
   publicUrl: string;
-  isAdmin: boolean;
 }
 
 export const handler: Handlers<SettingsData> = {
@@ -35,10 +33,7 @@ export const handler: Handlers<SettingsData> = {
       ? `${appUrl}/${currentSchool.slug}/${user.username}`
       : "";
 
-    const adminEmails = Deno.env.get("ADMIN_EMAILS")?.split(",").map(e => e.trim().toLowerCase()) || [];
-    const isAdmin = adminEmails.includes(user.email.toLowerCase());
-
-    return ctx.render({ user, currentSchool, schools, serviceAccountEmail, publicUrl, isAdmin });
+    return ctx.render({ user, currentSchool, schools, serviceAccountEmail, publicUrl });
   },
 };
 
@@ -68,10 +63,6 @@ export default function SettingsPage({ data }: PageProps<SettingsData>) {
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
               Settings
             </h1>
-
-            {data.isAdmin && (
-              <UsageStats />
-            )}
 
             <SettingsPanel
               user={data.user}
