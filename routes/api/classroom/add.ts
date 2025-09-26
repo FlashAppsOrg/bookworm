@@ -33,10 +33,11 @@ export const handler: Handlers = {
       const existingBook = await findBookByISBN(targetUserId, isbn);
 
       if (existingBook) {
+        const currentQuantity = existingBook.quantity || 1;
         return new Response(JSON.stringify({
           duplicate: true,
-          existingBook,
-          message: `You already have ${existingBook.quantity} cop${existingBook.quantity === 1 ? 'y' : 'ies'} of "${existingBook.title}"`
+          existingBook: { ...existingBook, quantity: currentQuantity },
+          message: `You already have ${currentQuantity} cop${currentQuantity === 1 ? 'y' : 'ies'} of "${existingBook.title}"`
         }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
