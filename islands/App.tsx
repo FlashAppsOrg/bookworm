@@ -59,11 +59,11 @@ export default function App() {
       </main>
 
       <footer class="text-center py-8">
-        <div class="flex flex-col items-center gap-3">
+        <div class="flex flex-col items-center gap-4">
           <div class="text-2xl font-bold text-primary dark:text-primary-light">BookWorm</div>
-          <div class="flex items-center gap-2">
-            <span class="text-gray-600 dark:text-gray-400">by</span>
-            <img src="/flash-apps-horizontal.svg" alt="FlashApps" class="h-12" />
+          <div class="flex flex-col items-center gap-2">
+            <span class="text-xl text-gray-600 dark:text-gray-400">by</span>
+            <img src="/flash-apps-horizontal.svg" alt="FlashApps" class="w-full max-w-md px-4" />
           </div>
         </div>
       </footer>
