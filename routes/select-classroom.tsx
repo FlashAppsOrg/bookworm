@@ -23,22 +23,26 @@ export const handler: Handlers<SelectClassroomData> = {
       });
     }
 
-    if (user.role !== "delegate" || user.delegatedToUserIds.length === 0) {
+    // Support both old singular field and new array field
+    const delegateToIds = user.delegatedToUserIds ||
+      ((user as any).delegatedToUserId ? [(user as any).delegatedToUserId] : []);
+
+    if (user.role !== "delegate" || delegateToIds.length === 0) {
       return new Response(null, {
         status: 302,
         headers: { Location: "/dashboard" },
       });
     }
 
-    if (user.delegatedToUserIds.length === 1) {
+    if (delegateToIds.length === 1) {
       return new Response(null, {
         status: 302,
-        headers: { Location: `/dashboard?teacherId=${user.delegatedToUserIds[0]}` },
+        headers: { Location: `/dashboard?teacherId=${delegateToIds[0]}` },
       });
     }
 
     const classrooms: ClassroomOption[] = [];
-    for (const teacherId of user.delegatedToUserIds) {
+    for (const teacherId of delegateToIds) {
       const teacher = await getUserById(teacherId);
       if (teacher) {
         classrooms.push({

@@ -27,13 +27,17 @@ export const handler: Handlers = {
       // If delegate, add to the selected teacher's classroom
       let targetUserId = user.id;
       if (user.role === "delegate") {
+        // Support both old singular field and new array field
+        const delegateToIds = user.delegatedToUserIds ||
+          ((user as any).delegatedToUserId ? [(user as any).delegatedToUserId] : []);
+
         if (!teacherId) {
           return new Response(JSON.stringify({ error: "Teacher ID required for delegates" }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
           });
         }
-        if (!user.delegatedToUserIds.includes(teacherId)) {
+        if (!delegateToIds.includes(teacherId)) {
           return new Response(JSON.stringify({ error: "Not authorized for this classroom" }), {
             status: 403,
             headers: { "Content-Type": "application/json" },

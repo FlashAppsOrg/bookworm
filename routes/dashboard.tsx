@@ -44,8 +44,12 @@ export const handler: Handlers<DashboardData> = {
     let teacherName: string | undefined;
 
     if (user.role === "delegate") {
+      // Support both old singular field and new array field
+      const delegateToIds = user.delegatedToUserIds ||
+        ((user as any).delegatedToUserId ? [(user as any).delegatedToUserId] : []);
+
       // If multiple classrooms, need to pick one
-      if (user.delegatedToUserIds.length > 1) {
+      if (delegateToIds.length > 1) {
         const url = new URL(req.url);
         selectedTeacherId = url.searchParams.get("teacherId") || undefined;
 
@@ -58,19 +62,19 @@ export const handler: Handlers<DashboardData> = {
         }
 
         // Verify they have access to this teacher
-        if (!user.delegatedToUserIds.includes(selectedTeacherId)) {
+        if (!delegateToIds.includes(selectedTeacherId)) {
           return new Response(null, {
             status: 302,
             headers: { Location: "/select-classroom" },
           });
         }
-      } else if (user.delegatedToUserIds.length === 1) {
-        selectedTeacherId = user.delegatedToUserIds[0];
+      } else if (delegateToIds.length === 1) {
+        selectedTeacherId = delegateToIds[0];
       }
 
       // Get list of teachers for switcher
       availableTeachers = [];
-      for (const teacherId of user.delegatedToUserIds) {
+      for (const teacherId of delegateToIds) {
         const teacher = await getUserById(teacherId);
         if (teacher) {
           availableTeachers.push({ id: teacher.id, name: teacher.displayName });

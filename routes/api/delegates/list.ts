@@ -26,8 +26,15 @@ export const handler: Handlers = {
 
       const entries = kv.list<User>({ prefix: ["users:id"] });
       for await (const entry of entries) {
-        if (entry.value.role === "delegate" && entry.value.delegatedToUserIds.includes(user.id)) {
-          delegates.push(entry.value);
+        const delegate = entry.value;
+        if (delegate.role === "delegate") {
+          // Support both old singular field and new array field
+          const delegateToIds = delegate.delegatedToUserIds ||
+            ((delegate as any).delegatedToUserId ? [(delegate as any).delegatedToUserId] : []);
+
+          if (delegateToIds.includes(user.id)) {
+            delegates.push(delegate);
+          }
         }
       }
 

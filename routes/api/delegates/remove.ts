@@ -43,7 +43,11 @@ export const handler: Handlers = {
 
       const delegate = delegateResult.value as any;
 
-      if (!delegate.delegatedToUserIds || !delegate.delegatedToUserIds.includes(user.id)) {
+      // Support both old singular field and new array field
+      let delegateToIds = delegate.delegatedToUserIds ||
+        (delegate.delegatedToUserId ? [delegate.delegatedToUserId] : []);
+
+      if (!delegateToIds.includes(user.id)) {
         return new Response(JSON.stringify({ error: "This delegate does not belong to you" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
@@ -51,7 +55,7 @@ export const handler: Handlers = {
       }
 
       // Remove this teacher from the delegate's list
-      delegate.delegatedToUserIds = delegate.delegatedToUserIds.filter((id: string) => id !== user.id);
+      delegate.delegatedToUserIds = delegateToIds.filter((id: string) => id !== user.id);
 
       // If they still help other teachers, just update the record
       if (delegate.delegatedToUserIds.length > 0) {
