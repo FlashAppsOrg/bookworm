@@ -106,13 +106,11 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       console.log("Code:", code);
       setLastScanned(code);
 
-      const isbn = extractISBNFromBarcode(code);
-      console.log("Extracted ISBN:", isbn);
-
-      if (isbn) {
-        lookupBook(isbn);
+      if (code.length >= 10 && code.length <= 13 && /^\d+$/.test(code)) {
+        console.log("Valid length barcode, attempting lookup:", code);
+        lookupBook(code);
       } else {
-        setError(`Scanned: ${code} - Not a valid ISBN. Look for the ISBN barcode (starts with 978 or 979)`);
+        setError(`Scanned: ${code} - Too short/long for an ISBN`);
         setTimeout(() => setError(null), 3000);
       }
     }
