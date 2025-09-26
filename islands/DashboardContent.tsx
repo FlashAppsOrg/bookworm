@@ -62,7 +62,8 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
 
       setInviteEmail("");
       await fetchInvitations();
-      alert(`Invitation created! Share this link:\n\n${data.inviteUrl}`);
+      setInviteError("");
+      alert(`✓ ${data.message}`);
     } catch (err) {
       setInviteError("Network error. Please try again.");
     } finally {
@@ -70,11 +71,24 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
     }
   };
 
-  const copyInviteLink = (token: string) => {
-    const appUrl = window.location.origin;
-    const link = `${appUrl}/delegate-signup?token=${token}`;
-    navigator.clipboard.writeText(link);
-    alert("Invitation link copied to clipboard!");
+  const resendInvite = async (email: string) => {
+    try {
+      const response = await fetch("/api/invitations/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`✓ Invitation resent to ${email}`);
+      } else {
+        alert(`✗ ${data.error}`);
+      }
+    } catch (err) {
+      alert("✗ Network error");
+    }
   };
 
   const handleBookFound = async (book: BookInfo) => {
@@ -311,7 +325,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                   </button>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  They'll receive a link to join as a helper and add books to your classroom
+                  An email invitation will be sent with a link to join as a helper
                 </p>
               </form>
 
@@ -334,10 +348,10 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                         </p>
                       </div>
                       <button
-                        onClick={() => copyInviteLink(inv.token)}
+                        onClick={() => resendInvite(inv.email)}
                         class="px-3 py-1 text-sm rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
                       >
-                        Copy Link
+                        Resend Email
                       </button>
                     </div>
                   ))}

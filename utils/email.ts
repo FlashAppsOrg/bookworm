@@ -139,3 +139,82 @@ export async function sendVerificationEmail(
     };
   }
 }
+
+export async function sendInvitationEmail(
+  email: string,
+  teacherName: string,
+  inviteUrl: string
+): Promise<{ success: boolean; error?: string }> {
+  const limitCheck = await checkEmailLimit();
+  if (!limitCheck.allowed) {
+    return { success: false, error: limitCheck.message };
+  }
+
+  const apiKey = Deno.env.get("RESEND_API_KEY");
+  if (!apiKey) {
+    return {
+      success: false,
+      error: "Email service not configured. Please contact support.",
+    };
+  }
+
+  const resend = new Resend(apiKey);
+  const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
+
+  try {
+    await resend.emails.send({
+      from: `BookWorm <${fromEmail}>`,
+      to: email,
+      subject: `${teacherName} invited you to help with BookWorm`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; padding: 30px 0;">
+              <h1 style="color: #0D9488; margin: 0;">📚 BookWorm</h1>
+            </div>
+
+            <div style="background: #f9fafb; border-radius: 8px; padding: 30px; margin: 20px 0;">
+              <h2 style="margin-top: 0; color: #111827;">You're Invited!</h2>
+              <p style="color: #4b5563; font-size: 16px;">
+                <strong>${teacherName}</strong> has invited you to help catalog their classroom books using BookWorm.
+              </p>
+              <p style="color: #4b5563; font-size: 16px;">
+                As a helper, you'll be able to scan and add books to their classroom library. Click the button below to get started.
+              </p>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${inviteUrl}"
+                   style="display: inline-block; background: #0D9488; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  Join as Helper
+                </a>
+              </div>
+
+              <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                Or copy and paste this link into your browser:<br>
+                <a href="${inviteUrl}" style="color: #0D9488; word-break: break-all;">${inviteUrl}</a>
+              </p>
+            </div>
+
+            <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+              <p>This invitation will expire in 7 days.</p>
+              <p>If you weren't expecting this invitation, you can safely ignore this email.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    await incrementEmailCount();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Failed to send invitation email. Please try again later.",
+    };
+  }
+}

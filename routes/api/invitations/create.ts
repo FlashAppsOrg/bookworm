@@ -2,6 +2,7 @@ import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
 import { getKv, Invitation } from "../../../utils/db.ts";
 import { generateToken } from "../../../utils/password.ts";
+import { sendInvitationEmail } from "../../../utils/email.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -53,10 +54,20 @@ export const handler: Handlers = {
       const appUrl = Deno.env.get("APP_URL") || "http://localhost:8000";
       const inviteUrl = `${appUrl}/delegate-signup?token=${token}`;
 
+      const emailResult = await sendInvitationEmail(email, user.displayName, inviteUrl);
+
+      if (!emailResult.success) {
+        await kv.delete(["invitations", token]);
+        await kv.delete(["invitations:teacher", user.id, token]);
+        return new Response(JSON.stringify({ error: emailResult.error }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(JSON.stringify({
         success: true,
-        invitation,
-        inviteUrl,
+        message: `Invitation sent to ${email}`,
       }), {
         status: 201,
         headers: { "Content-Type": "application/json" },
