@@ -11,10 +11,10 @@ const themes = {
     primary: "#4F46E5",
     secondary: "#10B981",
   },
-  purple: {
-    name: "Royal Purple",
-    primary: "#7C3AED",
-    secondary: "#F59E0B",
+  blue: {
+    name: "Ocean Blue",
+    primary: "#4F46E5",
+    secondary: "#EC4899",
   },
 };
 
