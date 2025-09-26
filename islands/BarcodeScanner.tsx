@@ -38,22 +38,25 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     checkQuagga();
   }, []);
 
-  const startCamera = async () => {
+  const startCamera = () => {
     console.log("startCamera clicked, quaggaReady:", quaggaReady);
     if (!quaggaReady || !window.Quagga) {
       setError("Barcode scanner not ready");
       return;
     }
 
-    if (!videoRef.current) {
-      setError("Video container not found");
+    setError(null);
+    setIsScanning(true);
+  };
+
+  useEffect(() => {
+    if (!isScanning || !quaggaReady || !window.Quagga || !videoRef.current) {
       return;
     }
 
-    try {
-      setError(null);
-      setIsScanning(true);
+    console.log("Initializing Quagga with video container:", videoRef.current);
 
+    try {
       window.Quagga.init({
         inputStream: {
           name: "Live",
@@ -87,7 +90,7 @@ export default function BarcodeScanner({ onBookFound }: Props) {
       setError("Camera access denied. Please enable camera permissions.");
       setIsScanning(false);
     }
-  };
+  }, [isScanning, quaggaReady]);
 
   const stopCamera = () => {
     if (window.Quagga && isScanning) {
