@@ -21,6 +21,7 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [quaggaReady, setQuaggaReady] = useState(false);
+  const [lastScanned, setLastScanned] = useState<string>("");
 
   useEffect(() => {
     console.log("BarcodeScanner mounted");
@@ -101,11 +102,18 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   const handleDetection = (result: any) => {
     console.log("Barcode detected:", result);
     if (result && result.codeResult && result.codeResult.code) {
-      console.log("Code:", result.codeResult.code);
-      const isbn = extractISBNFromBarcode(result.codeResult.code);
+      const code = result.codeResult.code;
+      console.log("Code:", code);
+      setLastScanned(code);
+
+      const isbn = extractISBNFromBarcode(code);
       console.log("Extracted ISBN:", isbn);
+
       if (isbn) {
         lookupBook(isbn);
+      } else {
+        setError(`Scanned: ${code} - Not a valid ISBN. Look for the ISBN barcode (starts with 978 or 979)`);
+        setTimeout(() => setError(null), 3000);
       }
     }
   };
@@ -214,6 +222,21 @@ export default function BarcodeScanner({ onBookFound }: Props) {
           <div ref={videoRef} class="scanner-video" />
           <div class="scan-overlay">
             <div class="scan-line"></div>
+          </div>
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,0.9)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            textAlign: 'center',
+            maxWidth: '90%'
+          }}>
+            {lastScanned ? `Last: ${lastScanned}` : 'Scan the ISBN barcode (starts with 978 or 979)'}
           </div>
           <button
             onClick={() => {
