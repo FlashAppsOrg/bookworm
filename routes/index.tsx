@@ -1,5 +1,22 @@
+import { Handlers } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
+import { getUserFromSession } from "../utils/session.ts";
 import App from "../islands/App.tsx";
+
+export const handler: Handlers = {
+  async GET(req, ctx) {
+    const user = await getUserFromSession(req);
+
+    if (user && user.verified && user.schoolId) {
+      return new Response(null, {
+        status: 302,
+        headers: { Location: "/dashboard" },
+      });
+    }
+
+    return ctx.render();
+  },
+};
 
 export default function Home() {
   return (

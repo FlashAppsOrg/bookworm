@@ -17,7 +17,7 @@ export default function BarcodeScanner({ onBookFound }: Props) {
   const videoRef = useRef<HTMLDivElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [manualISBN, setManualISBN] = useState("");
+  const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [quaggaReady, setQuaggaReady] = useState(false);
@@ -137,12 +137,13 @@ export default function BarcodeScanner({ onBookFound }: Props) {
     setIsScanning(false);
   };
 
-  const lookupBook = async (isbn: string) => {
+  const lookupBook = async (searchValue: string, isISBN: boolean = true) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/lookup?isbn=${isbn}`);
+      const queryParam = isISBN ? `isbn=${searchValue}` : `query=${encodeURIComponent(searchValue)}`;
+      const response = await fetch(`/api/lookup?${queryParam}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -167,8 +168,10 @@ export default function BarcodeScanner({ onBookFound }: Props) {
 
   const handleManualSubmit = (e: Event) => {
     e.preventDefault();
-    if (manualISBN.trim()) {
-      lookupBook(manualISBN.trim());
+    const trimmed = searchText.trim();
+    if (trimmed) {
+      const isISBN = /^\d{10,13}$/.test(trimmed);
+      lookupBook(trimmed, isISBN);
     }
   };
 
@@ -188,33 +191,35 @@ export default function BarcodeScanner({ onBookFound }: Props) {
           </button>
           <button
             onClick={() => {
-              console.log("Manual input button clicked!");
+              console.log("Manual search button clicked!");
               setShowManualInput(true);
             }}
             class="w-full py-4 px-6 rounded-lg bg-secondary hover:bg-secondary-dark text-gray-900 font-semibold text-lg shadow-lg transition-all transform hover:scale-105 active:scale-95"
-            aria-label="Enter ISBN manually"
+            aria-label="Search by ISBN, title, or author"
           >
-            ✏️ Enter ISBN Manually
+            🔍 Search by ISBN, Title, or Author
           </button>
         </div>
       )}
 
       {showManualInput && !isScanning && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 animate-fade-in">
-          <h3 class="text-2xl font-bold text-primary mb-4">Enter ISBN</h3>
+          <h3 class="text-2xl font-bold text-primary mb-4">Search for a Book</h3>
           <form onSubmit={handleManualSubmit} class="space-y-4">
             <input
               type="text"
-              value={manualISBN}
-              onInput={(e) => setManualISBN((e.target as HTMLInputElement).value)}
-              placeholder="Enter ISBN (10 or 13 digits)"
-              pattern="[0-9]{10,13}"
+              value={searchText}
+              onInput={(e) => setSearchText((e.target as HTMLInputElement).value)}
+              placeholder="ISBN, title, or author (e.g., 'Harry Potter')"
               class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white text-lg"
-              aria-label="ISBN number input"
+              aria-label="Search for book by ISBN, title, or author"
             />
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Enter an ISBN (10 or 13 digits), book title, or author name
+            </p>
             <div class="flex gap-3">
               <button type="submit" class="flex-1 py-3 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoading}>
-                {isLoading ? "Looking up..." : "Lookup"}
+                {isLoading ? "Searching..." : "Search"}
               </button>
               <button
                 type="button"

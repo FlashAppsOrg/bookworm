@@ -67,29 +67,40 @@ export const handler: Handlers = {
   async GET(req) {
     const url = new URL(req.url);
     const isbn = url.searchParams.get("isbn");
+    const query = url.searchParams.get("query");
 
-    if (!isbn) {
-      return new Response(JSON.stringify({ error: "ISBN is required" }), {
+    if (!isbn && !query) {
+      return new Response(JSON.stringify({ error: "ISBN or query is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
     try {
-      // Check cache first
-      const cachedBook = await getCachedBook(isbn);
-      if (cachedBook) {
-        return new Response(JSON.stringify(cachedBook), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+      // Check cache first (only for ISBN)
+      if (isbn) {
+        const cachedBook = await getCachedBook(isbn);
+        if (cachedBook) {
+          return new Response(JSON.stringify(cachedBook), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
       }
 
       // Get API key (user's or default)
       const apiKey = await getUserApiKey(req);
+
+      let searchQuery;
+      if (isbn) {
+        searchQuery = `isbn:${isbn}`;
+      } else {
+        searchQuery = encodeURIComponent(query!);
+      }
+
       const apiUrl = apiKey
-        ? `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`
-        : `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+        ? `https://www.googleapis.com/books/v1/volumes?q=${searchQuery}&key=${apiKey}`
+        : `https://www.googleapis.com/books/v1/volumes?q=${searchQuery}`;
 
       const response = await fetch(apiUrl);
 
@@ -109,8 +120,16 @@ export const handler: Handlers = {
       const book = data.items[0];
       const volumeInfo = book.volumeInfo;
 
+      // Extract ISBN from book data
+      let bookIsbn = isbn || "";
+      if (!bookIsbn && volumeInfo.industryIdentifiers) {
+        const isbn13 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_13");
+        const isbn10 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
+        bookIsbn = isbn13?.identifier || isbn10?.identifier || "";
+      }
+
       const bookInfo: BookInfo = {
-        isbn,
+        isbn: bookIsbn,
         title: volumeInfo.title || "Unknown Title",
         authors: volumeInfo.authors || ["Unknown Author"],
         publisher: volumeInfo.publisher,
@@ -120,8 +139,10 @@ export const handler: Handlers = {
         industryIdentifiers: volumeInfo.industryIdentifiers,
       };
 
-      // Cache the result
-      await cacheBook(isbn, bookInfo);
+      // Cache the result (only if we have an ISBN)
+      if (bookIsbn) {
+        await cacheBook(bookIsbn, bookInfo);
+      }
 
       return new Response(JSON.stringify(bookInfo), {
         status: 200,
