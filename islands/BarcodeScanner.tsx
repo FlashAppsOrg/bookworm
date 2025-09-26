@@ -23,15 +23,18 @@ export default function BarcodeScanner({ onBookFound }: Props) {
 
   useEffect(() => {
     console.log("BarcodeScanner mounted");
-    import("quagga").then((Quagga) => {
-      console.log("Quagga loaded:", Quagga);
-      globalThis.window = globalThis.window || {};
-      window.Quagga = Quagga.default;
-      setQuaggaReady(true);
-    }).catch((err) => {
-      console.error("Failed to load Quagga:", err);
-      setError("Failed to load barcode scanner library");
-    });
+
+    const checkQuagga = () => {
+      if (typeof window !== 'undefined' && window.Quagga) {
+        console.log("Quagga loaded from window");
+        setQuaggaReady(true);
+      } else {
+        console.log("Quagga not ready, checking again...");
+        setTimeout(checkQuagga, 100);
+      }
+    };
+
+    checkQuagga();
   }, []);
 
   const startCamera = async () => {
