@@ -1,5 +1,5 @@
-import { useState } from "preact/hooks";
-import { User, ClassroomBook } from "../utils/db.ts";
+import { useState, useEffect } from "preact/hooks";
+import { User, ClassroomBook, Invitation } from "../utils/db.ts";
 import BarcodeScanner from "./BarcodeScanner.tsx";
 import BookDisplay from "../components/BookDisplay.tsx";
 import type { BookInfo } from "../routes/api/lookup.ts";
@@ -7,14 +7,74 @@ import type { BookInfo } from "../routes/api/lookup.ts";
 interface Props {
   user: User;
   initialBooks: ClassroomBook[];
+  teacherName?: string;
 }
 
-export default function DashboardContent({ user, initialBooks }: Props) {
+export default function DashboardContent({ user, initialBooks, teacherName }: Props) {
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [showInvitations, setShowInvitations] = useState(false);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [creatingInvite, setCreatingInvite] = useState(false);
+  const [inviteError, setInviteError] = useState("");
+
+  useEffect(() => {
+    if (user.role === "teacher") {
+      fetchInvitations();
+    }
+  }, []);
+
+  const fetchInvitations = async () => {
+    try {
+      const response = await fetch("/api/invitations/list");
+      if (response.ok) {
+        const data = await response.json();
+        setInvitations(data.invitations || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch invitations:", err);
+    }
+  };
+
+  const handleCreateInvite = async (e: Event) => {
+    e.preventDefault();
+    setInviteError("");
+    setCreatingInvite(true);
+
+    try {
+      const response = await fetch("/api/invitations/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setInviteError(data.error || "Failed to create invitation");
+        return;
+      }
+
+      setInviteEmail("");
+      await fetchInvitations();
+      alert(`Invitation created! Share this link:\n\n${data.inviteUrl}`);
+    } catch (err) {
+      setInviteError("Network error. Please try again.");
+    } finally {
+      setCreatingInvite(false);
+    }
+  };
+
+  const copyInviteLink = (token: string) => {
+    const appUrl = window.location.origin;
+    const link = `${appUrl}/delegate-signup?token=${token}`;
+    navigator.clipboard.writeText(link);
+    alert("Invitation link copied to clipboard!");
+  };
 
   const handleBookFound = async (book: BookInfo) => {
     setCurrentBook(book);
@@ -146,28 +206,119 @@ export default function DashboardContent({ user, initialBooks }: Props) {
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                {user.displayName}'s Classroom
+                {user.role === "teacher" ? `${user.displayName}'s Classroom` : "Classroom Books"}
               </h1>
               <p class="text-gray-600 dark:text-gray-400 mt-1">
                 {books.length} book{books.length !== 1 ? "s" : ""} cataloged
               </p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               <button
                 onClick={() => setShowScanner(!showScanner)}
                 class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
               >
                 {showScanner ? "Hide Scanner" : "Scan Book"}
               </button>
-              <button
-                onClick={handleExport}
-                disabled={exporting || books.length === 0}
-                class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {exporting ? "Exporting..." : "Export CSV"}
-              </button>
+              {user.role === "teacher" && (
+                <>
+                  <button
+                    onClick={handleExport}
+                    disabled={exporting || books.length === 0}
+                    class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {exporting ? "Exporting..." : "Export CSV"}
+                  </button>
+                  <button
+                    onClick={() => setShowInvitations(!showInvitations)}
+                    class="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all"
+                  >
+                    👥 Manage Helpers
+                  </button>
+                </>
+              )}
             </div>
           </div>
+
+          {user.role === "delegate" && (
+            <div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <p class="text-blue-900 dark:text-blue-100 text-sm">
+                <strong>Helper Mode:</strong> You're adding books to {teacherName}'s classroom. You cannot remove books or export the list.
+              </p>
+            </div>
+          )}
+
+          {showInvitations && user.role === "teacher" && (
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Manage Helpers
+              </h2>
+
+              <form onSubmit={handleCreateInvite} class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Invite a Helper
+                </label>
+                {inviteError && (
+                  <div class="bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg text-sm mb-3">
+                    {inviteError}
+                  </div>
+                )}
+                <div class="flex gap-2">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onInput={(e) => setInviteEmail((e.target as HTMLInputElement).value)}
+                    placeholder="helper@example.com"
+                    required
+                    class="flex-1 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                  <button
+                    type="submit"
+                    disabled={creatingInvite}
+                    class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {creatingInvite ? "Creating..." : "Create Invite"}
+                  </button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  They'll receive a link to join as a helper and add books to your classroom
+                </p>
+              </form>
+
+              <div>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-3">
+                  Active Invitations ({invitations.filter(i => !i.used).length})
+                </h3>
+                <div class="space-y-2">
+                  {invitations.filter(i => !i.used).map((inv) => (
+                    <div
+                      key={inv.id}
+                      class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                    >
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 dark:text-white">
+                          {inv.email}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => copyInviteLink(inv.token)}
+                        class="px-3 py-1 text-sm rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+                      >
+                        Copy Link
+                      </button>
+                    </div>
+                  ))}
+                  {invitations.filter(i => !i.used).length === 0 && (
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">
+                      No active invitations
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {showScanner && (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
@@ -211,12 +362,14 @@ export default function DashboardContent({ user, initialBooks }: Props) {
                 <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                   ISBN: {book.isbn}
                 </p>
-                <button
-                  onClick={() => handleRemoveBook(book.id)}
-                  class="w-full px-3 py-2 rounded bg-error/10 hover:bg-error/20 text-error text-sm font-semibold transition-all"
-                >
-                  Remove
-                </button>
+                {user.role === "teacher" && (
+                  <button
+                    onClick={() => handleRemoveBook(book.id)}
+                    class="w-full px-3 py-2 rounded bg-error/10 hover:bg-error/20 text-error text-sm font-semibold transition-all"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             ))}
           </div>

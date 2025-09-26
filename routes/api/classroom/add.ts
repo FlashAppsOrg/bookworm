@@ -24,7 +24,12 @@ export const handler: Handlers = {
         });
       }
 
-      const book = await addBookToClassroom(user.id, {
+      // If delegate, add to teacher's classroom
+      const targetUserId = user.role === "delegate" && user.delegatedToUserId
+        ? user.delegatedToUserId
+        : user.id;
+
+      const book = await addBookToClassroom(targetUserId, {
         isbn,
         title,
         authors: authors || [],
