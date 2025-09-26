@@ -15,7 +15,7 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { bookId, quantity } = body;
+      const { bookId, quantity, teacherId } = body;
 
       if (!bookId || typeof quantity !== "number" || quantity < 1) {
         return new Response(JSON.stringify({ error: "Valid bookId and quantity (>= 1) are required" }), {
@@ -24,10 +24,23 @@ export const handler: Handlers = {
         });
       }
 
-      // If delegate, update in teacher's classroom
-      const targetUserId = user.role === "delegate" && user.delegatedToUserId
-        ? user.delegatedToUserId
-        : user.id;
+      // If delegate, update in the selected teacher's classroom
+      let targetUserId = user.id;
+      if (user.role === "delegate") {
+        if (!teacherId) {
+          return new Response(JSON.stringify({ error: "Teacher ID required for delegates" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (!user.delegatedToUserIds.includes(teacherId)) {
+          return new Response(JSON.stringify({ error: "Not authorized for this classroom" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        targetUserId = teacherId;
+      }
 
       const updatedBook = await updateBookQuantity(targetUserId, bookId, quantity);
 

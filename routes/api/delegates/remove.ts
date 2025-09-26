@@ -43,17 +43,34 @@ export const handler: Handlers = {
 
       const delegate = delegateResult.value as any;
 
-      if (delegate.delegatedToUserId !== user.id) {
+      if (!delegate.delegatedToUserIds || !delegate.delegatedToUserIds.includes(user.id)) {
         return new Response(JSON.stringify({ error: "This delegate does not belong to you" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
       }
 
+      // Remove this teacher from the delegate's list
+      delegate.delegatedToUserIds = delegate.delegatedToUserIds.filter((id: string) => id !== user.id);
+
+      // If they still help other teachers, just update the record
+      if (delegate.delegatedToUserIds.length > 0) {
+        await kv.set(["users:id", delegateId], delegate);
+        await kv.set(["users:email", delegate.email.toLowerCase()], delegate);
+        await kv.delete(["users:delegates", user.id, delegateId]);
+
+        return new Response(JSON.stringify({ success: true, message: "Removed from your classroom" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // If they have no more teachers, delete the account
       await kv.delete(["users:id", delegateId]);
       await kv.delete(["users:email", delegate.email.toLowerCase()]);
+      await kv.delete(["users:delegates", user.id, delegateId]);
 
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, message: "Delegate account deleted" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });

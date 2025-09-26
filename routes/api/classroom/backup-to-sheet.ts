@@ -40,12 +40,13 @@ export const handler: Handlers = {
       const books = await getUserBooks(user.id);
 
       const rows: string[][] = [
-        ["ISBN", "Title", "Authors", "Publisher", "Published Date", "Date Added"],
+        ["ISBN", "Quantity", "Title", "Authors", "Publisher", "Published Date", "Date Added"],
       ];
 
       for (const book of books) {
         rows.push([
           book.isbn || "",
+          String(book.quantity || 1),
           book.title,
           book.authors.join(", "),
           book.publisher || "",

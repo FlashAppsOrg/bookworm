@@ -8,9 +8,11 @@ interface Props {
   user: User;
   initialBooks: ClassroomBook[];
   teacherName?: string;
+  availableTeachers?: Array<{ id: string; name: string }>;
+  selectedTeacherId?: string;
 }
 
-export default function DashboardContent({ user, initialBooks, teacherName }: Props) {
+export default function DashboardContent({ user, initialBooks, teacherName, availableTeachers, selectedTeacherId }: Props) {
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -164,6 +166,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
           thumbnail: currentBook.thumbnail,
           publisher: currentBook.publisher,
           publishedDate: currentBook.publishedDate,
+          teacherId: selectedTeacherId,
         }),
       });
 
@@ -182,6 +185,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
               body: JSON.stringify({
                 bookId: data.existingBook.id,
                 quantity: data.existingBook.quantity + 1,
+                teacherId: selectedTeacherId,
               }),
             });
 
@@ -216,7 +220,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
       const response = await fetch("/api/classroom/update-quantity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookId, quantity: newQuantity }),
+        body: JSON.stringify({ bookId, quantity: newQuantity, teacherId: selectedTeacherId }),
       });
 
       if (response.ok) {
@@ -233,7 +237,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
       const response = await fetch("/api/classroom/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookId }),
+        body: JSON.stringify({ bookId, teacherId: selectedTeacherId }),
       });
 
       if (response.ok) {
@@ -327,13 +331,27 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                {user.role === "teacher" ? `${user.displayName}'s Classroom` : "Classroom Books"}
+                {user.role === "teacher" ? `${user.displayName}'s Classroom` : teacherName ? `${teacherName}'s Classroom` : "Classroom Books"}
               </h1>
               <p class="text-gray-600 dark:text-gray-400 mt-1">
                 {books.length} book{books.length !== 1 ? "s" : ""} cataloged
+                {user.role === "delegate" && teacherName && (
+                  <span class="ml-2 text-sm">• Helping: {teacherName}</span>
+                )}
               </p>
             </div>
             <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+              {user.role === "delegate" && availableTeachers && availableTeachers.length > 1 && (
+                <a
+                  href="/select-classroom"
+                  class="px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition-all text-sm whitespace-nowrap flex items-center justify-center gap-2"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01" />
+                  </svg>
+                  Switch
+                </a>
+              )}
               <button
                 onClick={() => setScannerMode(scannerMode === 'camera' ? null : 'camera')}
                 class="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"

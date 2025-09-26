@@ -59,10 +59,42 @@ export const handler: Handlers = {
       // Check if user already exists
       const existingUser = await getUserByEmail(email);
       if (existingUser) {
-        return new Response(JSON.stringify({ error: "Email already registered" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
+        // If they're a delegate, add this teacher to their list
+        if (existingUser.role === "delegate") {
+          if (!existingUser.delegatedToUserIds.includes(invitation.teacherId)) {
+            existingUser.delegatedToUserIds.push(invitation.teacherId);
+
+            const kv = await getKv();
+            await kv.set(["users:id", existingUser.id], existingUser);
+            await kv.set(["users:email", existingUser.email], existingUser);
+            await kv.set(["users:delegates", invitation.teacherId, existingUser.id], true);
+
+            // Mark invitation as used
+            invitation.used = true;
+            invitation.usedBy = existingUser.id;
+            invitation.usedAt = new Date().toISOString();
+            await kv.set(["invitations", token], invitation);
+            await kv.set(["invitations:teacher", invitation.teacherId, token], invitation);
+
+            return new Response(JSON.stringify({
+              success: true,
+              message: "Added to your classrooms",
+            }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            });
+          } else {
+            return new Response(JSON.stringify({ error: "You're already helping this teacher" }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        } else {
+          return new Response(JSON.stringify({ error: "Email already registered as teacher" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
       }
 
       // Get teacher info
@@ -84,7 +116,7 @@ export const handler: Handlers = {
         schoolId: teacher.schoolId, // Inherit teacher's school
         verified: true, // Auto-verified through invitation
         role: "delegate",
-        delegatedToUserId: teacher.id,
+        delegatedToUserIds: [teacher.id],
         googleBooksApiKey: null,
         googleSheetUrl: null,
       });

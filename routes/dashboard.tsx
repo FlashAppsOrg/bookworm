@@ -9,6 +9,8 @@ interface DashboardData {
   user: User;
   books: ClassroomBook[];
   teacherName?: string;
+  availableTeachers?: Array<{ id: string; name: string }>;
+  selectedTeacherId?: string;
 }
 
 export const handler: Handlers<DashboardData> = {
@@ -36,20 +38,55 @@ export const handler: Handlers<DashboardData> = {
       });
     }
 
-    // If delegate, get teacher's books instead
-    const booksUserId = user.role === "delegate" && user.delegatedToUserId
-      ? user.delegatedToUserId
-      : user.id;
-
-    const books = await getUserBooks(booksUserId);
-
+    // For delegates with multiple classrooms, check for selected teacher
+    let selectedTeacherId: string | undefined;
+    let availableTeachers: Array<{ id: string; name: string }> | undefined;
     let teacherName: string | undefined;
-    if (user.role === "delegate" && user.delegatedToUserId) {
-      const teacher = await getUserById(user.delegatedToUserId);
-      teacherName = teacher?.displayName;
+
+    if (user.role === "delegate") {
+      // If multiple classrooms, need to pick one
+      if (user.delegatedToUserIds.length > 1) {
+        const url = new URL(req.url);
+        selectedTeacherId = url.searchParams.get("teacherId") || undefined;
+
+        if (!selectedTeacherId) {
+          // Redirect to picker
+          return new Response(null, {
+            status: 302,
+            headers: { Location: "/select-classroom" },
+          });
+        }
+
+        // Verify they have access to this teacher
+        if (!user.delegatedToUserIds.includes(selectedTeacherId)) {
+          return new Response(null, {
+            status: 302,
+            headers: { Location: "/select-classroom" },
+          });
+        }
+      } else if (user.delegatedToUserIds.length === 1) {
+        selectedTeacherId = user.delegatedToUserIds[0];
+      }
+
+      // Get list of teachers for switcher
+      availableTeachers = [];
+      for (const teacherId of user.delegatedToUserIds) {
+        const teacher = await getUserById(teacherId);
+        if (teacher) {
+          availableTeachers.push({ id: teacher.id, name: teacher.displayName });
+        }
+      }
+
+      if (selectedTeacherId) {
+        const teacher = await getUserById(selectedTeacherId);
+        teacherName = teacher?.displayName;
+      }
     }
 
-    return ctx.render({ user, books, teacherName });
+    const booksUserId = selectedTeacherId || user.id;
+    const books = await getUserBooks(booksUserId);
+
+    return ctx.render({ user, books, teacherName, availableTeachers, selectedTeacherId });
   },
 };
 
@@ -59,7 +96,13 @@ export default function DashboardPage({ data }: PageProps<DashboardData>) {
       <Head>
         <title>Dashboard - BookWorm</title>
       </Head>
-      <DashboardContent user={data.user} initialBooks={data.books} teacherName={data.teacherName} />
+      <DashboardContent
+        user={data.user}
+        initialBooks={data.books}
+        teacherName={data.teacherName}
+        availableTeachers={data.availableTeachers}
+        selectedTeacherId={data.selectedTeacherId}
+      />
     </>
   );
 }

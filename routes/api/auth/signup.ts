@@ -50,7 +50,7 @@ export const handler: Handlers = {
         schoolId: null,
         verified: false,
         role: "teacher",
-        delegatedToUserId: null,
+        delegatedToUserIds: [],
         googleBooksApiKey: null,
         googleSheetUrl: null,
       });

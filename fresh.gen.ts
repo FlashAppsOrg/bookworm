@@ -31,6 +31,7 @@ import * as $dashboard from "./routes/dashboard.tsx";
 import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $select_classroom from "./routes/select-classroom.tsx";
 import * as $settings from "./routes/settings.tsx";
 import * as $setup from "./routes/setup.tsx";
 import * as $signup from "./routes/signup.tsx";
@@ -79,6 +80,7 @@ const manifest = {
     "./routes/delegate-signup.tsx": $delegate_signup,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/select-classroom.tsx": $select_classroom,
     "./routes/settings.tsx": $settings,
     "./routes/setup.tsx": $setup,
     "./routes/signup.tsx": $signup,

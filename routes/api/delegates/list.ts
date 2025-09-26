@@ -26,7 +26,7 @@ export const handler: Handlers = {
 
       const entries = kv.list<User>({ prefix: ["users:id"] });
       for await (const entry of entries) {
-        if (entry.value.role === "delegate" && entry.value.delegatedToUserId === user.id) {
+        if (entry.value.role === "delegate" && entry.value.delegatedToUserIds.includes(user.id)) {
           delegates.push(entry.value);
         }
       }

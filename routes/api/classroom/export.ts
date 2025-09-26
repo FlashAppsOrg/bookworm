@@ -24,12 +24,13 @@ export const handler: Handlers = {
       const books = await getUserBooks(user.id);
 
       const csvRows = [
-        ["ISBN", "Title", "Authors", "Publisher", "Published Date", "Date Added"].join(","),
+        ["ISBN", "Quantity", "Title", "Authors", "Publisher", "Published Date", "Date Added"].join(","),
       ];
 
       for (const book of books) {
         const row = [
           book.isbn,
+          book.quantity || 1,
           `"${book.title.replace(/"/g, '""')}"`,
           book.authors.length > 0 ? `"${book.authors.join("; ").replace(/"/g, '""')}"` : "",
           book.publisher ? `"${book.publisher.replace(/"/g, '""')}"` : "",

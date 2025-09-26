@@ -15,7 +15,7 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { isbn, title, authors, thumbnail, publisher, publishedDate } = body;
+      const { isbn, title, authors, thumbnail, publisher, publishedDate, teacherId } = body;
 
       if (!isbn || !title) {
         return new Response(JSON.stringify({ error: "ISBN and title are required" }), {
@@ -24,10 +24,23 @@ export const handler: Handlers = {
         });
       }
 
-      // If delegate, add to teacher's classroom
-      const targetUserId = user.role === "delegate" && user.delegatedToUserId
-        ? user.delegatedToUserId
-        : user.id;
+      // If delegate, add to the selected teacher's classroom
+      let targetUserId = user.id;
+      if (user.role === "delegate") {
+        if (!teacherId) {
+          return new Response(JSON.stringify({ error: "Teacher ID required for delegates" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (!user.delegatedToUserIds.includes(teacherId)) {
+          return new Response(JSON.stringify({ error: "Not authorized for this classroom" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        targetUserId = teacherId;
+      }
 
       // Check if this ISBN already exists in this classroom
       const existingBook = await findBookByISBN(targetUserId, isbn);

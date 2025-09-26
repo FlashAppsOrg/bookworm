@@ -14,15 +14,8 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role === "delegate") {
-        return new Response(JSON.stringify({ error: "Delegates cannot remove books" }), {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
       const body = await req.json();
-      const { bookId } = body;
+      const { bookId, teacherId } = body;
 
       if (!bookId) {
         return new Response(JSON.stringify({ error: "Book ID is required" }), {
@@ -31,7 +24,24 @@ export const handler: Handlers = {
         });
       }
 
-      await removeBookFromClassroom(user.id, bookId);
+      let targetUserId = user.id;
+      if (user.role === "delegate") {
+        if (!teacherId) {
+          return new Response(JSON.stringify({ error: "Teacher ID required for delegates" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (!user.delegatedToUserIds.includes(teacherId)) {
+          return new Response(JSON.stringify({ error: "Not authorized for this classroom" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        targetUserId = teacherId;
+      }
+
+      await removeBookFromClassroom(targetUserId, bookId);
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
