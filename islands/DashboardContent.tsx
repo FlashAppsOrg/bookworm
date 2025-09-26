@@ -202,6 +202,32 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
     }
   };
 
+  const handleQuantityChange = async (bookId: string, currentQuantity: number, change: number) => {
+    const newQuantity = (currentQuantity || 1) + change;
+
+    if (newQuantity <= 0) {
+      if (confirm("This will remove the book from your classroom. Continue?")) {
+        await handleRemoveBook(bookId);
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/classroom/update-quantity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId, quantity: newQuantity }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBooks(books.map(b => b.id === bookId ? data.book : b));
+      }
+    } catch (err) {
+      console.error("Failed to update quantity:", err);
+    }
+  };
+
   const handleRemoveBook = async (bookId: string) => {
     try {
       const response = await fetch("/api/classroom/remove", {
@@ -526,21 +552,40 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                     by {book.authors.join(", ")}
                   </p>
                 )}
-                {book.quantity > 1 && (
-                  <p class="text-sm font-semibold text-primary dark:text-primary-light mb-2">
-                    Quantity: {book.quantity}
-                  </p>
-                )}
                 <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                   ISBN: {book.isbn}
                 </p>
                 {user.role === "teacher" && (
-                  <button
-                    onClick={() => handleRemoveBook(book.id)}
-                    class="w-full px-3 py-2 rounded bg-error/10 hover:bg-error/20 text-error text-sm font-semibold transition-all"
-                  >
-                    Remove
-                  </button>
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity:</span>
+                      <div class="flex items-center gap-2">
+                        <button
+                          onClick={() => handleQuantityChange(book.id, book.quantity, -1)}
+                          class="w-8 h-8 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 font-bold text-gray-700 dark:text-gray-200 transition-all"
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
+                        <span class="text-lg font-bold text-primary dark:text-primary-light min-w-[2rem] text-center">
+                          {book.quantity || 1}
+                        </span>
+                        <button
+                          onClick={() => handleQuantityChange(book.id, book.quantity, 1)}
+                          class="w-8 h-8 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 font-bold text-gray-700 dark:text-gray-200 transition-all"
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveBook(book.id)}
+                      class="w-full px-3 py-2 rounded bg-error/10 hover:bg-error/20 text-error text-sm font-semibold transition-all"
+                    >
+                      Remove Book
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
