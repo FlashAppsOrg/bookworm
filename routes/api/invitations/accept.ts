@@ -86,6 +86,7 @@ export const handler: Handlers = {
         role: "delegate",
         delegatedToUserId: teacher.id,
         googleBooksApiKey: null,
+        googleSheetUrl: null,
       });
 
       // Mark invitation as used

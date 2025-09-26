@@ -1,7 +1,32 @@
+import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
+import { getUserFromSession } from "../utils/session.ts";
+import { User } from "../utils/db.ts";
 import SettingsPanel from "../islands/SettingsPanel.tsx";
 
-export default function SettingsPage() {
+interface SettingsData {
+  user: User;
+  serviceAccountEmail: string;
+}
+
+export const handler: Handlers<SettingsData> = {
+  async GET(req, ctx) {
+    const user = await getUserFromSession(req);
+
+    if (!user) {
+      return new Response(null, {
+        status: 302,
+        headers: { Location: "/login" },
+      });
+    }
+
+    const serviceAccountEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL") || "bookworm-backup@flashapps-463612.iam.gserviceaccount.com";
+
+    return ctx.render({ user, serviceAccountEmail });
+  },
+};
+
+export default function SettingsPage({ data }: PageProps<SettingsData>) {
   return (
     <>
       <Head>
@@ -13,10 +38,10 @@ export default function SettingsPage() {
             <div class="flex items-center justify-between h-16">
               <a href="/" class="text-2xl font-bold text-primary">BookWorm</a>
               <a
-                href="/"
+                href="/dashboard"
                 class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
               >
-                ← Back
+                ← Back to Dashboard
               </a>
             </div>
           </div>
@@ -27,7 +52,7 @@ export default function SettingsPage() {
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
               Settings
             </h1>
-            <SettingsPanel />
+            <SettingsPanel user={data.user} serviceAccountEmail={data.serviceAccountEmail} />
           </div>
         </main>
 

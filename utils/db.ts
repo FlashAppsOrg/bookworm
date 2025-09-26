@@ -9,6 +9,7 @@ export interface User {
   role: "teacher" | "delegate";
   delegatedToUserId: string | null; // If delegate, which teacher's classroom they help with
   googleBooksApiKey: string | null; // Optional per-teacher API key
+  googleSheetUrl: string | null; // Optional Google Sheet URL for backups
   createdAt: string;
 }
 

@@ -1,4 +1,10 @@
 import { useState, useEffect } from "preact/hooks";
+import { User } from "../utils/db.ts";
+
+interface Props {
+  user: User;
+  serviceAccountEmail: string;
+}
 
 const themes = {
   teal: {
@@ -18,9 +24,12 @@ const themes = {
   },
 };
 
-export default function SettingsPanel() {
+export default function SettingsPanel({ user, serviceAccountEmail }: Props) {
   const [theme, setTheme] = useState<string>("teal");
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [sheetUrl, setSheetUrl] = useState<string>(user.googleSheetUrl || "");
+  const [saving, setSaving] = useState<boolean>(false);
+  const [saveMessage, setSaveMessage] = useState<string>("");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("bookworm-theme") || "teal";
@@ -58,6 +67,30 @@ export default function SettingsPanel() {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     applyDarkMode(newDarkMode);
+  }
+
+  async function saveSheetUrl() {
+    setSaving(true);
+    setSaveMessage("");
+
+    try {
+      const response = await fetch("/api/settings/update-sheet-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ googleSheetUrl: sheetUrl }),
+      });
+
+      if (response.ok) {
+        setSaveMessage("✓ Saved successfully!");
+        setTimeout(() => setSaveMessage(""), 3000);
+      } else {
+        setSaveMessage("✗ Failed to save");
+      }
+    } catch (err) {
+      setSaveMessage("✗ Network error");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -123,6 +156,58 @@ export default function SettingsPanel() {
           </label>
         </div>
       </div>
+
+      {user.role === "teacher" && (
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
+          <h3 class="text-2xl font-semibold mb-4 dark:text-white">Google Sheets Backup</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            Optionally backup your classroom books to a Google Sheet. This provides a redundant copy of your data.
+          </p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Google Sheet URL
+              </label>
+              <input
+                type="url"
+                value={sheetUrl}
+                onInput={(e) => setSheetUrl((e.target as HTMLInputElement).value)}
+                placeholder="https://docs.google.com/spreadsheets/d/..."
+                class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <p class="text-sm text-blue-900 dark:text-blue-100 font-semibold mb-2">
+                Setup Instructions:
+              </p>
+              <ol class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
+                <li>Create a new Google Sheet (or use an existing one)</li>
+                <li>Click "Share" in the top-right</li>
+                <li>Add this email address: <code class="bg-blue-100 dark:bg-blue-950 px-2 py-1 rounded text-xs">{serviceAccountEmail}</code></li>
+                <li>Give it "Editor" permissions</li>
+                <li>Copy the sheet URL and paste it above</li>
+              </ol>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button
+                onClick={saveSheetUrl}
+                disabled={saving}
+                class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? "Saving..." : "Save Sheet URL"}
+              </button>
+              {saveMessage && (
+                <span class={`text-sm font-medium ${saveMessage.startsWith("✓") ? "text-green-600" : "text-red-600"}`}>
+                  {saveMessage}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 transition-colors">
         <h3 class="text-lg font-semibold mb-2 dark:text-white">About BookWorm</h3>

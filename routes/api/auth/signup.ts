@@ -52,6 +52,7 @@ export const handler: Handlers = {
         role: "teacher",
         delegatedToUserId: null,
         googleBooksApiKey: null,
+        googleSheetUrl: null,
       });
 
       const token = generateToken();
