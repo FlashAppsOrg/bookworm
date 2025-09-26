@@ -62,8 +62,8 @@ export default function App() {
         <div class="flex flex-col items-center gap-3">
           <div class="text-2xl font-bold text-primary dark:text-primary-light">BookWorm</div>
           <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">by</span>
-            <img src="/flash-apps-horizontal.svg" alt="FlashApps" class="h-6" />
+            <span class="text-gray-600 dark:text-gray-400">by</span>
+            <img src="/flash-apps-horizontal.svg" alt="FlashApps" class="h-12" />
           </div>
         </div>
       </footer>
