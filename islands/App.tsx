@@ -37,7 +37,7 @@ export default function App() {
   };
 
   return (
-    <div class="md:min-h-screen md:flex md:flex-col">
+    <div class="min-h-[100dvh] flex flex-col">
       <header class="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div class="container mx-auto px-4">
           <div class="flex items-center justify-between h-16">
@@ -77,7 +77,7 @@ export default function App() {
         </div>
       </header>
 
-      <main class="md:flex-1 container mx-auto px-4 py-8 min-h-[60vh] md:min-h-0">
+      <main class="flex-1 container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
           {currentBook ? (
             <BookDisplay book={currentBook} onScanAnother={handleScanAnother} />
