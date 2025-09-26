@@ -1,9 +1,12 @@
 import { useState, useEffect } from "preact/hooks";
-import { User } from "../utils/db.ts";
+import { User, School } from "../utils/db.ts";
 
 interface Props {
   user: User;
+  currentSchool: School | null;
+  schools: School[];
   serviceAccountEmail: string;
+  publicUrl: string;
 }
 
 const themes = {
@@ -24,12 +27,15 @@ const themes = {
   },
 };
 
-export default function SettingsPanel({ user, serviceAccountEmail }: Props) {
+export default function SettingsPanel({ user, currentSchool, schools, serviceAccountEmail, publicUrl }: Props) {
   const [theme, setTheme] = useState<string>("teal");
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [sheetUrl, setSheetUrl] = useState<string>(user.googleSheetUrl || "");
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>(user.schoolId || "");
   const [saving, setSaving] = useState<boolean>(false);
   const [saveMessage, setSaveMessage] = useState<string>("");
+  const [schoolSaving, setSchoolSaving] = useState<boolean>(false);
+  const [schoolMessage, setSchoolMessage] = useState<string>("");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("bookworm-theme") || "teal";
@@ -93,8 +99,112 @@ export default function SettingsPanel({ user, serviceAccountEmail }: Props) {
     }
   }
 
+  async function updateSchool() {
+    if (selectedSchoolId === user.schoolId) return;
+
+    setSchoolSaving(true);
+    setSchoolMessage("");
+
+    try {
+      const response = await fetch("/api/settings/update-school", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolId: selectedSchoolId }),
+      });
+
+      if (response.ok) {
+        setSchoolMessage("✓ School updated! Refreshing...");
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setSchoolMessage("✗ Failed to update");
+      }
+    } catch (err) {
+      setSchoolMessage("✗ Network error");
+    } finally {
+      setSchoolSaving(false);
+    }
+  }
+
+  function copyPublicUrl() {
+    navigator.clipboard.writeText(publicUrl);
+    alert("Public classroom URL copied to clipboard!");
+  }
+
   return (
     <div class="space-y-6">
+      {user.role === "teacher" && currentSchool && publicUrl && (
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
+          <h3 class="text-2xl font-semibold mb-4 dark:text-white">Public Classroom Page</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            Share this link with parents and students to view your classroom books.
+          </p>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              value={publicUrl}
+              readonly
+              class="flex-1 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white"
+            />
+            <button
+              onClick={copyPublicUrl}
+              class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+            >
+              Copy Link
+            </button>
+            <a
+              href={publicUrl}
+              target="_blank"
+              class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all"
+            >
+              View →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {user.role === "teacher" && currentSchool && (
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
+          <h3 class="text-2xl font-semibold mb-4 dark:text-white">School</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            Your classroom is associated with <strong>{currentSchool.name}</strong>. You can switch schools if needed.
+          </p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select School
+              </label>
+              <select
+                value={selectedSchoolId}
+                onChange={(e) => setSelectedSchoolId((e.target as HTMLSelectElement).value)}
+                class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+              >
+                {schools.map((school) => (
+                  <option key={school.id} value={school.id}>
+                    {school.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectedSchoolId !== user.schoolId && (
+              <div class="flex items-center gap-3">
+                <button
+                  onClick={updateSchool}
+                  disabled={schoolSaving}
+                  class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {schoolSaving ? "Updating..." : "Update School"}
+                </button>
+                {schoolMessage && (
+                  <span class={`text-sm font-medium ${schoolMessage.startsWith("✓") ? "text-green-600" : "text-red-600"}`}>
+                    {schoolMessage}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
         <h3 class="text-2xl font-semibold mb-6 dark:text-white">Color Theme</h3>
         <div class="grid gap-4">

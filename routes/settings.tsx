@@ -1,12 +1,16 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getUserFromSession } from "../utils/session.ts";
-import { User } from "../utils/db.ts";
+import { getSchoolById, listSchools } from "../utils/db-helpers.ts";
+import { User, School } from "../utils/db.ts";
 import SettingsPanel from "../islands/SettingsPanel.tsx";
 
 interface SettingsData {
   user: User;
+  currentSchool: School | null;
+  schools: School[];
   serviceAccountEmail: string;
+  publicUrl: string;
 }
 
 export const handler: Handlers<SettingsData> = {
@@ -20,9 +24,16 @@ export const handler: Handlers<SettingsData> = {
       });
     }
 
+    const currentSchool = user.schoolId ? await getSchoolById(user.schoolId) : null;
+    const schools = await listSchools();
     const serviceAccountEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL") || "bookworm-backup@flashapps-463612.iam.gserviceaccount.com";
 
-    return ctx.render({ user, serviceAccountEmail });
+    const appUrl = Deno.env.get("APP_URL") || req.url.split("/settings")[0];
+    const publicUrl = currentSchool && user.username
+      ? `${appUrl}/${currentSchool.slug}/${user.username}`
+      : "";
+
+    return ctx.render({ user, currentSchool, schools, serviceAccountEmail, publicUrl });
   },
 };
 
@@ -52,7 +63,13 @@ export default function SettingsPage({ data }: PageProps<SettingsData>) {
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
               Settings
             </h1>
-            <SettingsPanel user={data.user} serviceAccountEmail={data.serviceAccountEmail} />
+            <SettingsPanel
+              user={data.user}
+              currentSchool={data.currentSchool}
+              schools={data.schools}
+              serviceAccountEmail={data.serviceAccountEmail}
+              publicUrl={data.publicUrl}
+            />
           </div>
         </main>
 
