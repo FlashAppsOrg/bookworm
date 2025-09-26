@@ -3,6 +3,7 @@ import { validateEmail } from "../../../utils/auth.ts";
 import { getUserByEmail, createUser } from "../../../utils/db-helpers.ts";
 import { hashPassword, generateToken } from "../../../utils/password.ts";
 import { getKv, VerificationToken } from "../../../utils/db.ts";
+import { sendVerificationEmail } from "../../../utils/email.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -63,13 +64,21 @@ export const handler: Handlers = {
       const kv = await getKv();
       await kv.set(["verificationTokens", token], verificationToken);
 
-      // TODO: Send verification email
-      console.log(`Verification link: ${new URL(req.url).origin}/verify?token=${token}`);
+      const emailResult = await sendVerificationEmail(user.email, token);
+
+      if (!emailResult.success) {
+        console.error("Failed to send verification email:", emailResult.error);
+        return new Response(JSON.stringify({
+          error: emailResult.error || "Failed to send verification email. Please try again later.",
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
       return new Response(JSON.stringify({
         success: true,
         message: "Account created! Please check your email for verification link.",
-        verificationLink: `/verify?token=${token}`, // For testing
       }), {
         status: 201,
         headers: { "Content-Type": "application/json" },
