@@ -15,6 +15,7 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scannerMode, setScannerMode] = useState<'camera' | 'manual' | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
   const [showInvitations, setShowInvitations] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [delegates, setDelegates] = useState<User[]>([]);
@@ -217,6 +218,27 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
     }
   };
 
+  const handleBackupToSheet = async () => {
+    setBackingUp(true);
+    try {
+      const response = await fetch("/api/classroom/backup-to-sheet", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`✓ ${data.message}`);
+      } else {
+        alert(`✗ ${data.error}`);
+      }
+    } catch (err) {
+      alert("✗ Network error. Please try again.");
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
@@ -299,12 +321,23 @@ export default function DashboardContent({ user, initialBooks, teacherName }: Pr
                 🔍 {scannerMode === 'manual' ? "Hide" : "Lookup"}
               </button>
               {user.role === "teacher" && (
-                <button
-                  onClick={() => setShowInvitations(!showInvitations)}
-                  class="px-4 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all text-sm whitespace-nowrap"
-                >
-                  👥 Helpers
-                </button>
+                <>
+                  {user.googleSheetUrl && (
+                    <button
+                      onClick={handleBackupToSheet}
+                      disabled={backingUp || books.length === 0}
+                      class="px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+                    >
+                      📊 {backingUp ? "Backing Up..." : "Backup"}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowInvitations(!showInvitations)}
+                    class="px-4 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all text-sm whitespace-nowrap"
+                  >
+                    👥 Helpers
+                  </button>
+                </>
               )}
             </div>
           </div>

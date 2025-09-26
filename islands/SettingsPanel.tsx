@@ -37,7 +37,6 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
   const [schoolSaving, setSchoolSaving] = useState<boolean>(false);
   const [schoolMessage, setSchoolMessage] = useState<string>("");
   const [exporting, setExporting] = useState<boolean>(false);
-  const [backingUp, setBackingUp] = useState<boolean>(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("bookworm-theme") || "teal";
@@ -118,29 +117,6 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
       console.error("Failed to export:", err);
     } finally {
       setExporting(false);
-    }
-  }
-
-  async function handleBackupToSheet() {
-    setBackingUp(true);
-    setSaveMessage("");
-    try {
-      const response = await fetch("/api/classroom/backup-to-sheet", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSaveMessage(`✓ ${data.message}`);
-        setTimeout(() => setSaveMessage(""), 5000);
-      } else {
-        setSaveMessage(`✗ ${data.error}`);
-      }
-    } catch (err) {
-      setSaveMessage("✗ Network error. Please try again.");
-    } finally {
-      setBackingUp(false);
     }
   }
 
@@ -360,7 +336,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
               </ol>
             </div>
 
-            <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-3">
               <button
                 onClick={saveSheetUrl}
                 disabled={saving}
@@ -368,21 +344,17 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
               >
                 {saving ? "Saving..." : "Save Sheet URL"}
               </button>
-              {sheetUrl && (
-                <button
-                  onClick={handleBackupToSheet}
-                  disabled={backingUp || !sheetUrl}
-                  class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {backingUp ? "📆 Backing Up..." : "📆 Backup Now"}
-                </button>
-              )}
               {saveMessage && (
                 <span class={`text-sm font-medium ${saveMessage.startsWith("✓") ? "text-green-600" : "text-red-600"}`}>
                   {saveMessage}
                 </span>
               )}
             </div>
+            {sheetUrl && (
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                ✓ Sheet URL saved. Use the "Backup" button on your dashboard to sync your books.
+              </p>
+            )}
           </div>
         </div>
       )}
