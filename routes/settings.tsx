@@ -69,15 +69,13 @@ export default function SettingsPage({ data }: PageProps<SettingsData>) {
               <UsageStats />
             )}
 
-            <div class="max-w-2xl">
-              <SettingsPanel
-                user={data.user}
-                currentSchool={data.currentSchool}
-                schools={data.schools}
-                serviceAccountEmail={data.serviceAccountEmail}
-                publicUrl={data.publicUrl}
-              />
-            </div>
+            <SettingsPanel
+              user={data.user}
+              currentSchool={data.currentSchool}
+              schools={data.schools}
+              serviceAccountEmail={data.serviceAccountEmail}
+              publicUrl={data.publicUrl}
+            />
           </div>
         </main>
 
