@@ -20,12 +20,12 @@ export const handler: Handlers = {
     const users: Array<User & { schoolName?: string }> = [];
 
     const schoolMap = new Map<string, string>();
-    const schoolEntries = kv.list<School>({ prefix: ["schools", "id"] });
+    const schoolEntries = kv.list<School>({ prefix: ["schools:id"] });
     for await (const entry of schoolEntries) {
       schoolMap.set(entry.value.id, entry.value.name);
     }
 
-    const userEntries = kv.list<User>({ prefix: ["users", "id"] });
+    const userEntries = kv.list<User>({ prefix: ["users:id"] });
     for await (const entry of userEntries) {
       const u = entry.value;
       const userWithSchool = {
@@ -63,7 +63,7 @@ export const handler: Handlers = {
     }
 
     const kv = await getKv();
-    const userResult = await kv.get<User>(["users", "id", userId]);
+    const userResult = await kv.get<User>(["users:id", userId]);
 
     if (!userResult.value) {
       return new Response(JSON.stringify({ error: "User not found" }), {
@@ -88,7 +88,7 @@ export const handler: Handlers = {
       if (updates.schoolId === null) {
         targetUser.schoolId = null;
       } else {
-        const schoolResult = await kv.get(["schools", "id", updates.schoolId]);
+        const schoolResult = await kv.get(["schools:id", updates.schoolId]);
         if (!schoolResult.value) {
           return new Response(JSON.stringify({ error: "School not found" }), {
             status: 400,
@@ -99,8 +99,8 @@ export const handler: Handlers = {
       }
     }
 
-    await kv.set(["users", "id", userId], targetUser);
-    await kv.set(["users", "email", targetUser.email], targetUser);
+    await kv.set(["users:id", userId], targetUser);
+    await kv.set(["users:email", targetUser.email], targetUser);
 
     return new Response(JSON.stringify({ success: true, user: targetUser }), {
       status: 200,
@@ -158,7 +158,7 @@ export const handler: Handlers = {
 
     if (schoolId) {
       const kv = await getKv();
-      const schoolResult = await kv.get(["schools", "id", schoolId]);
+      const schoolResult = await kv.get(["schools:id", schoolId]);
       if (!schoolResult.value) {
         return new Response(JSON.stringify({ error: "School not found" }), {
           status: 400,
@@ -215,7 +215,7 @@ export const handler: Handlers = {
     }
 
     const kv = await getKv();
-    const userResult = await kv.get<User>(["users", "id", userId]);
+    const userResult = await kv.get<User>(["users:id", userId]);
 
     if (!userResult.value) {
       return new Response(JSON.stringify({ error: "User not found" }), {
@@ -226,10 +226,10 @@ export const handler: Handlers = {
 
     const targetUser = userResult.value;
 
-    await kv.delete(["users", "id", userId]);
-    await kv.delete(["users", "email", targetUser.email]);
+    await kv.delete(["users:id", userId]);
+    await kv.delete(["users:email", targetUser.email]);
     if (targetUser.schoolId && targetUser.username) {
-      await kv.delete(["users", "username", targetUser.schoolId, targetUser.username]);
+      await kv.delete(["users:username", targetUser.schoolId, targetUser.username]);
     }
 
     return new Response(JSON.stringify({ success: true }), {
