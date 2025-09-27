@@ -108,7 +108,7 @@ export default function SignupForm() {
           type="text"
           value={displayName}
           onInput={(e) => setDisplayName((e.target as HTMLInputElement).value)}
-          placeholder="Ms. Burke"
+          placeholder="Ms. Davis"
           required
           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
         />
