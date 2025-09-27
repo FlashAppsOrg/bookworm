@@ -31,7 +31,7 @@ export const handler: Handlers<DashboardData> = {
       });
     }
 
-    if (!user.schoolId) {
+    if (!user.schoolId && user.role !== "super_admin") {
       return new Response(null, {
         status: 302,
         headers: { Location: "/setup" },
