@@ -7,7 +7,7 @@ export const handler: Handlers = {
       const kv = await getKv();
 
       const allUsers: User[] = [];
-      const iter = kv.list<User>({ prefix: ["users", "id"] });
+      const iter = kv.list<User>({ prefix: ["users:id"] });
       for await (const entry of iter) {
         allUsers.push(entry.value);
       }

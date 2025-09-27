@@ -9,7 +9,7 @@ console.log("Email                          | Name                | Role        
 console.log("-".repeat(100));
 
 const users: User[] = [];
-const iter = kv.list<User>({ prefix: ["users", "id"] });
+const iter = kv.list<User>({ prefix: ["users:id"] });
 for await (const entry of iter) {
   users.push(entry.value);
 }

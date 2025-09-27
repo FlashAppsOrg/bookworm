@@ -15,7 +15,7 @@ export const handler: Handlers = {
     const kv = await getKv();
     const placeholders: Array<{ id: string; name: string; username: string; bookCount: number }> = [];
 
-    const userEntries = kv.list<User>({ prefix: ["users", "id"] });
+    const userEntries = kv.list<User>({ prefix: ["users:id"] });
     for await (const entry of userEntries) {
       const u = entry.value;
       if (u.schoolId === user.schoolId && u.isPlaceholder && u.role === "teacher") {
@@ -63,7 +63,7 @@ export const handler: Handlers = {
 
       const kv = await getKv();
 
-      const placeholderResult = await kv.get<User>(["users", "id", placeholderId]);
+      const placeholderResult = await kv.get<User>(["users:id", placeholderId]);
       if (!placeholderResult.value) {
         return new Response(JSON.stringify({ error: "Placeholder account not found" }), {
           status: 404,
@@ -104,10 +104,10 @@ export const handler: Handlers = {
         await kv.set(["classroomBooks", user.id, book.id], movedBook);
       }
 
-      await kv.delete(["users", "id", placeholderId]);
-      await kv.delete(["users", "email", placeholder.email]);
+      await kv.delete(["users:id", placeholderId]);
+      await kv.delete(["users:email", placeholder.email]);
       if (placeholder.username) {
-        await kv.delete(["users", "username", placeholder.schoolId!, placeholder.username]);
+        await kv.delete(["users:username", placeholder.schoolId!, placeholder.username]);
       }
 
       return new Response(JSON.stringify({

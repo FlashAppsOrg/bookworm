@@ -25,13 +25,13 @@ export const handler: Handlers = {
     const kv = await getKv();
 
     const schoolMap = new Map<string, School>();
-    const schoolEntries = kv.list<School>({ prefix: ["schools", "id"] });
+    const schoolEntries = kv.list<School>({ prefix: ["schools:id"] });
     for await (const entry of schoolEntries) {
       schoolMap.set(entry.value.id, entry.value);
     }
 
     const userMap = new Map<string, User>();
-    const userEntries = kv.list<User>({ prefix: ["users", "id"] });
+    const userEntries = kv.list<User>({ prefix: ["users:id"] });
     for await (const entry of userEntries) {
       userMap.set(entry.value.id, entry.value);
     }
