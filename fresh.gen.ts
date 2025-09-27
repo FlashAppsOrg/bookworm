@@ -15,6 +15,7 @@ import * as $admin_users_index from "./routes/admin/users/index.tsx";
 import * as $api_admin_bulk_import from "./routes/api/admin/bulk-import.ts";
 import * as $api_admin_challenges from "./routes/api/admin/challenges.ts";
 import * as $api_admin_classrooms from "./routes/api/admin/classrooms.ts";
+import * as $api_admin_promote_first from "./routes/api/admin/promote-first.ts";
 import * as $api_admin_schools from "./routes/api/admin/schools.ts";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
@@ -96,6 +97,7 @@ const manifest = {
     "./routes/api/admin/bulk-import.ts": $api_admin_bulk_import,
     "./routes/api/admin/challenges.ts": $api_admin_challenges,
     "./routes/api/admin/classrooms.ts": $api_admin_classrooms,
+    "./routes/api/admin/promote-first.ts": $api_admin_promote_first,
     "./routes/api/admin/schools.ts": $api_admin_schools,
     "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/admin/users.ts": $api_admin_users,
