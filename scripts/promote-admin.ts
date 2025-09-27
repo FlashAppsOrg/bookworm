@@ -11,7 +11,7 @@ if (!email) {
 
 const kv = await getKv();
 
-const userResult = await kv.get<User>(["users", "email", email.toLowerCase()]);
+const userResult = await kv.get<User>(["users:email", email.toLowerCase()]);
 
 if (!userResult.value) {
   console.error(`User with email ${email} not found`);
@@ -30,10 +30,10 @@ const updatedUser: User = {
   role: "super_admin",
 };
 
-await kv.set(["users", "id", user.id], updatedUser);
-await kv.set(["users", "email", user.email], updatedUser);
+await kv.set(["users:id", user.id], updatedUser);
+await kv.set(["users:email", user.email], updatedUser);
 if (user.username && user.schoolId) {
-  await kv.set(["users", "username", user.schoolId, user.username], user.id);
+  await kv.set(["users:username", user.schoolId, user.username], user.id);
 }
 
 console.log(`✓ Promoted ${user.displayName} (${user.email}) to super admin`);

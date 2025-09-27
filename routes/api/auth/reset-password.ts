@@ -81,8 +81,8 @@ export const handler: Handlers = {
       const passwordHash = await hashPassword(password);
       user.passwordHash = passwordHash;
 
-      await kv.set(["users", "id", user.id], user);
-      await kv.set(["users", "email", user.email], user);
+      await kv.set(["users:id", user.id], user);
+      await kv.set(["users:email", user.email], user);
 
       resetToken.used = true;
       await kv.set(["passwordResetTokens", token], resetToken);

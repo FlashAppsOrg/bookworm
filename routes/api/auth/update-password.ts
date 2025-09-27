@@ -60,8 +60,8 @@ export const handler: Handlers = {
       user.passwordHash = newPasswordHash;
 
       const kv = await getKv();
-      await kv.set(["users", "id", user.id], user);
-      await kv.set(["users", "email", user.email], user);
+      await kv.set(["users:id", user.id], user);
+      await kv.set(["users:email", user.email], user);
 
       return new Response(
         JSON.stringify({
