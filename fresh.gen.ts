@@ -37,6 +37,7 @@ import * as $api_classroom_claim from "./routes/api/classroom/claim.ts";
 import * as $api_classroom_export from "./routes/api/classroom/export.ts";
 import * as $api_classroom_remove from "./routes/api/classroom/remove.ts";
 import * as $api_classroom_update_quantity from "./routes/api/classroom/update-quantity.ts";
+import * as $api_debug_list_keys from "./routes/api/debug/list-keys.ts";
 import * as $api_debug_me from "./routes/api/debug/me.ts";
 import * as $api_debug_my_books from "./routes/api/debug/my-books.ts";
 import * as $api_debug_restore_school from "./routes/api/debug/restore-school.ts";
@@ -125,6 +126,7 @@ const manifest = {
     "./routes/api/classroom/export.ts": $api_classroom_export,
     "./routes/api/classroom/remove.ts": $api_classroom_remove,
     "./routes/api/classroom/update-quantity.ts": $api_classroom_update_quantity,
+    "./routes/api/debug/list-keys.ts": $api_debug_list_keys,
     "./routes/api/debug/me.ts": $api_debug_me,
     "./routes/api/debug/my-books.ts": $api_debug_my_books,
     "./routes/api/debug/restore-school.ts": $api_debug_restore_school,
