@@ -38,6 +38,7 @@ import * as $api_classroom_export from "./routes/api/classroom/export.ts";
 import * as $api_classroom_remove from "./routes/api/classroom/remove.ts";
 import * as $api_classroom_update_quantity from "./routes/api/classroom/update-quantity.ts";
 import * as $api_debug_me from "./routes/api/debug/me.ts";
+import * as $api_debug_user_by_email from "./routes/api/debug/user-by-email.ts";
 import * as $api_delegates_list from "./routes/api/delegates/list.ts";
 import * as $api_delegates_remove from "./routes/api/delegates/remove.ts";
 import * as $api_invitations_accept from "./routes/api/invitations/accept.ts";
@@ -123,6 +124,7 @@ const manifest = {
     "./routes/api/classroom/remove.ts": $api_classroom_remove,
     "./routes/api/classroom/update-quantity.ts": $api_classroom_update_quantity,
     "./routes/api/debug/me.ts": $api_debug_me,
+    "./routes/api/debug/user-by-email.ts": $api_debug_user_by_email,
     "./routes/api/delegates/list.ts": $api_delegates_list,
     "./routes/api/delegates/remove.ts": $api_delegates_remove,
     "./routes/api/invitations/accept.ts": $api_invitations_accept,
