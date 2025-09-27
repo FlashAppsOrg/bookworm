@@ -31,10 +31,10 @@ export const handler: Handlers = {
       role: "super_admin",
     };
 
-    await kv.set(["users", "id", user.id], updatedUser);
-    await kv.set(["users", "email", user.email], updatedUser);
+    await kv.set(["users:id", user.id], updatedUser);
+    await kv.set(["users:email", user.email.toLowerCase()], updatedUser);
     if (user.username && user.schoolId) {
-      await kv.set(["users", "username", user.schoolId, user.username], user.id);
+      await kv.set(["users:username", user.schoolId, user.username], user.id);
     }
 
     return new Response(JSON.stringify({
