@@ -25,7 +25,7 @@ export const handler: Handlers<ChallengePageData> = {
       return new Response("Book not found", { status: 404 });
     }
 
-    const teacherResult = await kv.get<User>(["users", "id", userId]);
+    const teacherResult = await kv.get<User>(["users:id", userId]);
     if (!teacherResult.value) {
       return new Response("Teacher not found", { status: 404 });
     }
@@ -36,7 +36,7 @@ export const handler: Handlers<ChallengePageData> = {
       return new Response("Teacher not assigned to a school", { status: 400 });
     }
 
-    const schoolResult = await kv.get<School>(["schools", "id", teacher.schoolId]);
+    const schoolResult = await kv.get<School>(["schools:id", teacher.schoolId]);
     if (!schoolResult.value) {
       return new Response("School not found", { status: 404 });
     }

@@ -32,10 +32,10 @@ export const handler: Handlers = {
       createdAt: new Date().toISOString(),
     };
 
-    await kv.set(["schools", "id", schoolId], school);
-    await kv.set(["schools", "slug", slug], schoolId);
+    await kv.set(["schools:id", schoolId], school);
+    await kv.set(["schools:slug", slug], schoolId);
     if (school.domain) {
-      await kv.set(["schools", "domain", school.domain], schoolId);
+      await kv.set(["schools:domain", school.domain], schoolId);
     }
 
     return new Response(JSON.stringify({

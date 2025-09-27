@@ -57,7 +57,7 @@ export const handler: Handlers = {
     const kv = await getKv();
     const slug = generateSlug(name);
 
-    const existingSchool = await kv.get(["schools", "slug", slug]);
+    const existingSchool = await kv.get(["schools:slug", slug]);
     if (existingSchool.value) {
       return new Response(JSON.stringify({ error: "A school with this name already exists" }), {
         status: 400,
@@ -66,7 +66,7 @@ export const handler: Handlers = {
     }
 
     if (domain && domain.trim()) {
-      const existingDomain = await kv.get(["schools", "domain", domain.trim().toLowerCase()]);
+      const existingDomain = await kv.get(["schools:domain", domain.trim().toLowerCase()]);
       if (existingDomain.value) {
         return new Response(JSON.stringify({ error: "A school with this domain already exists" }), {
           status: 400,

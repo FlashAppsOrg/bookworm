@@ -15,11 +15,11 @@ export const handler: Handlers = {
 
     const kv = await getKv();
 
-    const byEmail = await kv.get<User>(["users", "email", email.toLowerCase()]);
+    const byEmail = await kv.get<User>(["users:email", email.toLowerCase()]);
 
     let byId = null;
     if (byEmail.value) {
-      byId = await kv.get<User>(["users", "id", byEmail.value.id]);
+      byId = await kv.get<User>(["users:id", byEmail.value.id]);
     }
 
     return new Response(JSON.stringify({
