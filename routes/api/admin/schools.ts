@@ -23,7 +23,7 @@ export const handler: Handlers = {
     const kv = await getKv();
     const schools: School[] = [];
 
-    const entries = kv.list<School>({ prefix: ["schools", "id"] });
+    const entries = kv.list<School>({ prefix: ["schools:id"] });
     for await (const entry of entries) {
       schools.push(entry.value);
     }
@@ -84,10 +84,10 @@ export const handler: Handlers = {
       createdAt: new Date().toISOString(),
     };
 
-    await kv.set(["schools", "id", schoolId], school);
-    await kv.set(["schools", "slug", slug], schoolId);
+    await kv.set(["schools:id", schoolId], school);
+    await kv.set(["schools:slug", slug], schoolId);
     if (school.domain) {
-      await kv.set(["schools", "domain", school.domain], schoolId);
+      await kv.set(["schools:domain", school.domain], schoolId);
     }
 
     return new Response(JSON.stringify(school), {
@@ -116,7 +116,7 @@ export const handler: Handlers = {
     }
 
     const kv = await getKv();
-    const schoolResult = await kv.get<School>(["schools", "id", schoolId]);
+    const schoolResult = await kv.get<School>(["schools:id", schoolId]);
 
     if (!schoolResult.value) {
       return new Response(JSON.stringify({ error: "School not found" }), {
@@ -127,10 +127,10 @@ export const handler: Handlers = {
 
     const school = schoolResult.value;
 
-    await kv.delete(["schools", "id", schoolId]);
-    await kv.delete(["schools", "slug", school.slug]);
+    await kv.delete(["schools:id", schoolId]);
+    await kv.delete(["schools:slug", school.slug]);
     if (school.domain) {
-      await kv.delete(["schools", "domain", school.domain]);
+      await kv.delete(["schools:domain", school.domain]);
     }
 
     return new Response(JSON.stringify({ success: true }), {
