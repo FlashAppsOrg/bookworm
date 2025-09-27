@@ -182,15 +182,6 @@ export default function AdminDashboard({ data }: PageProps<AdminDashboardData>) 
             </div>
           </a>
         </div>
-
-        <div class="mt-6">
-          <a
-            href="/dashboard"
-            class="text-primary hover:text-primary-dark dark:text-primary-light font-semibold"
-          >
-            ← Back to Dashboard
-          </a>
-        </div>
       </div>
     </div>
   );

@@ -26,6 +26,15 @@ export default function AdminChallengesPage({ data }: PageProps<ChallengePageDat
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-6">
+          <a
+            href={isSuperAdmin(data.user) ? "/admin" : "/dashboard"}
+            class="text-primary hover:text-primary-dark dark:text-primary-light font-semibold"
+          >
+            ← Back to {isSuperAdmin(data.user) ? "Admin Dashboard" : "Dashboard"}
+          </a>
+        </div>
+
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Book Challenges

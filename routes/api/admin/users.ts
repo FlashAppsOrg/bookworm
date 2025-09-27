@@ -2,6 +2,9 @@ import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
 import { isSuperAdmin } from "../../../utils/auth-helpers.ts";
 import { getKv, User, School } from "../../../utils/db.ts";
+import { createUser, getUserByEmail } from "../../../utils/db-helpers.ts";
+import { hashPassword } from "../../../utils/password.ts";
+import { validateEmail } from "../../../utils/auth.ts";
 
 export const handler: Handlers = {
   async GET(req) {
@@ -101,6 +104,86 @@ export const handler: Handlers = {
 
     return new Response(JSON.stringify({ success: true, user: targetUser }), {
       status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+
+  async POST(req) {
+    const user = await getUserFromSession(req);
+    if (!user || !isSuperAdmin(user)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const { email, displayName, password, role, schoolId, username } = await req.json();
+
+    if (!email || !displayName || !password || !role) {
+      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      return new Response(JSON.stringify({ error: emailError }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (!["teacher", "delegate", "school_admin", "super_admin"].includes(role)) {
+      return new Response(JSON.stringify({ error: "Invalid role" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return new Response(JSON.stringify({ error: "Email already registered" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (schoolId) {
+      const kv = await getKv();
+      const schoolResult = await kv.get(["schools", "id", schoolId]);
+      if (!schoolResult.value) {
+        return new Response(JSON.stringify({ error: "School not found" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const passwordHash = await hashPassword(password);
+    const newUser = await createUser({
+      email: email.toLowerCase(),
+      passwordHash,
+      displayName,
+      username: username || "",
+      schoolId: schoolId || null,
+      verified: true,
+      role,
+      delegatedToUserIds: [],
+      googleBooksApiKey: null,
+      googleSheetUrl: null,
+      isPlaceholder: false,
+    });
+
+    return new Response(JSON.stringify({ success: true, user: newUser }), {
+      status: 201,
       headers: { "Content-Type": "application/json" },
     });
   },

@@ -28,7 +28,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   useEffect(() => {
-    if (user.role === "teacher") {
+    if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
       fetchInvitations();
       fetchDelegates();
     }
@@ -434,7 +434,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
               >
                 🔍 {scannerMode === 'manual' ? "Hide" : "Lookup"}
               </button>
-              {user.role === "teacher" && (
+              {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                 <>
                   {user.googleSheetUrl && (
                     <button
@@ -464,7 +464,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
             </div>
           )}
 
-          {showInvitations && user.role === "teacher" && (
+          {showInvitations && (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Manage Helpers
@@ -699,7 +699,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                 <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                   ISBN: {book.isbn}
                 </p>
-                {user.role === "teacher" && (
+                {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                   <div class="space-y-2">
                     <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                       <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity:</span>
@@ -746,7 +746,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                       <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Authors</th>
                       <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Publisher</th>
                       <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Published</th>
-                      {user.role === "teacher" && (
+                      {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Actions</th>
                       )}
                     </tr>
@@ -758,7 +758,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                           {book.isbn || "-"}
                         </td>
                         <td class="px-4 py-3 text-sm">
-                          {user.role === "teacher" ? (
+                          {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) ? (
                             <div class="flex items-center gap-2">
                               <button
                                 onClick={() => handleQuantityChange(book.id, book.quantity, -1)}
@@ -796,7 +796,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                           {book.publishedDate || "-"}
                         </td>
-                        {user.role === "teacher" && (
+                        {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                           <td class="px-4 py-3 text-sm">
                             <button
                               onClick={() => handleRemoveBook(book.id)}
