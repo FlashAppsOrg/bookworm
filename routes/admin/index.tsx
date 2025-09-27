@@ -31,12 +31,12 @@ export const handler: Handlers<AdminDashboardData> = {
     let totalDelegates = 0;
     let totalAdmins = 0;
 
-    const schoolEntries = kv.list<School>({ prefix: ["schools", "id"] });
+    const schoolEntries = kv.list<School>({ prefix: ["schools:id"] });
     for await (const _entry of schoolEntries) {
       totalSchools++;
     }
 
-    const userEntries = kv.list<User>({ prefix: ["users", "id"] });
+    const userEntries = kv.list<User>({ prefix: ["users:id"] });
     for await (const entry of userEntries) {
       const u = entry.value;
       if (u.role === "teacher") totalTeachers++;
