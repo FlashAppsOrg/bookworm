@@ -15,7 +15,7 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { isbn, title, authors, thumbnail, publisher, publishedDate, teacherId } = body;
+      const { isbn, title, authors, thumbnail, publisher, publishedDate, description, categories, maturityRating, pageCount, language, teacherId } = body;
 
       if (!isbn || !title) {
         return new Response(JSON.stringify({ error: "ISBN and title are required" }), {
@@ -68,6 +68,11 @@ export const handler: Handlers = {
         thumbnail: thumbnail || null,
         publisher: publisher || null,
         publishedDate: publishedDate || null,
+        description: description || undefined,
+        categories: categories || undefined,
+        maturityRating: maturityRating || undefined,
+        pageCount: pageCount || undefined,
+        language: language || undefined,
       });
 
       return new Response(JSON.stringify({ success: true, book }), {

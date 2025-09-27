@@ -5,8 +5,19 @@
 import * as $_school_username_ from "./routes/[school]/[username].tsx";
 import * as $_school_index from "./routes/[school]/index.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $admin_challenges_index from "./routes/admin/challenges/index.tsx";
+import * as $admin_classrooms_index from "./routes/admin/classrooms/index.tsx";
+import * as $admin_import_index from "./routes/admin/import/index.tsx";
+import * as $admin_index from "./routes/admin/index.tsx";
+import * as $admin_schools_index from "./routes/admin/schools/index.tsx";
 import * as $admin_usage from "./routes/admin/usage.tsx";
+import * as $admin_users_index from "./routes/admin/users/index.tsx";
+import * as $api_admin_bulk_import from "./routes/api/admin/bulk-import.ts";
+import * as $api_admin_challenges from "./routes/api/admin/challenges.ts";
+import * as $api_admin_classrooms from "./routes/api/admin/classrooms.ts";
+import * as $api_admin_schools from "./routes/api/admin/schools.ts";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
+import * as $api_admin_users from "./routes/api/admin/users.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
@@ -16,8 +27,10 @@ import * as $api_auth_reset_password from "./routes/api/auth/reset-password.ts";
 import * as $api_auth_signup from "./routes/api/auth/signup.ts";
 import * as $api_auth_update_password from "./routes/api/auth/update-password.ts";
 import * as $api_auth_verify from "./routes/api/auth/verify.ts";
+import * as $api_challenges_submit from "./routes/api/challenges/submit.ts";
 import * as $api_classroom_add from "./routes/api/classroom/add.ts";
 import * as $api_classroom_backup_to_sheet from "./routes/api/classroom/backup-to-sheet.ts";
+import * as $api_classroom_claim from "./routes/api/classroom/claim.ts";
 import * as $api_classroom_export from "./routes/api/classroom/export.ts";
 import * as $api_classroom_remove from "./routes/api/classroom/remove.ts";
 import * as $api_classroom_update_quantity from "./routes/api/classroom/update-quantity.ts";
@@ -28,15 +41,19 @@ import * as $api_invitations_create from "./routes/api/invitations/create.ts";
 import * as $api_invitations_list from "./routes/api/invitations/list.ts";
 import * as $api_invitations_revoke from "./routes/api/invitations/revoke.ts";
 import * as $api_lookup from "./routes/api/lookup.ts";
+import * as $api_school_admin_staff_import from "./routes/api/school-admin/staff-import.ts";
 import * as $api_schools from "./routes/api/schools.ts";
 import * as $api_settings_update_school from "./routes/api/settings/update-school.ts";
 import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
+import * as $challenge_book from "./routes/challenge-book.tsx";
+import * as $claim_classroom from "./routes/claim-classroom.tsx";
 import * as $dashboard from "./routes/dashboard.tsx";
 import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $forgot_password from "./routes/forgot-password.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
 import * as $reset_password from "./routes/reset-password.tsx";
+import * as $school_admin_staff_import_index from "./routes/school-admin/staff-import/index.tsx";
 import * as $select_classroom from "./routes/select-classroom.tsx";
 import * as $settings from "./routes/settings.tsx";
 import * as $setup from "./routes/setup.tsx";
@@ -44,16 +61,24 @@ import * as $signup from "./routes/signup.tsx";
 import * as $verify from "./routes/verify.tsx";
 import * as $App from "./islands/App.tsx";
 import * as $BarcodeScanner from "./islands/BarcodeScanner.tsx";
+import * as $BulkImport from "./islands/BulkImport.tsx";
+import * as $ChallengeForm from "./islands/ChallengeForm.tsx";
+import * as $ChallengeReview from "./islands/ChallengeReview.tsx";
+import * as $ClaimClassroom from "./islands/ClaimClassroom.tsx";
+import * as $ClassroomBrowser from "./islands/ClassroomBrowser.tsx";
 import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
 import * as $SchoolCatalog from "./islands/SchoolCatalog.tsx";
+import * as $SchoolManagement from "./islands/SchoolManagement.tsx";
 import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
 import * as $SetupForm from "./islands/SetupForm.tsx";
 import * as $SignupForm from "./islands/SignupForm.tsx";
+import * as $StaffImport from "./islands/StaffImport.tsx";
 import * as $UsageStats from "./islands/UsageStats.tsx";
+import * as $UserManagement from "./islands/UserManagement.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -61,8 +86,19 @@ const manifest = {
     "./routes/[school]/[username].tsx": $_school_username_,
     "./routes/[school]/index.tsx": $_school_index,
     "./routes/_app.tsx": $_app,
+    "./routes/admin/challenges/index.tsx": $admin_challenges_index,
+    "./routes/admin/classrooms/index.tsx": $admin_classrooms_index,
+    "./routes/admin/import/index.tsx": $admin_import_index,
+    "./routes/admin/index.tsx": $admin_index,
+    "./routes/admin/schools/index.tsx": $admin_schools_index,
     "./routes/admin/usage.tsx": $admin_usage,
+    "./routes/admin/users/index.tsx": $admin_users_index,
+    "./routes/api/admin/bulk-import.ts": $api_admin_bulk_import,
+    "./routes/api/admin/challenges.ts": $api_admin_challenges,
+    "./routes/api/admin/classrooms.ts": $api_admin_classrooms,
+    "./routes/api/admin/schools.ts": $api_admin_schools,
     "./routes/api/admin/usage.ts": $api_admin_usage,
+    "./routes/api/admin/users.ts": $api_admin_users,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
     "./routes/api/auth/login.ts": $api_auth_login,
@@ -72,8 +108,10 @@ const manifest = {
     "./routes/api/auth/signup.ts": $api_auth_signup,
     "./routes/api/auth/update-password.ts": $api_auth_update_password,
     "./routes/api/auth/verify.ts": $api_auth_verify,
+    "./routes/api/challenges/submit.ts": $api_challenges_submit,
     "./routes/api/classroom/add.ts": $api_classroom_add,
     "./routes/api/classroom/backup-to-sheet.ts": $api_classroom_backup_to_sheet,
+    "./routes/api/classroom/claim.ts": $api_classroom_claim,
     "./routes/api/classroom/export.ts": $api_classroom_export,
     "./routes/api/classroom/remove.ts": $api_classroom_remove,
     "./routes/api/classroom/update-quantity.ts": $api_classroom_update_quantity,
@@ -84,15 +122,20 @@ const manifest = {
     "./routes/api/invitations/list.ts": $api_invitations_list,
     "./routes/api/invitations/revoke.ts": $api_invitations_revoke,
     "./routes/api/lookup.ts": $api_lookup,
+    "./routes/api/school-admin/staff-import.ts": $api_school_admin_staff_import,
     "./routes/api/schools.ts": $api_schools,
     "./routes/api/settings/update-school.ts": $api_settings_update_school,
     "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
+    "./routes/challenge-book.tsx": $challenge_book,
+    "./routes/claim-classroom.tsx": $claim_classroom,
     "./routes/dashboard.tsx": $dashboard,
     "./routes/delegate-signup.tsx": $delegate_signup,
     "./routes/forgot-password.tsx": $forgot_password,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
     "./routes/reset-password.tsx": $reset_password,
+    "./routes/school-admin/staff-import/index.tsx":
+      $school_admin_staff_import_index,
     "./routes/select-classroom.tsx": $select_classroom,
     "./routes/settings.tsx": $settings,
     "./routes/setup.tsx": $setup,
@@ -102,16 +145,24 @@ const manifest = {
   islands: {
     "./islands/App.tsx": $App,
     "./islands/BarcodeScanner.tsx": $BarcodeScanner,
+    "./islands/BulkImport.tsx": $BulkImport,
+    "./islands/ChallengeForm.tsx": $ChallengeForm,
+    "./islands/ChallengeReview.tsx": $ChallengeReview,
+    "./islands/ClaimClassroom.tsx": $ClaimClassroom,
+    "./islands/ClassroomBrowser.tsx": $ClassroomBrowser,
     "./islands/DashboardContent.tsx": $DashboardContent,
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/PublicClassroom.tsx": $PublicClassroom,
     "./islands/ScanHistory.tsx": $ScanHistory,
     "./islands/SchoolCatalog.tsx": $SchoolCatalog,
+    "./islands/SchoolManagement.tsx": $SchoolManagement,
     "./islands/SettingsPanel.tsx": $SettingsPanel,
     "./islands/SetupForm.tsx": $SetupForm,
     "./islands/SignupForm.tsx": $SignupForm,
+    "./islands/StaffImport.tsx": $StaffImport,
     "./islands/UsageStats.tsx": $UsageStats,
+    "./islands/UserManagement.tsx": $UserManagement,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

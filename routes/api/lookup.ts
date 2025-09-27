@@ -11,6 +11,10 @@ export interface BookInfo {
   publishedDate?: string;
   description?: string;
   thumbnail?: string;
+  categories?: string[];
+  maturityRating?: string;
+  pageCount?: number;
+  language?: string;
   industryIdentifiers?: Array<{ type: string; identifier: string }>;
 }
 
@@ -137,6 +141,10 @@ export const handler: Handlers = {
             publishedDate: volumeInfo.publishedDate,
             description: volumeInfo.description,
             thumbnail: volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
+            categories: volumeInfo.categories || [],
+            maturityRating: volumeInfo.maturityRating,
+            pageCount: volumeInfo.pageCount,
+            language: volumeInfo.language,
             industryIdentifiers: volumeInfo.industryIdentifiers,
           };
         });
@@ -166,6 +174,10 @@ export const handler: Handlers = {
         publishedDate: volumeInfo.publishedDate,
         description: volumeInfo.description,
         thumbnail: volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:'),
+        categories: volumeInfo.categories || [],
+        maturityRating: volumeInfo.maturityRating,
+        pageCount: volumeInfo.pageCount,
+        language: volumeInfo.language,
         industryIdentifiers: volumeInfo.industryIdentifiers,
       };
 

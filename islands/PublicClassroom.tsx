@@ -18,8 +18,10 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
     const titleMatch = book.title.toLowerCase().includes(query);
     const authorMatch = book.authors.some(author => author.toLowerCase().includes(query));
     const isbnMatch = book.isbn?.toLowerCase().includes(query);
+    const descriptionMatch = book.description?.toLowerCase().includes(query);
+    const categoryMatch = book.categories?.some(cat => cat.toLowerCase().includes(query));
 
-    return titleMatch || authorMatch || isbnMatch;
+    return titleMatch || authorMatch || isbnMatch || descriptionMatch || categoryMatch;
   });
 
   return (
@@ -109,7 +111,22 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
                     by {book.authors.join(", ")}
                   </p>
                 )}
-                <div class="space-y-1 text-xs text-gray-500 dark:text-gray-500">
+                {book.categories && book.categories.length > 0 && (
+                  <div class="flex flex-wrap gap-1 mb-2">
+                    {book.categories.slice(0, 2).map((cat) => (
+                      <span key={cat} class="text-xs px-2 py-0.5 bg-primary/10 text-primary dark:text-primary-light rounded">
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {book.description && (
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                    {book.description}
+                  </p>
+                )}
+                <div class="space-y-1 text-xs text-gray-500 dark:text-gray-500 mb-3">
+                  {book.pageCount && <p>{book.pageCount} pages</p>}
                   {book.publisher && <p>{book.publisher}</p>}
                   {book.publishedDate && <p>{book.publishedDate}</p>}
                   {book.isbn && (
@@ -121,6 +138,12 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
                     Quantity: {book.quantity || 1}
                   </p>
                 </div>
+                <a
+                  href={`/challenge-book?bookId=${book.id}&userId=${book.userId}`}
+                  class="block w-full text-center py-2 px-4 bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 text-yellow-900 dark:text-yellow-300 rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Challenge Book
+                </a>
               </div>
             ))}
           </div>
@@ -134,8 +157,12 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Qty</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Title</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Authors</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Categories</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Description</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Pages</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Publisher</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Published</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -147,17 +174,44 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
                       <td class="px-4 py-3 text-sm font-semibold text-primary dark:text-primary-light">
                         {book.quantity || 1}
                       </td>
-                      <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                      <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white max-w-xs">
                         {book.title}
                       </td>
                       <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {book.authors.join(", ") || "-"}
                       </td>
                       <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {book.categories && book.categories.length > 0 ? (
+                          <div class="flex flex-wrap gap-1">
+                            {book.categories.slice(0, 2).map((cat) => (
+                              <span key={cat} class="text-xs px-2 py-0.5 bg-primary/10 text-primary dark:text-primary-light rounded whitespace-nowrap">
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                        ) : "-"}
+                      </td>
+                      <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 max-w-md">
+                        <div class="line-clamp-2">
+                          {book.description || "-"}
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {book.pageCount || "-"}
+                      </td>
+                      <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {book.publisher || "-"}
                       </td>
                       <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {book.publishedDate || "-"}
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        <a
+                          href={`/challenge-book?bookId=${book.id}&userId=${book.userId}`}
+                          class="inline-block px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 text-yellow-900 dark:text-yellow-300 rounded text-xs font-semibold transition-colors"
+                        >
+                          Challenge
+                        </a>
                       </td>
                     </tr>
                   ))}

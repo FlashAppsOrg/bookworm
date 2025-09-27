@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { validateEmail } from "../../../utils/auth.ts";
-import { getUserByEmail, createUser } from "../../../utils/db-helpers.ts";
+import { getUserByEmail, createUser, getSchoolByDomain } from "../../../utils/db-helpers.ts";
 import { hashPassword, generateToken } from "../../../utils/password.ts";
 import { getKv, VerificationToken } from "../../../utils/db.ts";
 import { sendVerificationEmail } from "../../../utils/email.ts";
@@ -41,18 +41,22 @@ export const handler: Handlers = {
         });
       }
 
+      const emailDomain = email.toLowerCase().split("@")[1];
+      const school = await getSchoolByDomain(emailDomain);
+
       const passwordHash = await hashPassword(password);
       const user = await createUser({
         email: email.toLowerCase(),
         passwordHash,
         displayName,
         username: "",
-        schoolId: null,
+        schoolId: school ? school.id : null,
         verified: false,
         role: "teacher",
         delegatedToUserIds: [],
         googleBooksApiKey: null,
         googleSheetUrl: null,
+        isPlaceholder: false,
       });
 
       const token = generateToken();

@@ -122,12 +122,12 @@ export default function SignupForm() {
           type="email"
           value={email}
           onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
-          placeholder="teacher@wcpss.net"
+          placeholder="teacher@school.edu"
           required
           class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
         />
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Must be a @wcpss.net email address
+          If your school uses BookWorm, you'll be automatically assigned to it
         </p>
       </div>
 

@@ -20,6 +20,7 @@ export async function createUser(user: Omit<User, "id" | "createdAt">): Promise<
     ...user,
     id,
     googleBooksApiKey: user.googleBooksApiKey || null,
+    isPlaceholder: user.isPlaceholder ?? false,
     createdAt: new Date().toISOString(),
   };
 
@@ -54,20 +55,35 @@ export async function getSchoolById(id: string): Promise<School | null> {
   return result.value;
 }
 
-export async function createSchool(name: string, slug: string): Promise<School> {
+export async function getSchoolByDomain(domain: string): Promise<School | null> {
+  const kv = await getKv();
+  const schoolIdResult = await kv.get<string>(["schools:domain", domain.toLowerCase()]);
+  if (!schoolIdResult.value) return null;
+
+  const schoolResult = await kv.get<School>(["schools:id", schoolIdResult.value]);
+  return schoolResult.value;
+}
+
+export async function createSchool(name: string, slug: string, domain: string | null = null): Promise<School> {
   const kv = await getKv();
   const id = generateId();
   const school: School = {
     id,
     name,
     slug,
+    domain,
     createdAt: new Date().toISOString(),
   };
 
-  await kv.atomic()
+  const atomicOp = kv.atomic()
     .set(["schools:id", id], school)
-    .set(["schools:slug", slug], id)
-    .commit();
+    .set(["schools:slug", slug], id);
+
+  if (domain) {
+    atomicOp.set(["schools:domain", domain.toLowerCase()], id);
+  }
+
+  await atomicOp.commit();
 
   return school;
 }
@@ -109,7 +125,7 @@ export async function findBookByISBN(userId: string, isbn: string): Promise<Clas
   return null;
 }
 
-export async function addBookToClassroom(userId: string, book: Omit<ClassroomBook, "id" | "userId" | "dateAdded" | "quantity">): Promise<ClassroomBook> {
+export async function addBookToClassroom(userId: string, book: Omit<ClassroomBook, "id" | "userId" | "dateAdded" | "quantity" | "imported">): Promise<ClassroomBook> {
   const kv = await getKv();
   const id = generateId();
   const newBook: ClassroomBook = {
@@ -117,6 +133,7 @@ export async function addBookToClassroom(userId: string, book: Omit<ClassroomBoo
     id,
     userId,
     quantity: 1,
+    imported: false,
     dateAdded: new Date().toISOString(),
   };
 
