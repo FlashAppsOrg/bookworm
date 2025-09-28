@@ -1,9 +1,15 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getUserFromSession } from "../../utils/session.ts";
+import { User } from "../../utils/db.ts";
+import AdminHeader from "../../islands/AdminHeader.tsx";
 import UsageStats from "../../islands/UsageStats.tsx";
 
-export const handler: Handlers = {
+interface UsagePageData {
+  user: User;
+}
+
+export const handler: Handlers<UsagePageData> = {
   async GET(req, ctx) {
     const user = await getUserFromSession(req);
 
@@ -24,38 +30,18 @@ export const handler: Handlers = {
       });
     }
 
-    return ctx.render();
+    return ctx.render({ user });
   },
 };
 
-export default function AdminUsagePage() {
+export default function AdminUsagePage({ data }: PageProps<UsagePageData>) {
   return (
     <>
       <Head>
         <title>System Usage - BookWorm Admin</title>
       </Head>
       <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
-        <header class="bg-white dark:bg-gray-800 shadow-md transition-colors">
-          <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-              <a href="/" class="text-2xl font-bold text-primary">BookWorm Admin</a>
-              <div class="flex gap-4">
-                <a
-                  href="/dashboard"
-                  class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Dashboard
-                </a>
-                <a
-                  href="/settings"
-                  class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Settings
-                </a>
-              </div>
-            </div>
-          </div>
-        </header>
+        <AdminHeader user={data.user} />
 
         <main class="flex-1 container mx-auto px-4 py-8">
           <div class="max-w-6xl mx-auto">

@@ -71,6 +71,7 @@ import * as $settings from "./routes/settings.tsx";
 import * as $setup from "./routes/setup.tsx";
 import * as $signup from "./routes/signup.tsx";
 import * as $verify from "./routes/verify.tsx";
+import * as $AdminHeader from "./islands/AdminHeader.tsx";
 import * as $App from "./islands/App.tsx";
 import * as $BarcodeScanner from "./islands/BarcodeScanner.tsx";
 import * as $BulkImport from "./islands/BulkImport.tsx";
@@ -168,6 +169,7 @@ const manifest = {
     "./routes/verify.tsx": $verify,
   },
   islands: {
+    "./islands/AdminHeader.tsx": $AdminHeader,
     "./islands/App.tsx": $App,
     "./islands/BarcodeScanner.tsx": $BarcodeScanner,
     "./islands/BulkImport.tsx": $BulkImport,
