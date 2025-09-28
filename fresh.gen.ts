@@ -5,6 +5,7 @@
 import * as $_school_username_ from "./routes/[school]/[username].tsx";
 import * as $_school_index from "./routes/[school]/index.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $accept_invitation from "./routes/accept-invitation.tsx";
 import * as $admin_challenges_index from "./routes/admin/challenges/index.tsx";
 import * as $admin_classrooms_index from "./routes/admin/classrooms/index.tsx";
 import * as $admin_import_index from "./routes/admin/import/index.tsx";
@@ -102,6 +103,7 @@ const manifest = {
     "./routes/[school]/[username].tsx": $_school_username_,
     "./routes/[school]/index.tsx": $_school_index,
     "./routes/_app.tsx": $_app,
+    "./routes/accept-invitation.tsx": $accept_invitation,
     "./routes/admin/challenges/index.tsx": $admin_challenges_index,
     "./routes/admin/classrooms/index.tsx": $admin_classrooms_index,
     "./routes/admin/import/index.tsx": $admin_import_index,

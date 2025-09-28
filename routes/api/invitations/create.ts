@@ -103,11 +103,15 @@ export const handler: Handlers = {
       await kv.set(["invitations:teacher", targetTeacherId, token], invitation);
 
       const appUrl = Deno.env.get("APP_URL") || "http://localhost:8000";
-      const inviteUrl = `${appUrl}/delegate-signup?token=${token}`;
 
       // Check if this email belongs to an existing delegate
       const existingUser = await getUserByEmail(email);
       const isExistingDelegate = existingUser?.role === "delegate";
+
+      // Use different URLs for existing vs new delegates
+      const inviteUrl = isExistingDelegate
+        ? `${appUrl}/accept-invitation?token=${token}`
+        : `${appUrl}/delegate-signup?token=${token}`;
 
       const emailResult = await sendInvitationEmail(email, targetTeacher.displayName, inviteUrl, isExistingDelegate);
 

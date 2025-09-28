@@ -22,7 +22,16 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { token } = body;
+      const { token, teacherId } = body;
+      const targetTeacherId = teacherId || user.id;
+
+      // If revoking for another teacher, must be super_admin
+      if (targetTeacherId !== user.id && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
       if (!token) {
         return new Response(JSON.stringify({ error: "Token is required" }), {
@@ -33,7 +42,7 @@ export const handler: Handlers = {
 
       const kv = await getKv();
       await kv.delete(["invitations", token]);
-      await kv.delete(["invitations:teacher", user.id, token]);
+      await kv.delete(["invitations:teacher", targetTeacherId, token]);
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

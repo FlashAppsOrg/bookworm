@@ -127,7 +127,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
       const response = await fetch("/api/invitations/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, teacherId: selectedTeacherId }),
       });
 
       const data = await response.json();
@@ -149,7 +149,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
       const response = await fetch("/api/invitations/revoke", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, teacherId: selectedTeacherId }),
       });
 
       if (response.ok) {
