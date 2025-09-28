@@ -2,6 +2,7 @@ import { Handlers } from "$fresh/server.ts";
 import { getCookies } from "$std/http/cookie.ts";
 import { getKv, CachedBook } from "../../utils/db.ts";
 import { getUserById } from "../../utils/db-helpers.ts";
+import { incrementQuotaCounter } from "../../utils/quota-tracker.ts";
 
 export interface BookInfo {
   isbn: string;
@@ -18,7 +19,7 @@ export interface BookInfo {
   industryIdentifiers?: Array<{ type: string; identifier: string }>;
 }
 
-const DEFAULT_API_KEY = ""; // Set in environment variable or config
+const DEFAULT_API_KEY = Deno.env.get("GOOGLE_BOOKS_API_KEY") || "";
 
 async function getCachedBook(isbn: string): Promise<BookInfo | null> {
   const kv = await getKv();
@@ -32,12 +33,14 @@ async function getCachedBook(isbn: string): Promise<BookInfo | null> {
   return null;
 }
 
-async function cacheBook(isbn: string, bookInfo: BookInfo): Promise<void> {
+async function cacheBook(isbn: string, bookInfo: BookInfo, source: "google_api" | "bulk_import" = "google_api"): Promise<void> {
   const kv = await getKv();
   const cached: CachedBook = {
     isbn,
     data: bookInfo,
     cachedAt: new Date().toISOString(),
+    source,
+    validated: source === "google_api",
   };
 
   await kv.set(["books:isbn", isbn], cached);
@@ -111,6 +114,9 @@ export const handler: Handlers = {
       if (!response.ok) {
         throw new Error(`Google Books API error: ${response.status}`);
       }
+
+      // Track API usage
+      await incrementQuotaCounter();
 
       const data = await response.json();
 

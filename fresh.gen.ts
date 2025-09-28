@@ -9,6 +9,7 @@ import * as $admin_challenges_index from "./routes/admin/challenges/index.tsx";
 import * as $admin_classrooms_index from "./routes/admin/classrooms/index.tsx";
 import * as $admin_import_index from "./routes/admin/import/index.tsx";
 import * as $admin_index from "./routes/admin/index.tsx";
+import * as $admin_quota from "./routes/admin/quota.tsx";
 import * as $admin_schools_index from "./routes/admin/schools/index.tsx";
 import * as $admin_usage from "./routes/admin/usage.tsx";
 import * as $admin_users_index from "./routes/admin/users/index.tsx";
@@ -18,9 +19,11 @@ import * as $api_admin_check_admins from "./routes/api/admin/check-admins.ts";
 import * as $api_admin_classrooms from "./routes/api/admin/classrooms.ts";
 import * as $api_admin_force_promote from "./routes/api/admin/force-promote.ts";
 import * as $api_admin_promote_first from "./routes/api/admin/promote-first.ts";
+import * as $api_admin_quota_stats from "./routes/api/admin/quota-stats.ts";
 import * as $api_admin_schools from "./routes/api/admin/schools.ts";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
+import * as $api_admin_validate_cache from "./routes/api/admin/validate-cache.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
@@ -53,6 +56,7 @@ import * as $api_school_admin_staff_import from "./routes/api/school-admin/staff
 import * as $api_schools from "./routes/api/schools.ts";
 import * as $api_settings_update_school from "./routes/api/settings/update-school.ts";
 import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
+import * as $api_teachers_list from "./routes/api/teachers/list.ts";
 import * as $challenge_book from "./routes/challenge-book.tsx";
 import * as $claim_classroom from "./routes/claim-classroom.tsx";
 import * as $dashboard from "./routes/dashboard.tsx";
@@ -78,6 +82,7 @@ import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
+import * as $QuotaMonitor from "./islands/QuotaMonitor.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
 import * as $SchoolCatalog from "./islands/SchoolCatalog.tsx";
 import * as $SchoolManagement from "./islands/SchoolManagement.tsx";
@@ -98,6 +103,7 @@ const manifest = {
     "./routes/admin/classrooms/index.tsx": $admin_classrooms_index,
     "./routes/admin/import/index.tsx": $admin_import_index,
     "./routes/admin/index.tsx": $admin_index,
+    "./routes/admin/quota.tsx": $admin_quota,
     "./routes/admin/schools/index.tsx": $admin_schools_index,
     "./routes/admin/usage.tsx": $admin_usage,
     "./routes/admin/users/index.tsx": $admin_users_index,
@@ -107,9 +113,11 @@ const manifest = {
     "./routes/api/admin/classrooms.ts": $api_admin_classrooms,
     "./routes/api/admin/force-promote.ts": $api_admin_force_promote,
     "./routes/api/admin/promote-first.ts": $api_admin_promote_first,
+    "./routes/api/admin/quota-stats.ts": $api_admin_quota_stats,
     "./routes/api/admin/schools.ts": $api_admin_schools,
     "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/admin/users.ts": $api_admin_users,
+    "./routes/api/admin/validate-cache.ts": $api_admin_validate_cache,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
     "./routes/api/auth/login.ts": $api_auth_login,
@@ -142,6 +150,7 @@ const manifest = {
     "./routes/api/schools.ts": $api_schools,
     "./routes/api/settings/update-school.ts": $api_settings_update_school,
     "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
+    "./routes/api/teachers/list.ts": $api_teachers_list,
     "./routes/challenge-book.tsx": $challenge_book,
     "./routes/claim-classroom.tsx": $claim_classroom,
     "./routes/dashboard.tsx": $dashboard,
@@ -170,6 +179,7 @@ const manifest = {
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/PublicClassroom.tsx": $PublicClassroom,
+    "./islands/QuotaMonitor.tsx": $QuotaMonitor,
     "./islands/ScanHistory.tsx": $ScanHistory,
     "./islands/SchoolCatalog.tsx": $SchoolCatalog,
     "./islands/SchoolManagement.tsx": $SchoolManagement,

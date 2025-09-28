@@ -1,6 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
 import { addBookToClassroom, findBookByISBN } from "../../../utils/db-helpers.ts";
+import { getTargetTeacherId } from "../../../utils/auth-helpers.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -24,26 +25,13 @@ export const handler: Handlers = {
         });
       }
 
-      // If delegate, add to the selected teacher's classroom
-      let targetUserId = user.id;
-      if (user.role === "delegate") {
-        // Support both old singular field and new array field
-        const delegateToIds = user.delegatedToUserIds ||
-          ((user as any).delegatedToUserId ? [(user as any).delegatedToUserId] : []);
-
-        if (!teacherId) {
-          return new Response(JSON.stringify({ error: "Teacher ID required for delegates" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-        if (!delegateToIds.includes(teacherId)) {
-          return new Response(JSON.stringify({ error: "Not authorized for this classroom" }), {
-            status: 403,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-        targetUserId = teacherId;
+      // Determine target teacher (handles super_admin, teacher, delegate)
+      const { teacherId: targetUserId, error } = getTargetTeacherId(user, teacherId);
+      if (error) {
+        return new Response(JSON.stringify({ error }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Check if this ISBN already exists in this classroom

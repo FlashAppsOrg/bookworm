@@ -26,6 +26,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
   const [inviteError, setInviteError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
@@ -260,6 +261,8 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
     try {
       const response = await fetch("/api/classroom/backup-to-sheet", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teacherId: selectedTeacherId }),
       });
 
       const data = await response.json();
@@ -273,6 +276,32 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
       alert("✗ Network error. Please try again.");
     } finally {
       setBackingUp(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const url = selectedTeacherId
+        ? `/api/classroom/export?teacherId=${selectedTeacherId}`
+        : "/api/classroom/export";
+      const response = await fetch(url);
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `classroom-books.csv`;
+        a.click();
+        URL.revokeObjectURL(downloadUrl);
+      } else {
+        alert("✗ Export failed");
+      }
+    } catch (err) {
+      console.error("Failed to export:", err);
+      alert("✗ Export failed");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -409,6 +438,27 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                   <span class="ml-2 text-sm">• Helping: {teacherName}</span>
                 )}
               </p>
+              {user.role === "super_admin" && availableTeachers && availableTeachers.length > 0 && (
+                <div class="mt-3">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Select Teacher's Classroom:
+                  </label>
+                  <select
+                    value={selectedTeacherId || user.id}
+                    onChange={(e) => {
+                      const teacherId = (e.target as HTMLSelectElement).value;
+                      window.location.href = `/dashboard?teacherId=${teacherId}`;
+                    }}
+                    class="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  >
+                    {availableTeachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
               {user.role === "delegate" && availableTeachers && availableTeachers.length > 1 && (
@@ -436,6 +486,13 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
               </button>
               {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                 <>
+                  <button
+                    onClick={handleExport}
+                    disabled={exporting || books.length === 0}
+                    class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+                  >
+                    📄 {exporting ? "Exporting..." : "Export"}
+                  </button>
                   {user.googleSheetUrl && (
                     <button
                       onClick={handleBackupToSheet}

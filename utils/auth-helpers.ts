@@ -57,3 +57,48 @@ export function canDeleteClassroomBook(user: User, bookUserId: string): boolean 
   if (isDelegate(user) && user.delegatedToUserIds.includes(bookUserId)) return true;
   return false;
 }
+
+export function canManageClassroom(user: User, teacherId: string): boolean {
+  // Super admin can manage any classroom
+  if (isSuperAdmin(user)) return true;
+
+  // Teacher can manage their own classroom
+  if (user.id === teacherId) return true;
+
+  // Delegate can manage classrooms they're delegated to
+  if (isDelegate(user) && user.delegatedToUserIds.includes(teacherId)) return true;
+
+  return false;
+}
+
+export function getTargetTeacherId(user: User, requestedTeacherId?: string): { teacherId: string; error?: string } {
+  // Super admin can act on any teacher's behalf
+  if (isSuperAdmin(user)) {
+    if (!requestedTeacherId) {
+      return { teacherId: user.id }; // Default to their own
+    }
+    return { teacherId: requestedTeacherId };
+  }
+
+  // Regular teacher acts on their own classroom
+  if (isTeacher(user)) {
+    return { teacherId: user.id };
+  }
+
+  // Delegate must specify and be authorized for the teacher
+  if (isDelegate(user)) {
+    const delegateToIds = user.delegatedToUserIds || [];
+
+    if (!requestedTeacherId) {
+      return { teacherId: "", error: "Teacher ID required for delegates" };
+    }
+
+    if (!delegateToIds.includes(requestedTeacherId)) {
+      return { teacherId: "", error: "Not authorized for this classroom" };
+    }
+
+    return { teacherId: requestedTeacherId };
+  }
+
+  return { teacherId: "", error: "Not authorized" };
+}

@@ -181,6 +181,25 @@ export default function AdminDashboard({ data }: PageProps<AdminDashboardData>) 
               </svg>
             </div>
           </a>
+
+          <a
+            href="/admin/quota"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow block"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  API Quota Monitor
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400">
+                  Track Google Books API usage
+                </p>
+              </div>
+              <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </a>
         </div>
       </div>
     </div>

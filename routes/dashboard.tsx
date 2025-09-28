@@ -39,11 +39,37 @@ export const handler: Handlers<DashboardData> = {
     }
 
     // For delegates with multiple classrooms, check for selected teacher
+    // For super_admin, allow selecting any teacher
     let selectedTeacherId: string | undefined;
     let availableTeachers: Array<{ id: string; name: string }> | undefined;
     let teacherName: string | undefined;
 
-    if (user.role === "delegate") {
+    if (user.role === "super_admin") {
+      // Super admin can manage any classroom
+      const url = new URL(req.url);
+      selectedTeacherId = url.searchParams.get("teacherId") || user.id; // Default to their own
+
+      // Get all teachers
+      const { getKv } = await import("../utils/db.ts");
+      const kv = await getKv();
+      availableTeachers = [];
+
+      const userEntries = kv.list<User>({ prefix: ["users:id"] });
+      for await (const entry of userEntries) {
+        const u = entry.value;
+        if (u.role === "teacher" || u.role === "super_admin") {
+          availableTeachers.push({ id: u.id, name: u.displayName });
+        }
+      }
+
+      // Sort by name
+      availableTeachers.sort((a, b) => a.name.localeCompare(b.name));
+
+      if (selectedTeacherId) {
+        const teacher = await getUserById(selectedTeacherId);
+        teacherName = teacher?.displayName;
+      }
+    } else if (user.role === "delegate") {
       // Support both old singular field and new array field
       const delegateToIds = user.delegatedToUserIds ||
         ((user as any).delegatedToUserId ? [(user as any).delegatedToUserId] : []);

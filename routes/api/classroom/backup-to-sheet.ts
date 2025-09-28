@@ -2,6 +2,7 @@ import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
 import { getUserBooks } from "../../../utils/db-helpers.ts";
 import { getAccessToken, extractSheetId, writeToSheet } from "../../../utils/google-sheets.ts";
+import { getTargetTeacherId } from "../../../utils/auth-helpers.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -15,8 +16,13 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role !== "teacher") {
-        return new Response(JSON.stringify({ error: "Only teachers can backup to sheets" }), {
+      const body = await req.json();
+      const { teacherId } = body;
+
+      // Determine target teacher (handles super_admin, teacher, delegate)
+      const { teacherId: targetUserId, error } = getTargetTeacherId(user, teacherId);
+      if (error) {
+        return new Response(JSON.stringify({ error }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
@@ -37,7 +43,7 @@ export const handler: Handlers = {
         });
       }
 
-      const books = await getUserBooks(user.id);
+      const books = await getUserBooks(targetUserId);
 
       const rows: string[][] = [
         ["ISBN", "Quantity", "Title", "Authors", "Publisher", "Published Date", "Date Added"],

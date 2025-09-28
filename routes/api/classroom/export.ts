@@ -1,6 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
 import { getUserBooks } from "../../../utils/db-helpers.ts";
+import { getTargetTeacherId } from "../../../utils/auth-helpers.ts";
 
 export const handler: Handlers = {
   async GET(req) {
@@ -14,14 +15,19 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role === "delegate") {
-        return new Response(JSON.stringify({ error: "Delegates cannot export books" }), {
+      const url = new URL(req.url);
+      const teacherId = url.searchParams.get("teacherId") || undefined;
+
+      // Determine target teacher (handles super_admin, teacher, delegate)
+      const { teacherId: targetUserId, error } = getTargetTeacherId(user, teacherId);
+      if (error) {
+        return new Response(JSON.stringify({ error }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
       }
 
-      const books = await getUserBooks(user.id);
+      const books = await getUserBooks(targetUserId);
 
       const csvRows = [
         ["ISBN", "Quantity", "Title", "Authors", "Publisher", "Published Date", "Date Added"].join(","),

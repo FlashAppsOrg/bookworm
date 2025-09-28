@@ -102,6 +102,8 @@ export interface CachedBook {
   isbn: string;
   data: any; // BookInfo structure
   cachedAt: string;
+  source: "google_api" | "bulk_import";
+  validated: boolean;
 }
 
 // Key patterns:
