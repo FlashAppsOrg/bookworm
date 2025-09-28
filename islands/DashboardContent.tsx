@@ -828,7 +828,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                📷 Scan
+                🏷️ Scan
               </button>
               <button
                 onClick={() => {
