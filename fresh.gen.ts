@@ -31,6 +31,7 @@ import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
+import * as $api_auth_parent_signup from "./routes/api/auth/parent-signup.ts";
 import * as $api_auth_resend_verification from "./routes/api/auth/resend-verification.ts";
 import * as $api_auth_reset_password from "./routes/api/auth/reset-password.ts";
 import * as $api_auth_signup from "./routes/api/auth/signup.ts";
@@ -69,6 +70,7 @@ import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $forgot_password from "./routes/forgot-password.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $parent_signup from "./routes/parent-signup.tsx";
 import * as $reset_password from "./routes/reset-password.tsx";
 import * as $school_admin_staff_import_index from "./routes/school-admin/staff-import/index.tsx";
 import * as $select_classroom from "./routes/select-classroom.tsx";
@@ -87,6 +89,7 @@ import * as $ClassroomBrowser from "./islands/ClassroomBrowser.tsx";
 import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
+import * as $ParentSignupForm from "./islands/ParentSignupForm.tsx";
 import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
 import * as $QuotaMonitor from "./islands/QuotaMonitor.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
@@ -131,6 +134,7 @@ const manifest = {
     "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
     "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
+    "./routes/api/auth/parent-signup.ts": $api_auth_parent_signup,
     "./routes/api/auth/resend-verification.ts": $api_auth_resend_verification,
     "./routes/api/auth/reset-password.ts": $api_auth_reset_password,
     "./routes/api/auth/signup.ts": $api_auth_signup,
@@ -169,6 +173,7 @@ const manifest = {
     "./routes/forgot-password.tsx": $forgot_password,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/parent-signup.tsx": $parent_signup,
     "./routes/reset-password.tsx": $reset_password,
     "./routes/school-admin/staff-import/index.tsx":
       $school_admin_staff_import_index,
@@ -190,6 +195,7 @@ const manifest = {
     "./islands/DashboardContent.tsx": $DashboardContent,
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
+    "./islands/ParentSignupForm.tsx": $ParentSignupForm,
     "./islands/PublicClassroom.tsx": $PublicClassroom,
     "./islands/QuotaMonitor.tsx": $QuotaMonitor,
     "./islands/ScanHistory.tsx": $ScanHistory,

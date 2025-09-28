@@ -6,12 +6,25 @@ interface Props {
   bookTitle: string;
   teacherName: string;
   schoolName: string;
+  parentId?: string;
+  parentName?: string;
+  parentEmail?: string;
 }
 
-export default function ChallengeForm({ bookId, userId, bookTitle, teacherName, schoolName }: Props) {
-  const [parentName, setParentName] = useState("");
-  const [parentEmail, setParentEmail] = useState("");
+export default function ChallengeForm({
+  bookId,
+  userId,
+  bookTitle,
+  teacherName,
+  schoolName,
+  parentId: propParentId,
+  parentName: propParentName,
+  parentEmail: propParentEmail
+}: Props) {
+  const [parentName, setParentName] = useState(propParentName || "");
+  const [parentEmail, setParentEmail] = useState(propParentEmail || "");
   const [studentName, setStudentName] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -29,9 +42,11 @@ export default function ChallengeForm({ bookId, userId, bookTitle, teacherName, 
         body: JSON.stringify({
           bookId,
           userId,
+          parentId: propParentId || null,
           parentName,
           parentEmail,
-          studentName: studentName || undefined,
+          studentName,
+          studentId,
           reason,
         }),
       });
@@ -116,7 +131,8 @@ export default function ChallengeForm({ bookId, userId, bookTitle, teacherName, 
           value={parentName}
           onInput={(e) => setParentName((e.target as HTMLInputElement).value)}
           required
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+          disabled={!!propParentId}
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
         />
       </div>
 
@@ -129,7 +145,8 @@ export default function ChallengeForm({ bookId, userId, bookTitle, teacherName, 
           value={parentEmail}
           onInput={(e) => setParentEmail((e.target as HTMLInputElement).value)}
           required
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+          disabled={!!propParentId}
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
         />
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           You will be contacted at this email regarding your challenge
@@ -138,14 +155,36 @@ export default function ChallengeForm({ bookId, userId, bookTitle, teacherName, 
 
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Student Name (Optional)
+          Student Name <span class="text-red-600">*</span>
         </label>
         <input
           type="text"
           value={studentName}
           onInput={(e) => setStudentName((e.target as HTMLInputElement).value)}
+          required
           class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+          placeholder="Your child's full name"
         />
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Name of your child in this classroom
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Student ID <span class="text-red-600">*</span>
+        </label>
+        <input
+          type="text"
+          value={studentId}
+          onInput={(e) => setStudentId((e.target as HTMLInputElement).value)}
+          required
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+          placeholder="School-provided student ID number"
+        />
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Required for verification. Contact the school if you don't know this ID.
+        </p>
       </div>
 
       <div>

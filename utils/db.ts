@@ -6,7 +6,7 @@ export interface User {
   username: string;
   schoolId: string | null;
   verified: boolean;
-  role: "teacher" | "delegate" | "school_admin" | "super_admin";
+  role: "teacher" | "delegate" | "school_admin" | "super_admin" | "parent";
   delegatedToUserIds: string[]; // If delegate, list of teacher IDs they help
   googleBooksApiKey: string | null; // Optional per-teacher API key
   googleSheetUrl: string | null; // Optional Google Sheet URL for backups
@@ -69,6 +69,23 @@ export interface Invitation {
   lastSentAt: string; // Track last email send for rate limiting
 }
 
+export interface ParentStudent {
+  id: string;
+  parentId: string;
+  parentName: string;
+  studentName: string;
+  studentId: string; // School-provided student ID
+  teacherId: string;
+  teacherName: string;
+  schoolId: string;
+  grade: string;
+  status: "pending" | "verified" | "rejected";
+  verifiedAt: string | null;
+  verifiedBy: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+}
+
 export interface BookChallenge {
   id: string;
   bookId: string;
@@ -78,9 +95,12 @@ export interface BookChallenge {
   teacherName: string;
   schoolId: string;
   schoolName: string;
+  parentId: string | null; // User ID if authenticated parent
   parentName: string;
   parentEmail: string;
-  studentName?: string;
+  parentStudentId: string | null; // Link to parent_student association
+  studentName: string;
+  studentId: string; // School student ID
   reason: string;
   status: "pending" | "under_review" | "approved" | "denied";
   reviewedBy: string | null;
