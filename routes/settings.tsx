@@ -4,6 +4,7 @@ import { getUserFromSession } from "../utils/session.ts";
 import { getSchoolById, listSchools } from "../utils/db-helpers.ts";
 import { User, School } from "../utils/db.ts";
 import SettingsPanel from "../islands/SettingsPanel.tsx";
+import { getAppUrl } from "../utils/url-helpers.ts";
 
 interface SettingsData {
   user: User;
@@ -28,7 +29,7 @@ export const handler: Handlers<SettingsData> = {
     const schools = await listSchools();
     const serviceAccountEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL") || "bookworm-backup@flashapps-463612.iam.gserviceaccount.com";
 
-    const appUrl = Deno.env.get("APP_URL") || req.url.split("/settings")[0];
+    const appUrl = getAppUrl(req);
     const publicUrl = currentSchool && user.username
       ? `${appUrl}/${currentSchool.slug}/${user.username}`
       : "";
