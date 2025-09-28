@@ -47,6 +47,12 @@ export const handler: Handlers = {
 
           if (delegateToIds.includes(targetTeacherId)) {
             delegates.push(delegate);
+
+            // Backwards compatibility: ensure delegate index exists
+            const indexCheck = await kv.get(["users:delegates", targetTeacherId, delegate.id]);
+            if (indexCheck.value === null) {
+              await kv.set(["users:delegates", targetTeacherId, delegate.id], true);
+            }
           }
         }
       }

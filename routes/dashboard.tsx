@@ -108,17 +108,18 @@ export const handler: Handlers<DashboardData> = {
     const booksUserId = selectedTeacherId || user.id;
     const books = await getUserBooks(booksUserId);
 
-    // Get school name
-    let schoolName: string | undefined;
-    if (user.schoolId) {
-      const school = await getSchoolById(user.schoolId);
-      schoolName = school?.name;
-    }
-
     // Get full teacher object for delegates/super_admin
     let selectedTeacher: User | undefined;
     if (selectedTeacherId && selectedTeacherId !== user.id) {
       selectedTeacher = await getUserById(selectedTeacherId) || undefined;
+    }
+
+    // Get school name from selected teacher or current user
+    let schoolName: string | undefined;
+    const schoolId = selectedTeacher?.schoolId || user.schoolId;
+    if (schoolId) {
+      const school = await getSchoolById(schoolId);
+      schoolName = school?.name;
     }
 
     return ctx.render({ user, books, teacherName, schoolName, availableTeachers, selectedTeacherId, selectedTeacher });

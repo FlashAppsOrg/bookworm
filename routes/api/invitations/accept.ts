@@ -121,6 +121,9 @@ export const handler: Handlers = {
         googleSheetUrl: null,
       });
 
+      // Create delegate index for new account
+      await kv.set(["users:delegates", teacher.id, delegate.id], true);
+
       // Mark invitation as used
       invitation.used = true;
       invitation.usedBy = delegate.id;
