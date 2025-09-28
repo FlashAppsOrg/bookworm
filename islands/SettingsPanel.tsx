@@ -60,6 +60,16 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
     applyDarkMode(savedDarkMode);
   }, []);
 
+  useEffect(() => {
+    if (selectedSchoolId !== user.schoolId) {
+      console.log("[SettingsPanel] School dropdown changed");
+      console.log("[SettingsPanel] Current school:", user.schoolId);
+      console.log("[SettingsPanel] Selected school:", selectedSchoolId);
+      console.log("[SettingsPanel] User ID:", user.id);
+      console.log("[SettingsPanel] User email:", user.email);
+    }
+  }, [selectedSchoolId]);
+
   function applyTheme(newTheme: string) {
     document.body.className = document.body.className.replace(/theme-\w+/g, "");
     document.body.classList.add(`theme-${newTheme}`);
@@ -161,7 +171,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
         } else {
           console.log("[SettingsPanel] No confirmation needed, updating school");
           setSchoolMessage("✓ School updated! Refreshing...");
-          setTimeout(() => window.location.reload(), 1500);
+          setTimeout(() => window.location.reload(), 5000);
         }
       } else {
         setSchoolMessage("✗ " + (data.error || "Failed to update"));
