@@ -19,7 +19,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'books' | 'scan' | 'lookup' | 'helpers'>('books');
+  const [activeTab, setActiveTab] = useState<'books' | 'scan' | 'lookup' | 'manual' | 'helpers'>('books');
   const [backingUp, setBackingUp] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [delegates, setDelegates] = useState<User[]>([]);
@@ -37,6 +37,16 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
   const [showMoveControls, setShowMoveControls] = useState(false);
   const [moveTargetTeacherId, setMoveTargetTeacherId] = useState("");
+  const [manualEntry, setManualEntry] = useState({
+    isbn: "",
+    title: "",
+    authors: "",
+    publisher: "",
+    publishedDate: "",
+    description: "",
+  });
+  const [manualEntryError, setManualEntryError] = useState("");
+  const [addingManualBook, setAddingManualBook] = useState(false);
 
   useEffect(() => {
     if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
@@ -434,6 +444,95 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
     }
   };
 
+  const handleAddManualBook = async (e: Event) => {
+    e.preventDefault();
+    setManualEntryError("");
+    setAddingManualBook(true);
+
+    // Validate required fields
+    if (!manualEntry.title.trim()) {
+      setManualEntryError("Title is required");
+      setAddingManualBook(false);
+      return;
+    }
+
+    if (!manualEntry.authors.trim()) {
+      setManualEntryError("At least one author is required");
+      setAddingManualBook(false);
+      return;
+    }
+
+    try {
+      // Split authors by comma
+      const authorsArray = manualEntry.authors.split(',').map(a => a.trim()).filter(a => a);
+
+      const response = await fetch("/api/classroom/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isbn: manualEntry.isbn.trim() || null,
+          title: manualEntry.title.trim(),
+          authors: authorsArray,
+          publisher: manualEntry.publisher.trim() || null,
+          publishedDate: manualEntry.publishedDate.trim() || null,
+          description: manualEntry.description.trim() || null,
+          thumbnail: null,
+          teacherId: selectedTeacherId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.duplicate) {
+          const increaseQuantity = confirm(
+            `${data.message}\n\nIncrease quantity to ${data.existingBook.quantity + 1}?`
+          );
+
+          if (increaseQuantity) {
+            const updateResponse = await fetch("/api/classroom/update-quantity", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                bookId: data.existingBook.id,
+                quantity: data.existingBook.quantity + 1,
+                teacherId: selectedTeacherId,
+              }),
+            });
+
+            if (updateResponse.ok) {
+              const updateData = await updateResponse.json();
+              setBooks(books.map(b => b.id === updateData.book.id ? updateData.book : b));
+            }
+          }
+        } else {
+          setBooks([data.book, ...books]);
+          // Clear form on success
+          setManualEntry({
+            isbn: "",
+            title: "",
+            authors: "",
+            publisher: "",
+            publishedDate: "",
+            description: "",
+          });
+          alert("✓ Book added successfully");
+        }
+
+        // Switch back to books tab
+        setActiveTab('books');
+      } else {
+        const error = await response.json();
+        setManualEntryError(error.error || "Failed to add book");
+      }
+    } catch (err) {
+      console.error("Failed to add manual book:", err);
+      setManualEntryError("Network error occurred");
+    } finally {
+      setAddingManualBook(false);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
@@ -727,6 +826,20 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
               >
                 🔍 Lookup
               </button>
+              <button
+                onClick={() => {
+                  setActiveTab('manual');
+                  setCurrentBook(null);
+                  setManualEntryError("");
+                }}
+                class={`px-4 py-2.5 rounded-lg font-semibold transition-all text-sm whitespace-nowrap ${
+                  activeTab === 'manual'
+                    ? 'bg-primary text-white shadow-lg scale-105'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                ✏️ Manual
+              </button>
               {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                 <button
                   onClick={() => setActiveTab('helpers')}
@@ -955,6 +1068,137 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
               ) : (
                 <BarcodeScanner onBookFound={handleBookFound} initialMode="manual" />
               )}
+            </div>
+          )}
+
+          {activeTab === 'manual' && (
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
+              <h2 class="text-2xl font-bold text-primary dark:text-primary-light mb-6">Manual Book Entry</h2>
+
+              <form onSubmit={handleAddManualBook} class="space-y-4 max-w-2xl mx-auto">
+                {manualEntryError && (
+                  <div class="bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg">
+                    ⚠️ {manualEntryError}
+                  </div>
+                )}
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Title <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.title}
+                    onInput={(e) => setManualEntry({ ...manualEntry, title: (e.target as HTMLInputElement).value })}
+                    placeholder="Enter book title"
+                    required
+                    disabled={addingManualBook}
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Author(s) <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.authors}
+                    onInput={(e) => setManualEntry({ ...manualEntry, authors: (e.target as HTMLInputElement).value })}
+                    placeholder="Enter authors (comma-separated for multiple)"
+                    required
+                    disabled={addingManualBook}
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    For multiple authors, separate with commas (e.g., "John Smith, Jane Doe")
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    ISBN
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.isbn}
+                    onInput={(e) => setManualEntry({ ...manualEntry, isbn: (e.target as HTMLInputElement).value })}
+                    placeholder="ISBN-10 or ISBN-13 (optional)"
+                    disabled={addingManualBook}
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Publisher
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.publisher}
+                    onInput={(e) => setManualEntry({ ...manualEntry, publisher: (e.target as HTMLInputElement).value })}
+                    placeholder="Publisher name (optional)"
+                    disabled={addingManualBook}
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Publication Date
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.publishedDate}
+                    onInput={(e) => setManualEntry({ ...manualEntry, publishedDate: (e.target as HTMLInputElement).value })}
+                    placeholder="Year or date (e.g., 2024 or 2024-03-15)"
+                    disabled={addingManualBook}
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={manualEntry.description}
+                    onInput={(e) => setManualEntry({ ...manualEntry, description: (e.target as HTMLTextAreaElement).value })}
+                    placeholder="Book description (optional)"
+                    disabled={addingManualBook}
+                    rows={3}
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    disabled={addingManualBook}
+                    class="flex-1 py-3 px-6 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {addingManualBook ? "Adding..." : "Add Book"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setManualEntry({
+                        isbn: "",
+                        title: "",
+                        authors: "",
+                        publisher: "",
+                        publishedDate: "",
+                        description: "",
+                      });
+                      setManualEntryError("");
+                    }}
+                    disabled={addingManualBook}
+                    class="px-6 py-3 rounded-lg bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 
