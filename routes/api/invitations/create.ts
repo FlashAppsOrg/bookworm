@@ -108,6 +108,24 @@ export const handler: Handlers = {
       const existingUser = await getUserByEmail(email);
       const isExistingDelegate = existingUser?.role === "delegate";
 
+      // Ensure delegatedToUserIds field exists for existing delegates (backwards compatibility)
+      if (isExistingDelegate && existingUser) {
+        let needsUpdate = false;
+
+        if (!existingUser.delegatedToUserIds) {
+          // Migrate from old singular field or initialize as empty array
+          existingUser.delegatedToUserIds = (existingUser as any).delegatedToUserId
+            ? [(existingUser as any).delegatedToUserId]
+            : [];
+          needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+          await kv.set(["users:id", existingUser.id], existingUser);
+          await kv.set(["users:email", existingUser.email], existingUser);
+        }
+      }
+
       // Use different URLs for existing vs new delegates
       const inviteUrl = isExistingDelegate
         ? `${appUrl}/accept-invitation?token=${token}`
