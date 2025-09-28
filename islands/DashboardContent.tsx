@@ -166,23 +166,28 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
     }
   };
 
-  const removeDelegate = async (delegateId: string, name: string) => {
+  const removeDelegate = async (delegateId: string, name: string, email?: string) => {
     if (!confirm(`Remove ${name} as a helper? This will delete their account.`)) return;
+
+    console.log(`[FRONTEND] Removing delegate - ID: ${delegateId}, Email: ${email}, TeacherId: ${selectedTeacherId}`);
 
     try {
       const response = await fetch("/api/delegates/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ delegateId }),
+        body: JSON.stringify({ delegateId, delegateEmail: email, teacherId: selectedTeacherId }),
       });
 
       if (response.ok) {
         await fetchDelegates();
         alert(`✓ ${name} has been removed`);
       } else {
-        alert("✗ Failed to remove helper");
+        const error = await response.json();
+        console.error("[FRONTEND] Remove delegate failed:", error);
+        alert(`✗ Failed to remove helper: ${error.error || 'Unknown error'}`);
       }
     } catch (err) {
+      console.error("[FRONTEND] Network error:", err);
       alert("✗ Network error");
     }
   };
@@ -829,7 +834,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                           )}
                         </div>
                         <button
-                          onClick={() => removeDelegate(delegate.id, delegate.displayName || delegate.email)}
+                          onClick={() => removeDelegate(delegate.id, delegate.displayName || delegate.email, delegate.email)}
                           class="px-3 py-1 text-sm rounded bg-error/10 hover:bg-error/20 text-error font-semibold transition-all"
                         >
                           Remove

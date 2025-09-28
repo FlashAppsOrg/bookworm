@@ -36,9 +36,11 @@ export const handler: Handlers = {
 
       const kv = await getKv();
       const delegates: User[] = [];
+      const processedEmails = new Set<string>();
 
-      const entries = kv.list<User>({ prefix: ["users:id"] });
-      for await (const entry of entries) {
+      // First check users by ID
+      const idEntries = kv.list<User>({ prefix: ["users:id"] });
+      for await (const entry of idEntries) {
         const delegate = entry.value;
         if (delegate.role === "delegate") {
           // Support both old singular field and new array field
@@ -47,11 +49,42 @@ export const handler: Handlers = {
 
           if (delegateToIds.includes(targetTeacherId)) {
             delegates.push(delegate);
+            processedEmails.add(delegate.email.toLowerCase());
 
             // Backwards compatibility: ensure delegate index exists
-            const indexCheck = await kv.get(["users:delegates", targetTeacherId, delegate.id]);
-            if (indexCheck.value === null) {
-              await kv.set(["users:delegates", targetTeacherId, delegate.id], true);
+            if (delegate.id) {
+              const indexCheck = await kv.get(["users:delegates", targetTeacherId, delegate.id]);
+              if (indexCheck.value === null) {
+                await kv.set(["users:delegates", targetTeacherId, delegate.id], true);
+              }
+            } else {
+              console.warn(`[DELEGATES LIST] Delegate ${delegate.email} has no ID field`);
+            }
+          }
+        }
+      }
+
+      // Also check users by email (for old delegates that might not have an ID entry)
+      const emailEntries = kv.list<User>({ prefix: ["users:email"] });
+      for await (const entry of emailEntries) {
+        const delegate = entry.value;
+        const email = delegate.email.toLowerCase();
+
+        // Skip if we already processed this delegate
+        if (processedEmails.has(email)) continue;
+
+        if (delegate.role === "delegate") {
+          // Support both old singular field and new array field
+          const delegateToIds = delegate.delegatedToUserIds ||
+            ((delegate as any).delegatedToUserId ? [(delegate as any).delegatedToUserId] : []);
+
+          if (delegateToIds.includes(targetTeacherId)) {
+            console.log(`[DELEGATES LIST] Found delegate by email only: ${email}`);
+            delegates.push(delegate);
+
+            // Try to create an ID entry for this delegate
+            if (!delegate.id) {
+              console.warn(`[DELEGATES LIST] Delegate ${email} has no ID - cannot create index`);
             }
           }
         }

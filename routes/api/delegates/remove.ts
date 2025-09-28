@@ -22,57 +22,99 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { delegateId } = body;
+      const { delegateId, delegateEmail, teacherId } = body;
 
-      if (!delegateId) {
-        return new Response(JSON.stringify({ error: "Delegate ID is required" }), {
+      console.log(`[REMOVE DELEGATE] Request - delegateId: ${delegateId}, delegateEmail: ${delegateEmail}, teacherId: ${teacherId}`);
+
+      if (!delegateId && !delegateEmail) {
+        console.error("[REMOVE DELEGATE] Missing both delegateId and delegateEmail");
+        return new Response(JSON.stringify({ error: "Delegate ID or email is required" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });
       }
 
       const kv = await getKv();
-      const delegateResult = await kv.get(["users:id", delegateId]);
+      let delegateResult;
+      let delegate;
 
-      if (!delegateResult.value) {
+      // Try to find delegate by ID first
+      if (delegateId) {
+        delegateResult = await kv.get(["users:id", delegateId]);
+        if (delegateResult.value) {
+          delegate = delegateResult.value;
+          console.log(`[REMOVE DELEGATE] Found by ID: ${delegateId}`);
+        }
+      }
+
+      // If not found by ID, try by email
+      if (!delegate && delegateEmail) {
+        const normalizedEmail = delegateEmail.toLowerCase().trim();
+        delegateResult = await kv.get(["users:email", normalizedEmail]);
+        if (delegateResult.value) {
+          delegate = delegateResult.value;
+          console.log(`[REMOVE DELEGATE] Found by email: ${normalizedEmail}`);
+        }
+      }
+
+      if (!delegate) {
+        console.error(`[REMOVE DELEGATE] Delegate not found - ID: ${delegateId}, Email: ${delegateEmail}`);
         return new Response(JSON.stringify({ error: "Delegate not found" }), {
           status: 404,
           headers: { "Content-Type": "application/json" },
         });
       }
 
-      const delegate = delegateResult.value as any;
+      // Ensure delegate has an ID (for old delegates that may not have one)
+      const actualDelegateId = (delegate as any).id || delegateId;
+      if (!actualDelegateId) {
+        console.error("[REMOVE DELEGATE] Delegate has no ID field");
+      }
 
       // Support both old singular field and new array field
-      let delegateToIds = delegate.delegatedToUserIds ||
-        (delegate.delegatedToUserId ? [delegate.delegatedToUserId] : []);
+      let delegateToIds = (delegate as any).delegatedToUserIds ||
+        ((delegate as any).delegatedToUserId ? [(delegate as any).delegatedToUserId] : []);
 
-      if (!delegateToIds.includes(user.id)) {
-        return new Response(JSON.stringify({ error: "This delegate does not belong to you" }), {
+      console.log(`[REMOVE DELEGATE] Current delegateToIds:`, delegateToIds);
+
+      // Determine which teacher to remove from (support super_admin removing from other teachers)
+      const targetTeacherId = (teacherId && user.role === "super_admin") ? teacherId : user.id;
+
+      if (!delegateToIds.includes(targetTeacherId)) {
+        console.error(`[REMOVE DELEGATE] Teacher ${targetTeacherId} not in delegate's list`);
+        return new Response(JSON.stringify({ error: "This delegate does not belong to the specified teacher" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
       }
 
-      // Remove this teacher from the delegate's list
-      delegate.delegatedToUserIds = delegateToIds.filter((id: string) => id !== user.id);
+      // Remove the target teacher from the delegate's list
+      (delegate as any).delegatedToUserIds = delegateToIds.filter((id: string) => id !== targetTeacherId);
+
+      console.log(`[REMOVE DELEGATE] Updated delegateToIds:`, (delegate as any).delegatedToUserIds);
 
       // If they still help other teachers, just update the record
-      if (delegate.delegatedToUserIds.length > 0) {
-        await kv.set(["users:id", delegateId], delegate);
-        await kv.set(["users:email", delegate.email.toLowerCase()], delegate);
-        await kv.delete(["users:delegates", user.id, delegateId]);
+      if ((delegate as any).delegatedToUserIds.length > 0) {
+        if (actualDelegateId) {
+          await kv.set(["users:id", actualDelegateId], delegate);
+        }
+        await kv.set(["users:email", (delegate as any).email.toLowerCase()], delegate);
+        await kv.delete(["users:delegates", targetTeacherId, actualDelegateId || (delegate as any).email]);
 
-        return new Response(JSON.stringify({ success: true, message: "Removed from your classroom" }), {
+        console.log(`[REMOVE DELEGATE] Updated delegate record - still has ${(delegate as any).delegatedToUserIds.length} teacher(s)`);
+        return new Response(JSON.stringify({ success: true, message: "Removed from classroom" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
       }
 
       // If they have no more teachers, delete the account
-      await kv.delete(["users:id", delegateId]);
-      await kv.delete(["users:email", delegate.email.toLowerCase()]);
-      await kv.delete(["users:delegates", user.id, delegateId]);
+      console.log(`[REMOVE DELEGATE] Deleting delegate account - no more teachers`);
+      if (actualDelegateId) {
+        await kv.delete(["users:id", actualDelegateId]);
+      }
+      await kv.delete(["users:email", (delegate as any).email.toLowerCase()]);
+      await kv.delete(["users:delegates", targetTeacherId, actualDelegateId || (delegate as any).email]);
 
       return new Response(JSON.stringify({ success: true, message: "Delegate account deleted" }), {
         status: 200,
