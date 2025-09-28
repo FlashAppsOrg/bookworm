@@ -71,6 +71,57 @@ async function getUserApiKey(req: Request): Promise<string> {
   return DEFAULT_API_KEY;
 }
 
+function calculateMatchScore(book: BookInfo, query: string): number {
+  const queryLower = query.toLowerCase().trim();
+  const titleLower = book.title.toLowerCase();
+  const authorLower = book.authors.join(" ").toLowerCase();
+
+  // Exact title match = 100%
+  if (titleLower === queryLower) return 100;
+
+  // Title starts with query = 95%
+  if (titleLower.startsWith(queryLower)) return 95;
+
+  // Exact author match = 90%
+  if (book.authors.some(a => a.toLowerCase() === queryLower)) return 90;
+
+  // Author starts with query = 85%
+  if (book.authors.some(a => a.toLowerCase().startsWith(queryLower))) return 85;
+
+  // Query appears as complete word in title = 80%
+  const titleWords = titleLower.split(/\s+/);
+  const queryWords = queryLower.split(/\s+/);
+  if (queryWords.every(qw => titleWords.some(tw => tw === qw || tw.startsWith(qw)))) {
+    return 80;
+  }
+
+  // Partial matches = lower scores (not used)
+  return 0;
+}
+
+async function searchCachedBooks(query: string): Promise<BookInfo[]> {
+  const kv = await getKv();
+  const scoredResults: Array<{ book: BookInfo; score: number }> = [];
+
+  // Search through all cached books
+  const entries = kv.list<CachedBook>({ prefix: ["books:isbn"] });
+  for await (const entry of entries) {
+    const book = entry.value.data;
+    const score = calculateMatchScore(book, query);
+
+    // Only include high confidence matches (80%+)
+    if (score >= 80) {
+      scoredResults.push({ book, score });
+    }
+  }
+
+  // Sort by score descending
+  scoredResults.sort((a, b) => b.score - a.score);
+
+  // Return top 10 high-confidence results
+  return scoredResults.slice(0, 10).map(r => r.book);
+}
+
 export const handler: Handlers = {
   async GET(req) {
     const url = new URL(req.url);
@@ -85,7 +136,7 @@ export const handler: Handlers = {
     }
 
     try {
-      // Check cache first (only for ISBN)
+      // Check cache first for both ISBN and text queries
       if (isbn) {
         const cachedBook = await getCachedBook(isbn);
         if (cachedBook) {
@@ -94,6 +145,18 @@ export const handler: Handlers = {
             headers: { "Content-Type": "application/json" },
           });
         }
+      } else if (query) {
+        // Search cache for text queries - only use if we have high-confidence matches
+        const cachedResults = await searchCachedBooks(query);
+        if (cachedResults.length >= 3) {
+          // If we have at least 3 high-confidence (80%+) results, return those
+          console.log(`Cache hit for query "${query}": ${cachedResults.length} high-confidence results`);
+          return new Response(JSON.stringify({ results: cachedResults, source: "cache" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        console.log(`Cache miss for query "${query}": only ${cachedResults.length} high-confidence results, hitting API`);
       }
 
       // Get API key (user's or default)
