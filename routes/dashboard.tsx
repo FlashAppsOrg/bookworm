@@ -1,7 +1,7 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getUserFromSession } from "../utils/session.ts";
-import { getUserBooks, getUserById } from "../utils/db-helpers.ts";
+import { getUserBooks, getUserById, getSchoolById } from "../utils/db-helpers.ts";
 import { User, ClassroomBook } from "../utils/db.ts";
 import DashboardContent from "../islands/DashboardContent.tsx";
 
@@ -9,6 +9,7 @@ interface DashboardData {
   user: User;
   books: ClassroomBook[];
   teacherName?: string;
+  schoolName?: string;
   availableTeachers?: Array<{ id: string; name: string }>;
   selectedTeacherId?: string;
 }
@@ -106,7 +107,14 @@ export const handler: Handlers<DashboardData> = {
     const booksUserId = selectedTeacherId || user.id;
     const books = await getUserBooks(booksUserId);
 
-    return ctx.render({ user, books, teacherName, availableTeachers, selectedTeacherId });
+    // Get school name
+    let schoolName: string | undefined;
+    if (user.schoolId) {
+      const school = await getSchoolById(user.schoolId);
+      schoolName = school?.name;
+    }
+
+    return ctx.render({ user, books, teacherName, schoolName, availableTeachers, selectedTeacherId });
   },
 };
 
@@ -120,6 +128,7 @@ export default function DashboardPage({ data }: PageProps<DashboardData>) {
         user={data.user}
         initialBooks={data.books}
         teacherName={data.teacherName}
+        schoolName={data.schoolName}
         availableTeachers={data.availableTeachers}
         selectedTeacherId={data.selectedTeacherId}
       />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { User, ClassroomBook, Invitation } from "../utils/db.ts";
 import BarcodeScanner from "./BarcodeScanner.tsx";
 import BookDisplay from "../components/BookDisplay.tsx";
@@ -8,11 +8,13 @@ interface Props {
   user: User;
   initialBooks: ClassroomBook[];
   teacherName?: string;
+  schoolName?: string;
   availableTeachers?: Array<{ id: string; name: string }>;
   selectedTeacherId?: string;
 }
 
-export default function DashboardContent({ user, initialBooks, teacherName, availableTeachers, selectedTeacherId }: Props) {
+export default function DashboardContent({ user, initialBooks, teacherName, schoolName, availableTeachers, selectedTeacherId }: Props) {
+  const menuRef = useRef<HTMLDivElement>(null);
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,6 +36,23 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
       fetchDelegates();
     }
   }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const fetchInvitations = async () => {
     try {
@@ -325,24 +344,51 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
     <div class="min-h-[100dvh] flex flex-col">
       <header class="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div class="container mx-auto px-4">
-          <div class="flex items-center justify-between h-16">
+          <div class="flex items-center justify-between h-16 gap-4">
             <span class="text-2xl font-bold text-primary">BookWorm</span>
-            <div class="relative">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors"
-                aria-label="Menu"
-              >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {isMenuOpen ? (
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
-              {isMenuOpen && (
-                <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 animate-fade-in z-50">
+            {schoolName && (
+              <span class="text-lg font-semibold text-gray-700 dark:text-gray-300 hidden sm:block">
+                {schoolName}
+              </span>
+            )}
+            <div class="flex items-center gap-4 ml-auto">
+              {((user.role === "super_admin" || user.role === "delegate") && availableTeachers && availableTeachers.length > 1) && (
+                <div class="hidden lg:flex items-center gap-2">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    {user.role === "super_admin" ? "Viewing:" : "Helping:"}
+                  </label>
+                  <select
+                    value={selectedTeacherId || user.id}
+                    onChange={(e) => {
+                      const teacherId = (e.target as HTMLSelectElement).value;
+                      window.location.href = `/dashboard?teacherId=${teacherId}`;
+                    }}
+                    class="px-3 py-1.5 text-sm border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+                  >
+                    {availableTeachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div class="relative" ref={menuRef}>
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors"
+                  aria-label="Menu"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {isMenuOpen ? (
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
+                {isMenuOpen && (
+                  <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 animate-fade-in z-50">
                   {user.role === "super_admin" && (
                     <a
                       href="/admin"
@@ -420,6 +466,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                   </button>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>
@@ -428,7 +475,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
       <main class="flex-1 container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
           <div class="flex flex-col gap-4 mb-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex flex-col gap-3">
               <div class="flex-1">
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
                   {user.role === "teacher" ? `${user.displayName}'s Classroom` : teacherName ? `${teacherName}'s Classroom` : "Classroom Books"}
@@ -441,7 +488,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                 </p>
               </div>
               {((user.role === "super_admin" || user.role === "delegate") && availableTeachers && availableTeachers.length > 1) && (
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 lg:hidden">
                   <label class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     {user.role === "super_admin" ? "Viewing:" : "Helping:"}
                   </label>
