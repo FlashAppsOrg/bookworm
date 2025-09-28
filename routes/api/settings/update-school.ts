@@ -15,8 +15,8 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role !== "teacher") {
-        return new Response(JSON.stringify({ error: "Only teachers can change schools" }), {
+      if (user.role !== "teacher" && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Only teachers and admins can change schools" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
