@@ -116,8 +116,20 @@ export async function findBookByISBN(userId: string, isbn: string): Promise<Clas
   const kv = await getKv();
   const iter = kv.list<ClassroomBook>({ prefix: ["classroomBooks", userId] });
 
+  const { normalizeISBN } = await import("./isbn.ts");
+  const normalizedSearchISBN = normalizeISBN(isbn);
+
   for await (const entry of iter) {
-    if (entry.value.isbn === isbn) {
+    const bookISBN = entry.value.isbn;
+    if (!bookISBN) continue;
+
+    const normalizedBookISBN = normalizeISBN(bookISBN);
+
+    if (normalizedBookISBN && normalizedSearchISBN && normalizedBookISBN === normalizedSearchISBN) {
+      return entry.value;
+    }
+
+    if (bookISBN === isbn) {
       return entry.value;
     }
   }

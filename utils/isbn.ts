@@ -36,6 +36,40 @@ export function validateISBN10(isbn: string): boolean {
   return sum % 11 === 0;
 }
 
+export function convertISBN10toISBN13(isbn10: string): string | null {
+  const cleaned = isbn10.replace(/[-\s]/g, '');
+
+  if (cleaned.length !== 10 || !validateISBN10(cleaned)) {
+    return null;
+  }
+
+  const base = '978' + cleaned.substring(0, 9);
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    const digit = parseInt(base[i]);
+    sum += i % 2 === 0 ? digit : digit * 3;
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+
+  return base + checkDigit;
+}
+
+export function normalizeISBN(isbn: string): string | null {
+  if (!isbn) return null;
+
+  const cleaned = isbn.replace(/[-\s]/g, '');
+
+  if (cleaned.length === 13 && validateISBN13(cleaned)) {
+    return cleaned;
+  }
+
+  if (cleaned.length === 10) {
+    return convertISBN10toISBN13(cleaned);
+  }
+
+  return null;
+}
+
 export function extractISBNFromBarcode(barcode: string): string | null {
   const cleaned = barcode.replace(/[-\s]/g, '');
 

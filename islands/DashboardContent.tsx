@@ -194,6 +194,8 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const handleAddToClassroom = async () => {
     if (!currentBook) return;
 
+    console.log(`[FRONTEND] Adding book - ISBN: "${currentBook.isbn}", Title: "${currentBook.title}", TeacherId: ${selectedTeacherId}`);
+
     try {
       const response = await fetch("/api/classroom/add", {
         method: "POST",
@@ -216,13 +218,16 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
 
       if (response.ok) {
         const data = await response.json();
+        console.log(`[FRONTEND] API response:`, data);
 
         if (data.duplicate) {
+          console.log(`[FRONTEND] Duplicate detected - showing confirmation dialog`);
           const increaseQuantity = confirm(
             `${data.message}\n\nIncrease quantity to ${data.existingBook.quantity + 1}?`
           );
 
           if (increaseQuantity) {
+            console.log(`[FRONTEND] User confirmed - increasing quantity`);
             const updateResponse = await fetch("/api/classroom/update-quantity", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -236,14 +241,20 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             if (updateResponse.ok) {
               const updateData = await updateResponse.json();
               setBooks(books.map(b => b.id === updateData.book.id ? updateData.book : b));
+              console.log(`[FRONTEND] Quantity updated successfully`);
             }
+          } else {
+            console.log(`[FRONTEND] User cancelled - not increasing quantity`);
           }
 
           setCurrentBook(null);
         } else {
+          console.log(`[FRONTEND] New book added - updating list`);
           setBooks([data.book, ...books]);
           setCurrentBook(null);
         }
+      } else {
+        console.error(`[FRONTEND] API error - status: ${response.status}`);
       }
     } catch (err) {
       console.error("Failed to add book:", err);

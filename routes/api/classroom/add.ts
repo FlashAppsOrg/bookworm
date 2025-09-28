@@ -35,9 +35,11 @@ export const handler: Handlers = {
       }
 
       // Check if this ISBN already exists in this classroom
+      console.log(`[DUPLICATE CHECK] Checking ISBN "${isbn}" for teacher ${targetUserId}`);
       const existingBook = await findBookByISBN(targetUserId, isbn);
 
       if (existingBook) {
+        console.log(`[DUPLICATE FOUND] Book exists: ${existingBook.title}, quantity: ${existingBook.quantity}, addedBy: ${existingBook.addedBy}`);
         const currentQuantity = existingBook.quantity || 1;
         return new Response(JSON.stringify({
           duplicate: true,
@@ -48,6 +50,8 @@ export const handler: Handlers = {
           headers: { "Content-Type": "application/json" },
         });
       }
+
+      console.log(`[NO DUPLICATE] ISBN "${isbn}" not found in classroom, adding new book`);
 
       const book = await addBookToClassroom(targetUserId, {
         isbn,

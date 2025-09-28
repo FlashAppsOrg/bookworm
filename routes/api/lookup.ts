@@ -3,6 +3,7 @@ import { getCookies } from "$std/http/cookie.ts";
 import { getKv, CachedBook } from "../../utils/db.ts";
 import { getUserById } from "../../utils/db-helpers.ts";
 import { incrementQuotaCounter } from "../../utils/quota-tracker.ts";
+import { normalizeISBN } from "../../utils/isbn.ts";
 
 export interface BookInfo {
   isbn: string;
@@ -200,7 +201,8 @@ export const handler: Handlers = {
           if (volumeInfo.industryIdentifiers) {
             const isbn13 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_13");
             const isbn10 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
-            bookIsbn = isbn13?.identifier || isbn10?.identifier || "";
+            const rawIsbn = isbn13?.identifier || isbn10?.identifier || "";
+            bookIsbn = normalizeISBN(rawIsbn) || rawIsbn;
           }
 
           return {
@@ -236,6 +238,8 @@ export const handler: Handlers = {
         const isbn10 = volumeInfo.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
         bookIsbn = isbn13?.identifier || isbn10?.identifier || "";
       }
+
+      bookIsbn = normalizeISBN(bookIsbn) || bookIsbn;
 
       const bookInfo: BookInfo = {
         isbn: bookIsbn,
