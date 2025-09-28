@@ -31,10 +31,10 @@ export default function UserManagement() {
   const [newUser, setNewUser] = useState({
     email: "",
     displayName: "",
-    password: "",
     role: "teacher",
     schoolId: "",
     username: "",
+    sendEmail: true,
   });
 
   async function loadData() {
@@ -127,10 +127,10 @@ export default function UserManagement() {
         setNewUser({
           email: "",
           displayName: "",
-          password: "",
           role: "teacher",
           schoolId: "",
           username: "",
+          sendEmail: true,
         });
       } else {
         const data = await response.json();
@@ -160,6 +160,26 @@ export default function UserManagement() {
       }
     } catch (error) {
       setMessage("✗ Failed to delete user");
+    }
+  }
+
+  async function sendInvite(userId: string, displayName: string) {
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/send-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        setMessage(`✓ Invitation sent to ${displayName}`);
+      } else {
+        const data = await response.json();
+        setMessage(`✗ ${data.error}`);
+      }
+    } catch (error) {
+      setMessage("✗ Failed to send invitation");
     }
   }
 
@@ -218,19 +238,6 @@ export default function UserManagement() {
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  value={newUser.password}
-                  onInput={(e) => setNewUser({ ...newUser, password: (e.target as HTMLInputElement).value })}
-                  required
-                  minLength={8}
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-800 dark:text-white"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Role *
                 </label>
                 <select
@@ -272,6 +279,18 @@ export default function UserManagement() {
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-800 dark:text-white"
                 />
               </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="sendEmail"
+                checked={newUser.sendEmail}
+                onChange={(e) => setNewUser({ ...newUser, sendEmail: (e.target as HTMLInputElement).checked })}
+                class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <label for="sendEmail" class="text-sm text-gray-700 dark:text-gray-300">
+                Send signup invitation email (user will set their own password)
+              </label>
             </div>
             <button
               type="submit"
@@ -445,6 +464,14 @@ export default function UserManagement() {
                         </div>
                       ) : (
                         <div class="flex gap-3 justify-end">
+                          {!user.verified && (
+                            <button
+                              onClick={() => sendInvite(user.id, user.displayName)}
+                              class="text-green-600 hover:text-green-800 dark:text-green-400 font-semibold"
+                            >
+                              Send Invite
+                            </button>
+                          )}
                           <button
                             onClick={() => startEdit(user)}
                             class="text-primary hover:text-primary-dark dark:text-primary-light font-semibold"

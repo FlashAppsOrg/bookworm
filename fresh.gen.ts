@@ -21,6 +21,7 @@ import * as $api_admin_force_promote from "./routes/api/admin/force-promote.ts";
 import * as $api_admin_promote_first from "./routes/api/admin/promote-first.ts";
 import * as $api_admin_quota_stats from "./routes/api/admin/quota-stats.ts";
 import * as $api_admin_schools from "./routes/api/admin/schools.ts";
+import * as $api_admin_send_invite from "./routes/api/admin/send-invite.ts";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
 import * as $api_admin_validate_cache from "./routes/api/admin/validate-cache.ts";
@@ -116,6 +117,7 @@ const manifest = {
     "./routes/api/admin/promote-first.ts": $api_admin_promote_first,
     "./routes/api/admin/quota-stats.ts": $api_admin_quota_stats,
     "./routes/api/admin/schools.ts": $api_admin_schools,
+    "./routes/api/admin/send-invite.ts": $api_admin_send_invite,
     "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/admin/users.ts": $api_admin_users,
     "./routes/api/admin/validate-cache.ts": $api_admin_validate_cache,

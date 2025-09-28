@@ -117,9 +117,9 @@ export const handler: Handlers = {
       });
     }
 
-    const { email, displayName, password, role, schoolId, username } = await req.json();
+    const { email, displayName, role, schoolId, username, sendEmail } = await req.json();
 
-    if (!email || !displayName || !password || !role) {
+    if (!email || !displayName || !role) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -129,13 +129,6 @@ export const handler: Handlers = {
     const emailError = validateEmail(email);
     if (emailError) {
       return new Response(JSON.stringify({ error: emailError }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    if (password.length < 8) {
-      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -167,20 +160,41 @@ export const handler: Handlers = {
       }
     }
 
-    const passwordHash = await hashPassword(password);
+    // Create user without password (they'll set it via verification email)
+    const placeholderHash = await hashPassword(crypto.randomUUID());
     const newUser = await createUser({
       email: email.toLowerCase(),
-      passwordHash,
+      passwordHash: placeholderHash,
       displayName,
       username: username || "",
       schoolId: schoolId || null,
-      verified: true,
+      verified: false,
       role,
       delegatedToUserIds: [],
       googleBooksApiKey: null,
       googleSheetUrl: null,
       isPlaceholder: false,
     });
+
+    // Send verification email if requested
+    if (sendEmail) {
+      const { sendVerificationEmail } = await import("../../../utils/email.ts");
+      const kv = await getKv();
+      const verificationCode = crypto.randomUUID();
+      await kv.set(["verifications", verificationCode], newUser.id, {
+        expireIn: 24 * 60 * 60 * 1000,
+      });
+
+      const emailResult = await sendVerificationEmail(newUser.email, verificationCode);
+      if (!emailResult.success) {
+        return new Response(JSON.stringify({
+          error: emailResult.error || "Failed to send invitation email"
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
 
     return new Response(JSON.stringify({ success: true, user: newUser }), {
       status: 201,
