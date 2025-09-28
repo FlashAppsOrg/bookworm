@@ -10,6 +10,8 @@ interface Props {
 export default function PublicClassroom({ books, teacherName, schoolName }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
 
   const filteredBooks = books.filter((book) => {
     if (!searchQuery.trim()) return true;
@@ -23,6 +25,49 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
 
     return titleMatch || authorMatch || isbnMatch || descriptionMatch || categoryMatch;
   });
+
+  const toggleBookSelection = (bookId: string) => {
+    const newSelected = new Set(selectedBooks);
+    if (newSelected.has(bookId)) {
+      newSelected.delete(bookId);
+    } else {
+      newSelected.add(bookId);
+    }
+    setSelectedBooks(newSelected);
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedBooks.size === filteredBooks.length) {
+      setSelectedBooks(new Set());
+    } else {
+      setSelectedBooks(new Set(filteredBooks.map(b => b.id)));
+    }
+  };
+
+  const toggleDescription = (bookId: string) => {
+    const newExpanded = new Set(expandedDescriptions);
+    if (newExpanded.has(bookId)) {
+      newExpanded.delete(bookId);
+    } else {
+      newExpanded.add(bookId);
+    }
+    setExpandedDescriptions(newExpanded);
+  };
+
+  const truncateDescription = (text: string, maxLength: number = 150) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + "...";
+  };
+
+  const handleChallengeSelected = () => {
+    const selectedBooksList = filteredBooks.filter(b => selectedBooks.has(b.id));
+    if (selectedBooksList.length === 1) {
+      const book = selectedBooksList[0];
+      window.location.href = `/challenge-book?bookId=${book.id}&userId=${book.userId}`;
+    } else {
+      alert("Challenge multiple books feature coming soon!");
+    }
+  };
 
   return (
     <div class="space-y-6">
@@ -88,21 +133,63 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
         )}
       </div>
 
+      {selectedBooks.size > 0 && (
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex flex-wrap items-center gap-4">
+          <p class="text-sm font-semibold text-blue-900 dark:text-blue-300">
+            {selectedBooks.size} book{selectedBooks.size !== 1 ? "s" : ""} selected
+          </p>
+          <button
+            onClick={toggleAllSelection}
+            class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-600 rounded text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700"
+          >
+            {selectedBooks.size === filteredBooks.length ? "Deselect All" : "Select All"}
+          </button>
+          <button
+            onClick={handleChallengeSelected}
+            class="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm font-semibold transition-colors"
+          >
+            Challenge Selected
+          </button>
+        </div>
+      )}
+
       {filteredBooks.length > 0 ? (
         viewMode === "grid" ? (
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredBooks.map((book) => (
               <div
                 key={book.id}
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-all hover:shadow-xl"
+                class={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-all hover:shadow-xl relative ${
+                  selectedBooks.has(book.id) ? "ring-2 ring-primary" : ""
+                }`}
               >
-                {book.thumbnail && (
-                  <img
-                    src={book.thumbnail}
-                    alt={book.title}
-                    class="w-full h-48 object-contain mb-3"
+                <div class="absolute top-2 right-2 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedBooks.has(book.id)}
+                    onChange={() => toggleBookSelection(book.id)}
+                    class="w-5 h-5 text-primary bg-white border-2 border-gray-300 rounded focus:ring-primary cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                )}
+                </div>
+
+                <div class="w-full h-48 mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                  {book.thumbnail ? (
+                    <img
+                      src={book.thumbnail}
+                      alt={book.title}
+                      class="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div class="text-center">
+                      <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">No cover</p>
+                    </div>
+                  )}
+                </div>
+
                 <h3 class="font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">
                   {book.title}
                 </h3>
@@ -121,9 +208,22 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
                   </div>
                 )}
                 {book.description && (
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-                    {book.description}
-                  </p>
+                  <div class="mb-2">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {expandedDescriptions.has(book.id)
+                        ? book.description
+                        : truncateDescription(book.description)
+                      }
+                    </p>
+                    {book.description.length > 150 && (
+                      <button
+                        onClick={() => toggleDescription(book.id)}
+                        class="text-xs text-primary hover:text-primary-dark dark:text-primary-light font-semibold mt-1"
+                      >
+                        {expandedDescriptions.has(book.id) ? "Show less" : "Show more"}
+                      </button>
+                    )}
+                  </div>
                 )}
                 <div class="space-y-1 text-xs text-gray-500 dark:text-gray-500 mb-3">
                   {book.pageCount && <p>{book.pageCount} pages</p>}
