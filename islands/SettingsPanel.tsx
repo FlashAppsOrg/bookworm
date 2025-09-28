@@ -67,6 +67,24 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
       console.log("[SettingsPanel] Selected school:", selectedSchoolId);
       console.log("[SettingsPanel] User ID:", user.id);
       console.log("[SettingsPanel] User email:", user.email);
+
+      // Immediately check for delegates
+      fetch("/api/settings/update-school", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolId: selectedSchoolId }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log("[SettingsPanel] Pre-check response:", data);
+          if (data.requiresConfirmation) {
+            console.log("[SettingsPanel] DELEGATES FOUND:", data.delegates.length);
+            console.log("[SettingsPanel] Delegate details:", data.delegates);
+          } else {
+            console.log("[SettingsPanel] No delegates found or no confirmation needed");
+          }
+        })
+        .catch(err => console.error("[SettingsPanel] Pre-check failed:", err));
     }
   }, [selectedSchoolId]);
 
