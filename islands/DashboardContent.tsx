@@ -605,14 +605,14 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                     {delegates.map((delegate) => (
                       <div
                         key={delegate.id}
-                        class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/40 border-2 border-green-200 dark:border-green-600 rounded-lg"
+                        class="flex items-center justify-between p-3 bg-green-50 dark:bg-gray-700 border-2 border-green-200 dark:border-green-500 rounded-lg"
                       >
                         <div class="flex-1 min-w-0">
-                          <p class="text-xl font-bold text-gray-900 dark:text-green-100">
+                          <p class="text-xl font-bold text-gray-900 dark:text-white">
                             {delegate.displayName || delegate.email}
                           </p>
                           {delegate.displayName && (
-                            <p class="text-xs text-gray-500 dark:text-green-300 mt-0.5">
+                            <p class="text-xs text-gray-500 dark:text-gray-300 mt-0.5">
                               {delegate.email}
                             </p>
                           )}
