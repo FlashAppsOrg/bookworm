@@ -209,6 +209,7 @@ export default function AdminDashboard({ data }: PageProps<AdminDashboardData>) 
               </svg>
             </div>
           </a>
+        </div>
           </div>
         </main>
 
