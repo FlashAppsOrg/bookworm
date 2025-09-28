@@ -42,6 +42,12 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [passwordSaving, setPasswordSaving] = useState<boolean>(false);
   const [passwordMessage, setPasswordMessage] = useState<string>("");
+  const [showDelegateModal, setShowDelegateModal] = useState<boolean>(false);
+  const [pendingSchoolChange, setPendingSchoolChange] = useState<{
+    newSchoolId: string;
+    oldSchoolId: string;
+    delegates: Array<{ id: string; name: string; email: string }>;
+  } | null>(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("bookworm-theme") || "teal";
@@ -138,16 +144,63 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
         body: JSON.stringify({ schoolId: selectedSchoolId }),
       });
 
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.requiresConfirmation) {
+          // Show delegate confirmation modal
+          setPendingSchoolChange({
+            newSchoolId: data.newSchoolId,
+            oldSchoolId: data.oldSchoolId,
+            delegates: data.delegates,
+          });
+          setShowDelegateModal(true);
+          setSchoolSaving(false);
+        } else {
+          setSchoolMessage("✓ School updated! Refreshing...");
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      } else {
+        setSchoolMessage("✗ " + (data.error || "Failed to update"));
+        setSchoolSaving(false);
+      }
+    } catch (err) {
+      setSchoolMessage("✗ Network error");
+      setSchoolSaving(false);
+    }
+  }
+
+  async function confirmSchoolChange(delegateAction: "move" | "remove") {
+    if (!pendingSchoolChange) return;
+
+    setSchoolSaving(true);
+    setSchoolMessage("");
+    setShowDelegateModal(false);
+
+    try {
+      const response = await fetch("/api/settings/update-school", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          schoolId: pendingSchoolChange.newSchoolId,
+          delegateAction,
+        }),
+      });
+
+      const data = await response.json();
+
       if (response.ok) {
         setSchoolMessage("✓ School updated! Refreshing...");
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        setSchoolMessage("✗ Failed to update");
+        setSchoolMessage("✗ " + (data.error || "Failed to update"));
+        setSchoolSaving(false);
       }
     } catch (err) {
       setSchoolMessage("✗ Network error");
-    } finally {
       setSchoolSaving(false);
+    } finally {
+      setPendingSchoolChange(null);
     }
   }
 
@@ -473,6 +526,56 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
           Scan book barcodes to instantly get book information. Made with ❤️ by FlashApps.
         </p>
       </div>
+
+      {showDelegateModal && pendingSchoolChange && (
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              What about your helpers?
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+              You have {pendingSchoolChange.delegates.length} helper{pendingSchoolChange.delegates.length !== 1 ? 's' : ''}:
+            </p>
+            <ul class="mb-6 space-y-2">
+              {pendingSchoolChange.delegates.map((delegate) => (
+                <li key={delegate.id} class="text-sm text-gray-700 dark:text-gray-300">
+                  • {delegate.name} ({delegate.email})
+                </li>
+              ))}
+            </ul>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+              What would you like to do with them?
+            </p>
+            <div class="space-y-3">
+              <button
+                onClick={() => confirmSchoolChange("move")}
+                disabled={schoolSaving}
+                class="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Move them to the new school
+              </button>
+              <button
+                onClick={() => confirmSchoolChange("remove")}
+                disabled={schoolSaving}
+                class="w-full px-4 py-3 rounded-lg bg-error hover:bg-error/90 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Leave them at the old school
+              </button>
+              <button
+                onClick={() => {
+                  setShowDelegateModal(false);
+                  setPendingSchoolChange(null);
+                  setSelectedSchoolId(user.schoolId || "");
+                }}
+                disabled={schoolSaving}
+                class="w-full px-4 py-3 rounded-lg bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
 import { updateUser, getSchoolById } from "../../../utils/db-helpers.ts";
-import { getKv } from "../../../utils/db.ts";
+import { getKv, User } from "../../../utils/db.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -23,7 +23,7 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { schoolId } = body;
+      const { schoolId, delegateAction } = body;
 
       if (!schoolId) {
         return new Response(JSON.stringify({ error: "School ID is required" }), {
@@ -40,14 +40,71 @@ export const handler: Handlers = {
         });
       }
 
+      const kv = await getKv();
+
+      // Get delegates for this teacher
+      const delegates: User[] = [];
+      const entries = kv.list<User>({ prefix: ["users:id"] });
+      for await (const entry of entries) {
+        const delegate = entry.value;
+        if (delegate.role === "delegate") {
+          const delegateToIds = delegate.delegatedToUserIds || [];
+          if (delegateToIds.includes(user.id)) {
+            delegates.push(delegate);
+          }
+        }
+      }
+
+      // If delegates exist and no action specified, require confirmation
+      if (delegates.length > 0 && !delegateAction) {
+        return new Response(JSON.stringify({
+          requiresConfirmation: true,
+          delegates: delegates.map(d => ({ id: d.id, name: d.displayName, email: d.email })),
+          oldSchoolId: user.schoolId,
+          newSchoolId: schoolId,
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Process school change
       const oldSchoolId = user.schoolId;
       user.schoolId = schoolId;
       await updateUser(user);
 
       if (oldSchoolId && user.username) {
-        const kv = await getKv();
         await kv.delete(["usernames", oldSchoolId, user.username.toLowerCase()]);
         await kv.set(["usernames", schoolId, user.username.toLowerCase()], user.id);
+      }
+
+      // Handle delegates based on action
+      if (delegates.length > 0 && delegateAction) {
+        if (delegateAction === "move") {
+          // Move delegates to new school
+          for (const delegate of delegates) {
+            delegate.schoolId = schoolId;
+            await kv.set(["users:id", delegate.id], delegate);
+            await kv.set(["users:email", delegate.email.toLowerCase()], delegate);
+          }
+        } else if (delegateAction === "remove") {
+          // Remove teacher from delegates' lists
+          for (const delegate of delegates) {
+            delegate.delegatedToUserIds = delegate.delegatedToUserIds.filter(id => id !== user.id);
+
+            // If delegate has no more teachers, delete their account
+            if (delegate.delegatedToUserIds.length === 0) {
+              await kv.delete(["users:id", delegate.id]);
+              await kv.delete(["users:email", delegate.email.toLowerCase()]);
+              await kv.delete(["users:delegates", user.id, delegate.id]);
+            } else {
+              // Otherwise just update
+              await kv.set(["users:id", delegate.id], delegate);
+              await kv.set(["users:email", delegate.email.toLowerCase()], delegate);
+              await kv.delete(["users:delegates", user.id, delegate.id]);
+            }
+          }
+        }
       }
 
       return new Response(JSON.stringify({ success: true }), {
