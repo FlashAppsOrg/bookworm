@@ -14,8 +14,8 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role !== "teacher") {
-        return new Response(JSON.stringify({ error: "Only teachers can configure backups" }), {
+      if (user.role !== "teacher" && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Only teachers and admins can configure backups" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });

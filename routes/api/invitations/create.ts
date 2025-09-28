@@ -16,8 +16,8 @@ export const handler: Handlers = {
         });
       }
 
-      if (user.role !== "teacher") {
-        return new Response(JSON.stringify({ error: "Only teachers can create invitations" }), {
+      if (user.role !== "teacher" && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Only teachers and admins can create invitations" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
