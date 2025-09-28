@@ -125,7 +125,7 @@ export async function findBookByISBN(userId: string, isbn: string): Promise<Clas
   return null;
 }
 
-export async function addBookToClassroom(userId: string, book: Omit<ClassroomBook, "id" | "userId" | "dateAdded" | "quantity" | "imported">): Promise<ClassroomBook> {
+export async function addBookToClassroom(userId: string, book: Omit<ClassroomBook, "id" | "userId" | "dateAdded" | "quantity" | "imported" | "addedBy">, addedBy?: string): Promise<ClassroomBook> {
   const kv = await getKv();
   const id = generateId();
   const newBook: ClassroomBook = {
@@ -135,6 +135,7 @@ export async function addBookToClassroom(userId: string, book: Omit<ClassroomBoo
     quantity: 1,
     imported: false,
     dateAdded: new Date().toISOString(),
+    addedBy,
   };
 
   await kv.set(["classroomBooks", userId, id], newBook);
@@ -154,6 +155,12 @@ export async function updateBookQuantity(userId: string, bookId: string, quantit
 
   await kv.set(["classroomBooks", userId, bookId], updatedBook);
   return updatedBook;
+}
+
+export async function getBookById(userId: string, bookId: string): Promise<ClassroomBook | null> {
+  const kv = await getKv();
+  const result = await kv.get<ClassroomBook>(["classroomBooks", userId, bookId]);
+  return result.value;
 }
 
 export async function removeBookFromClassroom(userId: string, bookId: string): Promise<void> {

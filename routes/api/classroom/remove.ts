@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { getUserFromSession } from "../../../utils/session.ts";
-import { removeBookFromClassroom } from "../../../utils/db-helpers.ts";
+import { removeBookFromClassroom, getBookById } from "../../../utils/db-helpers.ts";
 import { getTargetTeacherId } from "../../../utils/auth-helpers.ts";
 
 export const handler: Handlers = {
@@ -32,6 +32,25 @@ export const handler: Handlers = {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
+      }
+
+      // Get the book to check permissions
+      const book = await getBookById(targetUserId, bookId);
+      if (!book) {
+        return new Response(JSON.stringify({ error: "Book not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Delegates can only delete books they added
+      if (user.role === "delegate") {
+        if (book.addedBy !== user.id) {
+          return new Response(JSON.stringify({ error: "You can only delete books you added" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
       }
 
       await removeBookFromClassroom(targetUserId, bookId);

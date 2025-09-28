@@ -61,7 +61,7 @@ export const handler: Handlers = {
         maturityRating: maturityRating || undefined,
         pageCount: pageCount || undefined,
         language: language || undefined,
-      });
+      }, user.id); // Track who added this book
 
       return new Response(JSON.stringify({ success: true, book }), {
         status: 201,

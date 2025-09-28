@@ -39,6 +39,7 @@ export interface ClassroomBook {
   quantity: number;
   dateAdded: string;
   imported: boolean;
+  addedBy?: string; // User ID of who added this book (for delegates)
 }
 
 export interface VerificationToken {

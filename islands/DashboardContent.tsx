@@ -34,6 +34,9 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const [inviteTeacherError, setInviteTeacherError] = useState("");
   const [inviteTeacherSuccess, setInviteTeacherSuccess] = useState(false);
   const [showInviteBanner, setShowInviteBanner] = useState(true);
+  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const [showMoveControls, setShowMoveControls] = useState(false);
+  const [moveTargetTeacherId, setMoveTargetTeacherId] = useState("");
 
   useEffect(() => {
     if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
@@ -374,6 +377,47 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
     }
   };
 
+  const toggleBookSelection = (bookId: string) => {
+    const newSelection = new Set(selectedBooks);
+    if (newSelection.has(bookId)) {
+      newSelection.delete(bookId);
+    } else {
+      newSelection.add(bookId);
+    }
+    setSelectedBooks(newSelection);
+    setShowMoveControls(newSelection.size > 0);
+  };
+
+  const handleMoveBooks = async () => {
+    if (!moveTargetTeacherId || selectedBooks.size === 0) return;
+
+    try {
+      const response = await fetch("/api/classroom/move-books", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookIds: Array.from(selectedBooks),
+          fromTeacherId: selectedTeacherId,
+          toTeacherId: moveTargetTeacherId,
+        }),
+      });
+
+      if (response.ok) {
+        // Remove moved books from current view
+        setBooks(books.filter(b => !selectedBooks.has(b.id)));
+        setSelectedBooks(new Set());
+        setShowMoveControls(false);
+        setMoveTargetTeacherId("");
+        alert(`✓ Moved ${selectedBooks.size} book${selectedBooks.size !== 1 ? 's' : ''}`);
+      } else {
+        const data = await response.json();
+        alert(`✗ ${data.error || 'Failed to move books'}`);
+      }
+    } catch (err) {
+      alert("✗ Network error");
+    }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
@@ -679,7 +723,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                   👥 Helpers
                 </button>
               )}
-              {activeTab === 'books' && (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
+              {activeTab === 'books' && (user.role === "teacher" || user.role === "delegate" || (user.role === "super_admin" && user.schoolId)) && (
                 <>
                   <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                   <button
@@ -706,7 +750,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
           {user.role === "delegate" && (
             <div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
               <p class="text-blue-900 dark:text-blue-100 text-sm">
-                <strong>Helper Mode:</strong> You're adding books to {teacherName}'s classroom. You cannot remove books or export the list.
+                <strong>Helper Mode:</strong> You're adding books to {teacherName}'s classroom. You can delete books you've added and export the list.
               </p>
             </div>
           )}
@@ -954,8 +998,20 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             {filteredBooks.map((book) => (
               <div
                 key={book.id}
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-colors"
+                class={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-all relative ${
+                  selectedBooks.has(book.id) ? 'ring-2 ring-primary' : ''
+                }`}
               >
+                {user.role === "delegate" && availableTeachers && availableTeachers.length > 1 && book.addedBy === user.id && (
+                  <div class="absolute top-2 right-2 z-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedBooks.has(book.id)}
+                      onChange={() => toggleBookSelection(book.id)}
+                      class="w-5 h-5 text-primary focus:ring-primary rounded cursor-pointer"
+                    />
+                  </div>
+                )}
                 {book.thumbnail && (
                   <img
                     src={book.thumbnail}
@@ -1006,6 +1062,14 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                     </button>
                   </div>
                 )}
+                {user.role === "delegate" && book.addedBy === user.id && (
+                  <button
+                    onClick={() => handleRemoveBook(book.id)}
+                    class="w-full px-3 py-2 rounded bg-error/10 hover:bg-error/20 text-error text-sm font-semibold transition-all"
+                  >
+                    Remove Book
+                  </button>
+                )}
               </div>
             ))}
             </div>
@@ -1021,7 +1085,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                       <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Authors</th>
                       <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Publisher</th>
                       <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Published</th>
-                      {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
+                      {(user.role === "teacher" || user.role === "delegate" || (user.role === "super_admin" && user.schoolId)) && (
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Actions</th>
                       )}
                     </tr>
@@ -1071,20 +1135,61 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                           {book.publishedDate || "-"}
                         </td>
-                        {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
+                        {(user.role === "teacher" || user.role === "delegate" || (user.role === "super_admin" && user.schoolId)) && (
                           <td class="px-4 py-3 text-sm">
-                            <button
-                              onClick={() => handleRemoveBook(book.id)}
-                              class="px-3 py-1 rounded bg-error/10 hover:bg-error/20 text-error text-xs font-semibold transition-all"
-                            >
-                              Remove
-                            </button>
+                            {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId) || (user.role === "delegate" && book.addedBy === user.id)) && (
+                              <button
+                                onClick={() => handleRemoveBook(book.id)}
+                                class="px-3 py-1 rounded bg-error/10 hover:bg-error/20 text-error text-xs font-semibold transition-all"
+                              >
+                                Remove
+                              </button>
+                            )}
                           </td>
                         )}
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {showMoveControls && user.role === "delegate" && availableTeachers && availableTeachers.length > 1 && (
+            <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border-2 border-primary p-4 z-50 animate-fade-in">
+              <div class="flex items-center gap-4">
+                <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                  {selectedBooks.size} book{selectedBooks.size !== 1 ? 's' : ''} selected
+                </span>
+                <select
+                  value={moveTargetTeacherId}
+                  onChange={(e) => setMoveTargetTeacherId((e.target as HTMLSelectElement).value)}
+                  class="px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white text-sm"
+                >
+                  <option value="">Move to...</option>
+                  {availableTeachers.filter(t => t.id !== selectedTeacherId).map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleMoveBooks}
+                  disabled={!moveTargetTeacherId}
+                  class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  Move
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedBooks(new Set());
+                    setShowMoveControls(false);
+                    setMoveTargetTeacherId("");
+                  }}
+                  class="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold transition-all text-sm"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}
