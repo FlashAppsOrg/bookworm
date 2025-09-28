@@ -137,7 +137,7 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
       if (code.length >= 10 && code.length <= 13 && /^\d+$/.test(code)) {
         processingRef.current = true;
         stopCamera();
-        lookupBook(code);
+        lookupBook(code, true, true);
       }
     }
   };
@@ -151,7 +151,7 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
     setIsScanning(false);
   };
 
-  const lookupBook = async (searchValue: string, isISBN: boolean = true) => {
+  const lookupBook = async (searchValue: string, isISBN: boolean = true, fromScanner: boolean = false) => {
     setIsLoading(true);
     setError(null);
     setSearchResults([]);
@@ -172,9 +172,21 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
         onBookFound(data);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Book not found");
+      const errorMessage = err instanceof Error ? err.message : "Book not found";
+
+      // If this was from scanner and book wasn't found, show special error with retry options
+      if (fromScanner && errorMessage.includes("not found")) {
+        setError(`scanError:${searchValue}`);
+      } else {
+        setError(errorMessage);
+      }
+
       processingRef.current = false;
-      setIsScanning(false);
+
+      // Don't stop scanning if it was a scan error - let user retry
+      if (!fromScanner) {
+        setIsScanning(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -209,9 +221,45 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
     }
   };
 
+  const retryScan = () => {
+    setError(null);
+    setLastScanned("");
+    processingRef.current = false;
+    lastScanTime.current = 0;
+    if (!isScanning) {
+      startCamera();
+    }
+  };
+
+  const switchToManualSearch = () => {
+    setError(null);
+    setLastScanned("");
+    processingRef.current = false;
+    stopCamera();
+    setShowManualInput(true);
+  };
+
+  // Show start scan button if nothing is active
+  const showStartButton = !isScanning && !showManualInput && !searchResults.length && !isLoading;
+
   return (
     <div class="max-w-2xl mx-auto">
-      {showManualInput && !isScanning && (
+      {showStartButton && (
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 animate-fade-in text-center">
+          <h3 class="text-2xl font-bold text-primary mb-4">Ready to Scan</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Position the book's barcode in front of your camera
+          </p>
+          <button
+            onClick={startCamera}
+            class="py-3 px-8 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold text-lg shadow-lg transition-all transform hover:scale-105"
+          >
+            📷 Start Scanning
+          </button>
+        </div>
+      )}
+
+      {showManualInput && !isScanning && !searchResults.length && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 animate-fade-in">
           <h3 class="text-2xl font-bold text-primary mb-4">Search for a Book</h3>
           <form onSubmit={handleManualSubmit} class="space-y-4">
@@ -232,7 +280,11 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => setShowManualInput(false)}
+                onClick={() => {
+                  setShowManualInput(false);
+                  setSearchText("");
+                  setError(null);
+                }}
                 class="flex-1 py-3 px-6 rounded-lg bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold shadow-lg transition-all"
               >
                 Cancel
@@ -349,8 +401,48 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
       )}
 
       {error && (
-        <div class="mt-4 bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg animate-fade-in" role="alert">
-          ⚠️ {error}
+        <div class="mt-4 animate-fade-in">
+          {error.startsWith('scanError:') ? (
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500 dark:border-yellow-600 rounded-lg p-4 space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">📚</span>
+                <div class="flex-1">
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                    Book Not Found
+                  </h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    ISBN: {error.split(':')[1]}
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    This often happens with older books or damaged barcodes. Try:
+                  </p>
+                  <ul class="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4 space-y-1">
+                    <li>• Clean the barcode and scan again</li>
+                    <li>• Ensure good lighting and steady hands</li>
+                    <li>• Search by title or author instead</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <button
+                  onClick={retryScan}
+                  class="flex-1 py-2 px-4 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold shadow-lg transition-all"
+                >
+                  📷 Try Scanning Again
+                </button>
+                <button
+                  onClick={switchToManualSearch}
+                  class="flex-1 py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold shadow-lg transition-all"
+                >
+                  🔍 Search Manually
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div class="bg-error/10 border-2 border-error text-error px-4 py-3 rounded-lg" role="alert">
+              ⚠️ {error}
+            </div>
+          )}
         </div>
       )}
     </div>
