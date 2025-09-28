@@ -1,17 +1,38 @@
 /**
  * Get the application URL, with fallback logic:
- * 1. Use custom domain (bookworm.flashapps.org)
- * 2. Use origin from request if available
- * 3. Fall back to localhost for development
+ * 1. Use CUSTOM_BOOKWORM_DOMAIN environment variable if set
+ * 2. Use APP_URL environment variable if set correctly
+ * 3. Use origin from request if available
+ * 4. Fall back to localhost for development
+ *
+ * Set CUSTOM_BOOKWORM_DOMAIN to: bookworm.flashapps.org
+ * Or set APP_URL to full URL: https://bookworm.flashapps.org
  */
 export function getAppUrl(req?: Request): string {
-  // Use the custom domain in production
-  const customDomain = Deno.env.get("CUSTOM_DOMAIN") || "bookworm.flashapps.org";
+  // Check for CUSTOM_BOOKWORM_DOMAIN env var first (specific to this app)
+  const customBookwormDomain = Deno.env.get("CUSTOM_BOOKWORM_DOMAIN");
+  if (customBookwormDomain) {
+    return `https://${customBookwormDomain}`;
+  }
 
-  // Check for override via APP_URL env var
-  const customUrl = Deno.env.get("APP_URL");
-  if (customUrl && !customUrl.includes(".deno.net") && !customUrl.includes(".deno.dev")) {
-    return customUrl;
+  // Check for APP_URL env var (should be full URL with protocol)
+  const appUrl = Deno.env.get("APP_URL");
+  if (appUrl) {
+    // Fix common mistakes in the URL
+    if (appUrl.includes(".deno.net")) {
+      // If someone accidentally used .deno.net, correct it to .deno.dev
+      return appUrl.replace(".deno.net", ".deno.dev");
+    }
+    return appUrl;
+  }
+
+  // If we have a request, use its origin (for dynamic detection)
+  if (req) {
+    const url = new URL(req.url);
+    // Don't use localhost or .deno.dev origins for production links
+    if (!url.host.includes("localhost") && !url.host.includes(".deno.dev")) {
+      return `${url.protocol}//${url.host}`;
+    }
   }
 
   // Development fallback
@@ -19,20 +40,28 @@ export function getAppUrl(req?: Request): string {
     return "http://localhost:8000";
   }
 
-  // Production - always use the custom domain
-  return `https://${customDomain}`;
+  // If nothing is configured, fall back to Deno Deploy URL
+  return "https://bookworm-flashapps.deno.dev";
 }
 
 /**
- * Get the preferred domain for links (always use custom domain)
+ * Get the preferred domain for links (for emails, etc)
+ * Uses same logic as getAppUrl but without request context
  */
 export function getPreferredDomain(): string {
-  // Use the custom domain in production
-  const customDomain = Deno.env.get("CUSTOM_DOMAIN") || "bookworm.flashapps.org";
+  // Check for CUSTOM_BOOKWORM_DOMAIN env var first (specific to this app)
+  const customBookwormDomain = Deno.env.get("CUSTOM_BOOKWORM_DOMAIN");
+  if (customBookwormDomain) {
+    return `https://${customBookwormDomain}`;
+  }
 
-  // Check for override via APP_URL env var
+  // Check for APP_URL env var
   const appUrl = Deno.env.get("APP_URL");
-  if (appUrl && !appUrl.includes(".deno.net") && !appUrl.includes(".deno.dev")) {
+  if (appUrl) {
+    // Fix common mistakes in the URL
+    if (appUrl.includes(".deno.net")) {
+      return appUrl.replace(".deno.net", ".deno.dev");
+    }
     return appUrl;
   }
 
@@ -41,6 +70,6 @@ export function getPreferredDomain(): string {
     return "http://localhost:8000";
   }
 
-  // Production - always use the custom domain
-  return `https://${customDomain}`;
+  // If nothing is configured, fall back to Deno Deploy URL
+  return "https://bookworm-flashapps.deno.dev";
 }
