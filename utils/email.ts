@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { getKv } from "./db.ts";
+import { getPreferredDomain } from "./url-helpers.ts";
 
 const MONTHLY_LIMIT = 2950;
 
@@ -81,7 +82,7 @@ export async function sendVerificationEmail(
   }
 
   const resend = new Resend(apiKey);
-  const verifyUrl = `${Deno.env.get("APP_URL") || "http://localhost:8000"}/verify?token=${token}`;
+  const verifyUrl = `${getPreferredDomain()}/verify?token=${token}`;
 
   const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
 
@@ -249,7 +250,7 @@ export async function sendPasswordResetEmail(
   }
 
   const resend = new Resend(apiKey);
-  const resetUrl = `${Deno.env.get("APP_URL") || "http://localhost:8000"}/reset-password?token=${token}`;
+  const resetUrl = `${getPreferredDomain()}/reset-password?token=${token}`;
 
   const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
 

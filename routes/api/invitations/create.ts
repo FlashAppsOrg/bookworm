@@ -3,6 +3,7 @@ import { getUserFromSession } from "../../../utils/session.ts";
 import { getKv, Invitation } from "../../../utils/db.ts";
 import { generateToken } from "../../../utils/password.ts";
 import { sendInvitationEmail } from "../../../utils/email.ts";
+import { getAppUrl } from "../../../utils/url-helpers.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -102,7 +103,7 @@ export const handler: Handlers = {
       await kv.set(["invitations", token], invitation);
       await kv.set(["invitations:teacher", targetTeacherId, token], invitation);
 
-      const appUrl = Deno.env.get("APP_URL") || "http://localhost:8000";
+      const appUrl = getAppUrl(req);
 
       // Check if this email belongs to an existing delegate
       const existingUser = await getUserByEmail(email);
