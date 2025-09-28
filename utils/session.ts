@@ -5,7 +5,17 @@ import { User } from "./db.ts";
 export interface Session {
   userId: string;
   email: string;
-  role: "teacher" | "delegate";
+  role: "teacher" | "delegate" | "parent" | "school_admin" | "super_admin";
+}
+
+export async function createSession(user: User): Promise<string> {
+  const sessionData: Session = {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  return btoa(JSON.stringify(sessionData));
 }
 
 export async function getSession(req: Request): Promise<Session | null> {
