@@ -201,12 +201,20 @@ export default function UserManagement() {
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">Filters</h2>
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
-          >
-            {showCreateForm ? "Cancel" : "+ Create User"}
-          </button>
+          <div class="flex gap-2">
+            <a
+              href="/admin/import"
+              class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all"
+            >
+              📄 Bulk Import CSV
+            </a>
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+            >
+              {showCreateForm ? "Cancel" : "+ Create User"}
+            </button>
+          </div>
         </div>
 
         {showCreateForm && (
