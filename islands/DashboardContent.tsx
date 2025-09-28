@@ -19,9 +19,9 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scannerMode, setScannerMode] = useState<'camera' | 'manual' | null>(null);
+  const [activeTab, setActiveTab] = useState<'books' | 'add-book' | 'helpers'>('books');
+  const [scannerMode, setScannerMode] = useState<'camera' | 'manual'>('camera');
   const [backingUp, setBackingUp] = useState(false);
-  const [showInvitations, setShowInvitations] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [delegates, setDelegates] = useState<User[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -631,21 +631,49 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                 </div>
               )}
             </div>
-            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
               <button
-                onClick={() => setScannerMode(scannerMode === 'camera' ? null : 'camera')}
-                class="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"
+                onClick={() => setActiveTab(activeTab === 'books' ? 'books' : 'books')}
+                class={`px-4 py-2.5 rounded-lg font-semibold transition-all text-sm whitespace-nowrap ${
+                  activeTab === 'books'
+                    ? 'bg-primary text-white shadow-lg scale-105'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
               >
-                📷 {scannerMode === 'camera' ? "Hide" : "Scan"}
+                📚 Books
               </button>
               <button
-                onClick={() => setScannerMode(scannerMode === 'manual' ? null : 'manual')}
-                class="px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"
+                onClick={() => {
+                  if (activeTab === 'add-book') {
+                    setActiveTab('books');
+                  } else {
+                    setActiveTab('add-book');
+                    setScannerMode('camera');
+                  }
+                }}
+                class={`px-4 py-2.5 rounded-lg font-semibold transition-all text-sm whitespace-nowrap ${
+                  activeTab === 'add-book'
+                    ? 'bg-primary text-white shadow-lg scale-105'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
               >
-                🔍 {scannerMode === 'manual' ? "Hide" : "Lookup"}
+                ➕ Add Book
               </button>
               {(user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
+                <button
+                  onClick={() => setActiveTab(activeTab === 'helpers' ? 'books' : 'helpers')}
+                  class={`px-4 py-2.5 rounded-lg font-semibold transition-all text-sm whitespace-nowrap ${
+                    activeTab === 'helpers'
+                      ? 'bg-primary text-white shadow-lg scale-105'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  👥 Helpers
+                </button>
+              )}
+              {activeTab === 'books' && (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
                 <>
+                  <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                   <button
                     onClick={handleExport}
                     disabled={exporting || books.length === 0}
@@ -662,12 +690,6 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                       📊 {backingUp ? "Backing Up..." : "Backup"}
                     </button>
                   )}
-                  <button
-                    onClick={() => setShowInvitations(!showInvitations)}
-                    class="px-4 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all text-sm whitespace-nowrap"
-                  >
-                    👥 Helpers
-                  </button>
                 </>
               )}
             </div>
@@ -681,7 +703,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             </div>
           )}
 
-          {showInvitations && (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
+          {activeTab === 'helpers' && (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) && (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Manage Helpers
@@ -812,8 +834,30 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             </div>
           )}
 
-          {scannerMode && (
+          {activeTab === 'add-book' && (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
+              <div class="flex gap-2 mb-4">
+                <button
+                  onClick={() => setScannerMode('camera')}
+                  class={`px-4 py-2 rounded-lg font-semibold text-sm ${
+                    scannerMode === 'camera'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  📷 Scan Barcode
+                </button>
+                <button
+                  onClick={() => setScannerMode('manual')}
+                  class={`px-4 py-2 rounded-lg font-semibold text-sm ${
+                    scannerMode === 'manual'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  🔍 Manual Lookup
+                </button>
+              </div>
               {currentBook ? (
                 <div>
                   <div class="flex gap-3 mb-6">
@@ -838,7 +882,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             </div>
           )}
 
-          {books.length > 0 && (
+          {activeTab === 'books' && books.length > 0 && (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 transition-colors mb-6">
               <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                 <div class="relative flex-1">
@@ -1033,7 +1077,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             </div>
           )}
 
-          {filteredBooks.length === 0 && searchQuery.trim() && (
+          {activeTab === 'books' && filteredBooks.length === 0 && searchQuery.trim() && (
             <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
               <div class="text-6xl mb-4">🔍</div>
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -1045,7 +1089,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
             </div>
           )}
 
-          {books.length === 0 && !scannerMode && (
+          {activeTab === 'books' && books.length === 0 && (
             <div class="text-center py-12">
               <div class="text-6xl mb-4">📚</div>
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -1055,7 +1099,10 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                 Start scanning books to build your classroom library
               </p>
               <button
-                onClick={() => setScannerMode('camera')}
+                onClick={() => {
+                  setActiveTab('add-book');
+                  setScannerMode('camera');
+                }}
                 class="px-6 py-3 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-lg shadow-lg transition-all"
               >
                 Scan Your First Book
