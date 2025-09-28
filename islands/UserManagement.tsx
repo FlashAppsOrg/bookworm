@@ -27,6 +27,7 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<string>("");
   const [editSchoolId, setEditSchoolId] = useState<string>("");
+  const [editEmail, setEditEmail] = useState<string>("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newUser, setNewUser] = useState({
     email: "",
@@ -68,6 +69,7 @@ export default function UserManagement() {
     setEditingUser(user);
     setEditRole(user.role);
     setEditSchoolId(user.schoolId || "");
+    setEditEmail(user.email.endsWith("@placeholder.local") ? "" : user.email);
     setMessage("");
   }
 
@@ -75,6 +77,7 @@ export default function UserManagement() {
     setEditingUser(null);
     setEditRole("");
     setEditSchoolId("");
+    setEditEmail("");
     setMessage("");
   }
 
@@ -88,6 +91,10 @@ export default function UserManagement() {
       }
       if (editSchoolId !== (editingUser.schoolId || "")) {
         updates.schoolId = editSchoolId || null;
+      }
+      const currentEmail = editingUser.email.endsWith("@placeholder.local") ? "" : editingUser.email;
+      if (editEmail !== currentEmail) {
+        updates.email = editEmail || null;
       }
 
       const response = await fetch("/api/admin/users", {
@@ -222,15 +229,18 @@ export default function UserManagement() {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email *
+                  Email (optional)
                 </label>
                 <input
                   type="email"
                   value={newUser.email}
                   onInput={(e) => setNewUser({ ...newUser, email: (e.target as HTMLInputElement).value })}
-                  required
+                  placeholder="Leave blank to add later"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-800 dark:text-white"
                 />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  If no email is provided, you can add it later before sending an invite
+                </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -415,7 +425,19 @@ export default function UserManagement() {
                       )}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                      {user.email}
+                      {editingUser?.id === user.id ? (
+                        <input
+                          type="email"
+                          value={editEmail}
+                          onInput={(e) => setEditEmail((e.target as HTMLInputElement).value)}
+                          placeholder="Add email address..."
+                          class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white text-sm"
+                        />
+                      ) : user.email.endsWith("@placeholder.local") ? (
+                        <span class="text-gray-400 dark:text-gray-500 italic">(No email)</span>
+                      ) : (
+                        user.email
+                      )}
                     </td>
                     <td class="px-6 py-4 text-sm">
                       {editingUser?.id === user.id ? (
