@@ -47,6 +47,20 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   });
   const [manualEntryError, setManualEntryError] = useState("");
   const [addingManualBook, setAddingManualBook] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const [exportColumns, setExportColumns] = useState({
+    isbn: true,
+    quantity: true,
+    title: true,
+    authors: true,
+    publisher: true,
+    publishedDate: true,
+    description: true,
+    categories: true,
+    pageCount: true,
+    language: true,
+    dateAdded: true,
+  });
 
   useEffect(() => {
     if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
@@ -343,11 +357,14 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
 
   const handleExport = async () => {
     setExporting(true);
+    setShowExportOptions(false);
     try {
-      const url = selectedTeacherId
-        ? `/api/classroom/export?teacherId=${selectedTeacherId}`
-        : "/api/classroom/export";
-      const response = await fetch(url);
+      const columnsParam = JSON.stringify(exportColumns);
+      const params = new URLSearchParams();
+      if (selectedTeacherId) params.append('teacherId', selectedTeacherId);
+      params.append('columns', columnsParam);
+
+      const response = await fetch(`/api/classroom/export?${params.toString()}`);
       if (response.ok) {
         const blob = await response.blob();
         const downloadUrl = URL.createObjectURL(blob);
@@ -859,13 +876,102 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
               ) && (
                 <>
                   <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                  <button
-                    onClick={handleExport}
-                    disabled={exporting || books.length === 0}
-                    class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
-                  >
-                    📄 {exporting ? "Exporting..." : "Export"}
-                  </button>
+                  <div class="relative">
+                    <button
+                      onClick={() => setShowExportOptions(!showExportOptions)}
+                      disabled={exporting || books.length === 0}
+                      class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+                    >
+                      📄 {exporting ? "Exporting..." : "Export CSV"}
+                    </button>
+
+                    {showExportOptions && (
+                      <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-50">
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Select Columns to Export</h3>
+
+                        <div class="space-y-2 mb-4">
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.isbn}
+                              onChange={(e) => setExportColumns({ ...exportColumns, isbn: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">ISBN</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.quantity}
+                              onChange={(e) => setExportColumns({ ...exportColumns, quantity: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Quantity</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.title}
+                              onChange={(e) => setExportColumns({ ...exportColumns, title: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Title</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.authors}
+                              onChange={(e) => setExportColumns({ ...exportColumns, authors: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Authors</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.publisher}
+                              onChange={(e) => setExportColumns({ ...exportColumns, publisher: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Publisher</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.publishedDate}
+                              onChange={(e) => setExportColumns({ ...exportColumns, publishedDate: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Published Date</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exportColumns.dateAdded}
+                              onChange={(e) => setExportColumns({ ...exportColumns, dateAdded: (e.target as HTMLInputElement).checked })}
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Date Added</span>
+                          </label>
+                        </div>
+
+                        <div class="flex gap-2">
+                          <button
+                            onClick={handleExport}
+                            class="flex-1 px-3 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg transition-colors"
+                          >
+                            Export
+                          </button>
+                          <button
+                            onClick={() => setShowExportOptions(false)}
+                            class="flex-1 px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   {((selectedTeacher && selectedTeacher.googleSheetUrl) || (!selectedTeacher && user.googleSheetUrl)) && (
                     <button
                       onClick={handleBackupToSheet}
@@ -1117,16 +1223,19 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    ISBN
+                    ISBN (Optional - ISBN-13 preferred)
                   </label>
                   <input
                     type="text"
                     value={manualEntry.isbn}
                     onInput={(e) => setManualEntry({ ...manualEntry, isbn: (e.target as HTMLInputElement).value })}
-                    placeholder="ISBN-10 or ISBN-13 (optional)"
+                    placeholder="Enter ISBN-13 if available, or ISBN-10"
                     disabled={addingManualBook}
                     class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
                   />
+                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                    Books may have multiple ISBNs. Enter the 13-digit ISBN if available.
+                  </p>
                 </div>
 
                 <div>

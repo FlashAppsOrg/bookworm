@@ -17,6 +17,18 @@ export const handler: Handlers = {
 
       const url = new URL(req.url);
       const teacherId = url.searchParams.get("teacherId") || undefined;
+      const columnsParam = url.searchParams.get("columns");
+
+      // Parse columns parameter or use all columns by default
+      const selectedColumns = columnsParam ? JSON.parse(columnsParam) : {
+        isbn: true,
+        quantity: true,
+        title: true,
+        authors: true,
+        publisher: true,
+        publishedDate: true,
+        dateAdded: true,
+      };
 
       // Determine target teacher (handles super_admin, teacher, delegate)
       const { teacherId: targetUserId, error } = getTargetTeacherId(user, teacherId);
@@ -29,21 +41,33 @@ export const handler: Handlers = {
 
       const books = await getUserBooks(targetUserId);
 
-      const csvRows = [
-        ["ISBN", "Quantity", "Title", "Authors", "Publisher", "Published Date", "Date Added"].join(","),
-      ];
+      // Build headers based on selected columns
+      const headers = [];
+      if (selectedColumns.isbn) headers.push("ISBN");
+      if (selectedColumns.quantity) headers.push("Quantity");
+      if (selectedColumns.title) headers.push("Title");
+      if (selectedColumns.authors) headers.push("Authors");
+      if (selectedColumns.publisher) headers.push("Publisher");
+      if (selectedColumns.publishedDate) headers.push("Published Date");
+      if (selectedColumns.dateAdded) headers.push("Date Added");
+
+      const csvRows = [headers.join(",")];
 
       for (const book of books) {
-        const row = [
-          book.isbn,
-          book.quantity || 1,
-          `"${book.title.replace(/"/g, '""')}"`,
-          book.authors.length > 0 ? `"${book.authors.join("; ").replace(/"/g, '""')}"` : "",
-          book.publisher ? `"${book.publisher.replace(/"/g, '""')}"` : "",
-          book.publishedDate || "",
-          book.dateAdded,
-        ].join(",");
-        csvRows.push(row);
+        const row = [];
+        if (selectedColumns.isbn) row.push(book.isbn);
+        if (selectedColumns.quantity) row.push(book.quantity || 1);
+        if (selectedColumns.title) row.push(`"${book.title.replace(/"/g, '""')}"`);
+        if (selectedColumns.authors) {
+          row.push(book.authors.length > 0 ? `"${book.authors.join("; ").replace(/"/g, '""')}"` : "");
+        }
+        if (selectedColumns.publisher) {
+          row.push(book.publisher ? `"${book.publisher.replace(/"/g, '""')}"` : "");
+        }
+        if (selectedColumns.publishedDate) row.push(book.publishedDate || "");
+        if (selectedColumns.dateAdded) row.push(book.dateAdded);
+
+        csvRows.push(row.join(","));
       }
 
       const csv = csvRows.join("\n");
