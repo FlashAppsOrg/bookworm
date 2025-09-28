@@ -202,7 +202,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
 
   return (
     <div class="space-y-6">
-      {user.role === "teacher" && currentSchool && publicUrl && (
+      {(user.role === "teacher" || user.role === "super_admin") && currentSchool && publicUrl && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
           <h3 class="text-2xl font-semibold mb-4 dark:text-white">Public Classroom Page</h3>
           <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
@@ -232,7 +232,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
         </div>
       )}
 
-      {user.role === "teacher" && currentSchool && (
+      {(user.role === "teacher" || user.role === "super_admin") && currentSchool && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
           <h3 class="text-2xl font-semibold mb-4 dark:text-white">School</h3>
           <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
@@ -396,7 +396,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
         </div>
       </div>
 
-      {user.role === "teacher" && (
+      {(user.role === "teacher" || user.role === "super_admin") && (
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">
           <h3 class="text-2xl font-semibold mb-4 dark:text-white">Export & Backup</h3>
           <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
