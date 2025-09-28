@@ -10,6 +10,7 @@ import * as $admin_challenges_index from "./routes/admin/challenges/index.tsx";
 import * as $admin_classrooms_index from "./routes/admin/classrooms/index.tsx";
 import * as $admin_import_index from "./routes/admin/import/index.tsx";
 import * as $admin_index from "./routes/admin/index.tsx";
+import * as $admin_parents_index from "./routes/admin/parents/index.tsx";
 import * as $admin_quota from "./routes/admin/quota.tsx";
 import * as $admin_schools_index from "./routes/admin/schools/index.tsx";
 import * as $admin_usage from "./routes/admin/usage.tsx";
@@ -20,6 +21,7 @@ import * as $api_admin_check_admins from "./routes/api/admin/check-admins.ts";
 import * as $api_admin_classrooms from "./routes/api/admin/classrooms.ts";
 import * as $api_admin_delete_cache from "./routes/api/admin/delete-cache.ts";
 import * as $api_admin_force_promote from "./routes/api/admin/force-promote.ts";
+import * as $api_admin_parent_associations from "./routes/api/admin/parent-associations.ts";
 import * as $api_admin_promote_first from "./routes/api/admin/promote-first.ts";
 import * as $api_admin_quota_stats from "./routes/api/admin/quota-stats.ts";
 import * as $api_admin_schools from "./routes/api/admin/schools.ts";
@@ -27,6 +29,7 @@ import * as $api_admin_send_invite from "./routes/api/admin/send-invite.ts";
 import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
 import * as $api_admin_validate_cache from "./routes/api/admin/validate-cache.ts";
+import * as $api_admin_verify_parent from "./routes/api/admin/verify-parent.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
@@ -90,6 +93,7 @@ import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $ParentSignupForm from "./islands/ParentSignupForm.tsx";
+import * as $ParentVerification from "./islands/ParentVerification.tsx";
 import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
 import * as $QuotaMonitor from "./islands/QuotaMonitor.tsx";
 import * as $ScanHistory from "./islands/ScanHistory.tsx";
@@ -113,6 +117,7 @@ const manifest = {
     "./routes/admin/classrooms/index.tsx": $admin_classrooms_index,
     "./routes/admin/import/index.tsx": $admin_import_index,
     "./routes/admin/index.tsx": $admin_index,
+    "./routes/admin/parents/index.tsx": $admin_parents_index,
     "./routes/admin/quota.tsx": $admin_quota,
     "./routes/admin/schools/index.tsx": $admin_schools_index,
     "./routes/admin/usage.tsx": $admin_usage,
@@ -123,6 +128,7 @@ const manifest = {
     "./routes/api/admin/classrooms.ts": $api_admin_classrooms,
     "./routes/api/admin/delete-cache.ts": $api_admin_delete_cache,
     "./routes/api/admin/force-promote.ts": $api_admin_force_promote,
+    "./routes/api/admin/parent-associations.ts": $api_admin_parent_associations,
     "./routes/api/admin/promote-first.ts": $api_admin_promote_first,
     "./routes/api/admin/quota-stats.ts": $api_admin_quota_stats,
     "./routes/api/admin/schools.ts": $api_admin_schools,
@@ -130,6 +136,7 @@ const manifest = {
     "./routes/api/admin/usage.ts": $api_admin_usage,
     "./routes/api/admin/users.ts": $api_admin_users,
     "./routes/api/admin/validate-cache.ts": $api_admin_validate_cache,
+    "./routes/api/admin/verify-parent.ts": $api_admin_verify_parent,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
     "./routes/api/auth/login.ts": $api_auth_login,
@@ -196,6 +203,7 @@ const manifest = {
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/ParentSignupForm.tsx": $ParentSignupForm,
+    "./islands/ParentVerification.tsx": $ParentVerification,
     "./islands/PublicClassroom.tsx": $PublicClassroom,
     "./islands/QuotaMonitor.tsx": $QuotaMonitor,
     "./islands/ScanHistory.tsx": $ScanHistory,

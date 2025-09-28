@@ -189,18 +189,17 @@ export default function ChallengeForm({
 
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Reason for Challenge <span class="text-red-600">*</span>
+          Reason for Challenge (Optional)
         </label>
         <textarea
           value={reason}
           onInput={(e) => setReason((e.target as HTMLTextAreaElement).value)}
-          required
           rows={6}
-          placeholder="Please explain your concerns about this book..."
+          placeholder="You may explain your concerns about this book (optional)..."
           class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
         />
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Please be specific about your concerns
+          While optional, providing specific concerns helps administrators review your challenge more effectively
         </p>
       </div>
 
