@@ -206,9 +206,11 @@ export async function getTeachersBySchoolId(schoolId: string): Promise<User[]> {
   const iter = kv.list<User>({ prefix: ["users:id"] });
 
   for await (const entry of iter) {
-    // Include both teachers and school_admins (who are also teachers with books)
+    // Include teachers, school_admins, and super_admins who belong to this school
     if (entry.value.schoolId === schoolId &&
-        (entry.value.role === "teacher" || entry.value.role === "school_admin")) {
+        (entry.value.role === "teacher" ||
+         entry.value.role === "school_admin" ||
+         entry.value.role === "super_admin")) {
       teachers.push(entry.value);
     }
   }
