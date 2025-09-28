@@ -93,30 +93,24 @@ export const handler: Handlers = {
 
       console.log(`[REMOVE DELEGATE] Updated delegateToIds:`, (delegate as any).delegatedToUserIds);
 
-      // If they still help other teachers, just update the record
-      if ((delegate as any).delegatedToUserIds.length > 0) {
-        if (actualDelegateId) {
-          await kv.set(["users:id", actualDelegateId], delegate);
-        }
-        await kv.set(["users:email", (delegate as any).email.toLowerCase()], delegate);
-        await kv.delete(["users:delegates", targetTeacherId, actualDelegateId || (delegate as any).email]);
-
-        console.log(`[REMOVE DELEGATE] Updated delegate record - still has ${(delegate as any).delegatedToUserIds.length} teacher(s)`);
-        return new Response(JSON.stringify({ success: true, message: "Removed from classroom" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      // If they have no more teachers, delete the account
-      console.log(`[REMOVE DELEGATE] Deleting delegate account - no more teachers`);
+      // Always update the delegate record (never delete the user account)
+      // The user might be a delegate in other classrooms we don't track properly
+      // or they might want to keep their account for future use
       if (actualDelegateId) {
-        await kv.delete(["users:id", actualDelegateId]);
+        await kv.set(["users:id", actualDelegateId], delegate);
       }
-      await kv.delete(["users:email", (delegate as any).email.toLowerCase()]);
+      await kv.set(["users:email", (delegate as any).email.toLowerCase()], delegate);
+
+      // Remove the delegation index
       await kv.delete(["users:delegates", targetTeacherId, actualDelegateId || (delegate as any).email]);
 
-      return new Response(JSON.stringify({ success: true, message: "Delegate account deleted" }), {
+      const remainingTeachers = (delegate as any).delegatedToUserIds.length;
+      console.log(`[REMOVE DELEGATE] Removed from classroom. Delegate still has ${remainingTeachers} teacher(s) in their list`);
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Helper removed from classroom"
+      }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });

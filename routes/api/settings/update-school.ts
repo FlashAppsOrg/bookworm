@@ -98,17 +98,13 @@ export const handler: Handlers = {
           for (const delegate of delegates) {
             delegate.delegatedToUserIds = delegate.delegatedToUserIds.filter(id => id !== user.id);
 
-            // If delegate has no more teachers, delete their account
-            if (delegate.delegatedToUserIds.length === 0) {
-              await kv.delete(["users:id", delegate.id]);
-              await kv.delete(["users:email", delegate.email.toLowerCase()]);
-              await kv.delete(["users:delegates", user.id, delegate.id]);
-            } else {
-              // Otherwise just update
-              await kv.set(["users:id", delegate.id], delegate);
-              await kv.set(["users:email", delegate.email.toLowerCase()], delegate);
-              await kv.delete(["users:delegates", user.id, delegate.id]);
-            }
+            // Always update the delegate record (never delete the user account)
+            // The user might be a delegate in other classrooms or want to keep their account
+            await kv.set(["users:id", delegate.id], delegate);
+            await kv.set(["users:email", delegate.email.toLowerCase()], delegate);
+
+            // Remove the delegation index
+            await kv.delete(["users:delegates", user.id, delegate.id]);
           }
         }
       }
