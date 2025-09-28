@@ -48,7 +48,9 @@ export const handler: Handlers = {
       for await (const entry of entries) {
         const delegate = entry.value;
         if (delegate.role === "delegate") {
-          const delegateToIds = delegate.delegatedToUserIds || [];
+          // Support both old singular field and new array field
+          const delegateToIds = delegate.delegatedToUserIds ||
+            ((delegate as any).delegatedToUserId ? [(delegate as any).delegatedToUserId] : []);
           if (delegateToIds.includes(user.id)) {
             delegates.push(delegate);
           }
