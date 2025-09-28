@@ -17,6 +17,7 @@ export interface BookInfo {
   pageCount?: number;
   language?: string;
   industryIdentifiers?: Array<{ type: string; identifier: string }>;
+  infoLink?: string;
 }
 
 const DEFAULT_API_KEY = Deno.env.get("GOOGLE_BOOKS_API_KEY") || "";
@@ -152,6 +153,7 @@ export const handler: Handlers = {
             pageCount: volumeInfo.pageCount,
             language: volumeInfo.language,
             industryIdentifiers: volumeInfo.industryIdentifiers,
+            infoLink: volumeInfo.infoLink,
           };
         });
 
@@ -185,6 +187,7 @@ export const handler: Handlers = {
         pageCount: volumeInfo.pageCount,
         language: volumeInfo.language,
         industryIdentifiers: volumeInfo.industryIdentifiers,
+        infoLink: volumeInfo.infoLink,
       };
 
       // Cache the result
