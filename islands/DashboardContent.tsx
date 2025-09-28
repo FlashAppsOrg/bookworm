@@ -427,21 +427,23 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
 
       <main class="flex-1 container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                {user.role === "teacher" ? `${user.displayName}'s Classroom` : teacherName ? `${teacherName}'s Classroom` : "Classroom Books"}
-              </h1>
-              <p class="text-gray-600 dark:text-gray-400 mt-1">
-                {books.length} book{books.length !== 1 ? "s" : ""} cataloged
-                {user.role === "delegate" && teacherName && (
-                  <span class="ml-2 text-sm">• Helping: {teacherName}</span>
-                )}
-              </p>
+          <div class="flex flex-col gap-4 mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex-1">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {user.role === "teacher" ? `${user.displayName}'s Classroom` : teacherName ? `${teacherName}'s Classroom` : "Classroom Books"}
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  {books.length} book{books.length !== 1 ? "s" : ""} cataloged
+                  {user.role === "delegate" && teacherName && (
+                    <span class="ml-2 text-sm">• Helping: {teacherName}</span>
+                  )}
+                </p>
+              </div>
               {user.role === "super_admin" && availableTeachers && availableTeachers.length > 0 && (
-                <div class="mt-3">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Select Teacher's Classroom:
+                <div class="flex items-center gap-2">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    Viewing:
                   </label>
                   <select
                     value={selectedTeacherId || user.id}

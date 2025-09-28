@@ -180,11 +180,25 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
     }
   };
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      stopCamera();
+      console.log("Component unmounting, stopping camera");
+      if (window.Quagga) {
+        window.Quagga.stop();
+        window.Quagga.offDetected(handleDetection);
+      }
     };
   }, []);
+
+  // Cleanup when isScanning changes to false
+  useEffect(() => {
+    if (!isScanning && window.Quagga) {
+      console.log("isScanning changed to false, stopping Quagga");
+      window.Quagga.stop();
+      window.Quagga.offDetected(handleDetection);
+    }
+  }, [isScanning]);
 
   const handleManualSubmit = (e: Event) => {
     e.preventDefault();
@@ -306,7 +320,7 @@ export default function BarcodeScanner({ onBookFound, initialMode }: Props) {
       )}
 
       {isScanning && (
-        <div class="relative rounded-lg overflow-hidden shadow-2xl bg-black h-[70vh] min-h-[500px]">
+        <div class="relative rounded-lg overflow-hidden shadow-2xl bg-black h-[50vh] min-h-[400px] max-h-[600px]">
           <div ref={videoRef} class="w-full h-full" />
           <div class="absolute inset-0 pointer-events-none">
             <div class="absolute inset-0 border-4 border-primary opacity-50"></div>
