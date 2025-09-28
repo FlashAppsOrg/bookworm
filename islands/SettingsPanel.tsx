@@ -292,26 +292,28 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
           <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
             Share this link with parents and students to view your classroom books.
           </p>
-          <div class="flex gap-2">
+          <div class="space-y-2">
             <input
               type="text"
               value={publicUrl}
               readonly
-              class="flex-1 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white text-sm"
             />
-            <button
-              onClick={copyPublicUrl}
-              class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
-            >
-              Copy Link
-            </button>
-            <a
-              href={publicUrl}
-              target="_blank"
-              class="px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all"
-            >
-              View →
-            </a>
+            <div class="flex flex-wrap gap-2">
+              <button
+                onClick={copyPublicUrl}
+                class="flex-1 min-w-[100px] px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all"
+              >
+                Copy Link
+              </button>
+              <a
+                href={publicUrl}
+                target="_blank"
+                class="flex-1 min-w-[100px] px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-dark text-white font-semibold transition-all text-center"
+              >
+                Visit →
+              </a>
+            </div>
           </div>
         </div>
       )}
