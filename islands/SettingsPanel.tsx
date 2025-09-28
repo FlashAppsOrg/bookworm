@@ -145,9 +145,11 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
       });
 
       const data = await response.json();
+      console.log("[SettingsPanel] updateSchool response:", data);
 
       if (response.ok) {
         if (data.requiresConfirmation) {
+          console.log("[SettingsPanel] Showing delegate modal with", data.delegates.length, "delegates");
           // Show delegate confirmation modal
           setPendingSchoolChange({
             newSchoolId: data.newSchoolId,
@@ -157,6 +159,7 @@ export default function SettingsPanel({ user, currentSchool, schools, serviceAcc
           setShowDelegateModal(true);
           setSchoolSaving(false);
         } else {
+          console.log("[SettingsPanel] No confirmation needed, updating school");
           setSchoolMessage("✓ School updated! Refreshing...");
           setTimeout(() => window.location.reload(), 1500);
         }

@@ -55,8 +55,12 @@ export const handler: Handlers = {
         }
       }
 
+      console.log(`[update-school] Found ${delegates.length} delegates for user ${user.id} (${user.email})`);
+      console.log(`[update-school] delegateAction: ${delegateAction}`);
+
       // If delegates exist and no action specified, require confirmation
       if (delegates.length > 0 && !delegateAction) {
+        console.log(`[update-school] Returning requiresConfirmation for ${delegates.length} delegates`);
         return new Response(JSON.stringify({
           requiresConfirmation: true,
           delegates: delegates.map(d => ({ id: d.id, name: d.displayName, email: d.email })),
