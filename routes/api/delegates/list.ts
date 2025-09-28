@@ -21,6 +21,19 @@ export const handler: Handlers = {
         });
       }
 
+      // Allow super_admin to view any teacher's delegates via query param
+      const url = new URL(req.url);
+      const teacherId = url.searchParams.get("teacherId");
+      const targetTeacherId = teacherId || user.id;
+
+      // If viewing another teacher's delegates, must be super_admin
+      if (targetTeacherId !== user.id && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       const kv = await getKv();
       const delegates: User[] = [];
 
@@ -32,7 +45,7 @@ export const handler: Handlers = {
           const delegateToIds = delegate.delegatedToUserIds ||
             ((delegate as any).delegatedToUserId ? [(delegate as any).delegatedToUserId] : []);
 
-          if (delegateToIds.includes(user.id)) {
+          if (delegateToIds.includes(targetTeacherId)) {
             delegates.push(delegate);
           }
         }

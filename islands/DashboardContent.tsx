@@ -34,13 +34,14 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const [invitingTeacher, setInvitingTeacher] = useState(false);
   const [inviteTeacherError, setInviteTeacherError] = useState("");
   const [inviteTeacherSuccess, setInviteTeacherSuccess] = useState(false);
+  const [showInviteBanner, setShowInviteBanner] = useState(true);
 
   useEffect(() => {
     if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
       fetchInvitations();
       fetchDelegates();
     }
-  }, []);
+  }, [selectedTeacherId]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -61,7 +62,10 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
 
   const fetchInvitations = async () => {
     try {
-      const response = await fetch("/api/invitations/list");
+      const url = selectedTeacherId
+        ? `/api/invitations/list?teacherId=${selectedTeacherId}`
+        : "/api/invitations/list";
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setInvitations(data.invitations || []);
@@ -73,7 +77,10 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
 
   const fetchDelegates = async () => {
     try {
-      const response = await fetch("/api/delegates/list");
+      const url = selectedTeacherId
+        ? `/api/delegates/list?teacherId=${selectedTeacherId}`
+        : "/api/delegates/list";
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setDelegates(data.delegates || []);
@@ -92,7 +99,10 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
       const response = await fetch("/api/invitations/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail }),
+        body: JSON.stringify({
+          email: inviteEmail,
+          teacherId: selectedTeacherId,
+        }),
       });
 
       const data = await response.json();
@@ -516,15 +526,35 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
       <main class="flex-1 container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
           {(user.role === "delegate" || user.role === "super_admin") && selectedTeacher && selectedTeacher.isPlaceholder && (
-            <div class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-              <h3 class="text-xl font-bold text-yellow-900 dark:text-yellow-100 mb-2">
-                📧 Invite Teacher to Claim Classroom
-              </h3>
-              <p class="text-yellow-800 dark:text-yellow-200 mb-4">
-                This classroom was created for <strong>{teacherName}</strong>, but they haven't been invited yet.
-                Enter their email address to send them an invitation to claim and manage this classroom.
-              </p>
-              <form onSubmit={handleInviteTeacher} class="space-y-3">
+            <div class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-lg overflow-hidden">
+              <div
+                class="flex items-center justify-between p-4 cursor-pointer hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+                onClick={() => setShowInviteBanner(!showInviteBanner)}
+              >
+                <div class="flex items-center gap-3">
+                  <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <h3 class="text-lg font-bold text-yellow-900 dark:text-yellow-100">
+                    Teacher Not Invited - Click to {showInviteBanner ? "Minimize" : "Expand"}
+                  </h3>
+                </div>
+                <svg
+                  class={`w-5 h-5 text-yellow-600 dark:text-yellow-400 transition-transform ${showInviteBanner ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              {showInviteBanner && (
+                <div class="px-4 pb-4">
+                  <p class="text-yellow-800 dark:text-yellow-200 mb-4">
+                    This classroom was created for <strong>{teacherName}</strong>, but they haven't been invited yet.
+                    Enter their email address to send them an invitation to claim and manage this classroom.
+                  </p>
+                  <form onSubmit={handleInviteTeacher} class="space-y-3">
                 <div>
                   <label class="block text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-2">
                     Teacher's Email Address
@@ -562,6 +592,8 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                   {invitingTeacher ? "Sending Invitation..." : "Send Invitation"}
                 </button>
               </form>
+                </div>
+              )}
             </div>
           )}
           <div class="flex flex-col gap-4 mb-6">
@@ -621,7 +653,7 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                   >
                     📄 {exporting ? "Exporting..." : "Export"}
                   </button>
-                  {user.googleSheetUrl && (
+                  {((selectedTeacher && selectedTeacher.googleSheetUrl) || (!selectedTeacher && user.googleSheetUrl)) && (
                     <button
                       onClick={handleBackupToSheet}
                       disabled={backingUp || books.length === 0}

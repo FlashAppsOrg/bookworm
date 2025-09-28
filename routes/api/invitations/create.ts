@@ -24,7 +24,16 @@ export const handler: Handlers = {
       }
 
       const body = await req.json();
-      const { email } = body;
+      const { email, teacherId } = body;
+      const targetTeacherId = teacherId || user.id;
+
+      // If creating for another teacher, must be super_admin
+      if (targetTeacherId !== user.id && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
       if (!email) {
         return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -35,8 +44,18 @@ export const handler: Handlers = {
 
       const kv = await getKv();
 
+      // Get teacher name for invitation
+      const { getUserById } = await import("../../../utils/db-helpers.ts");
+      const targetTeacher = await getUserById(targetTeacherId);
+      if (!targetTeacher) {
+        return new Response(JSON.stringify({ error: "Teacher not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       // Check if invitation already exists (resend case)
-      const existingInvitations = await kv.list<Invitation>({ prefix: ["invitations:teacher", user.id] });
+      const existingInvitations = await kv.list<Invitation>({ prefix: ["invitations:teacher", targetTeacherId] });
       let existingInvite: Invitation | null = null;
 
       for await (const entry of existingInvitations) {
@@ -69,8 +88,8 @@ export const handler: Handlers = {
       const invitation: Invitation = {
         id: token,
         token,
-        teacherId: user.id,
-        teacherName: user.displayName,
+        teacherId: targetTeacherId,
+        teacherName: targetTeacher.displayName,
         email: email.toLowerCase(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         used: false,
@@ -81,16 +100,16 @@ export const handler: Handlers = {
       };
 
       await kv.set(["invitations", token], invitation);
-      await kv.set(["invitations:teacher", user.id, token], invitation);
+      await kv.set(["invitations:teacher", targetTeacherId, token], invitation);
 
       const appUrl = Deno.env.get("APP_URL") || "http://localhost:8000";
       const inviteUrl = `${appUrl}/delegate-signup?token=${token}`;
 
-      const emailResult = await sendInvitationEmail(email, user.displayName, inviteUrl);
+      const emailResult = await sendInvitationEmail(email, targetTeacher.displayName, inviteUrl);
 
       if (!emailResult.success) {
         await kv.delete(["invitations", token]);
-        await kv.delete(["invitations:teacher", user.id, token]);
+        await kv.delete(["invitations:teacher", targetTeacherId, token]);
         return new Response(JSON.stringify({ error: emailResult.error }), {
           status: 500,
           headers: { "Content-Type": "application/json" },

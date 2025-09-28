@@ -21,10 +21,23 @@ export const handler: Handlers = {
         });
       }
 
+      // Allow super_admin to view any teacher's invitations via query param
+      const url = new URL(req.url);
+      const teacherId = url.searchParams.get("teacherId");
+      const targetTeacherId = teacherId || user.id;
+
+      // If viewing another teacher's invitations, must be super_admin
+      if (targetTeacherId !== user.id && user.role !== "super_admin") {
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       const kv = await getKv();
       const invitations: Invitation[] = [];
 
-      const entries = kv.list<Invitation>({ prefix: ["invitations:teacher", user.id] });
+      const entries = kv.list<Invitation>({ prefix: ["invitations:teacher", targetTeacherId] });
       for await (const entry of entries) {
         invitations.push(entry.value);
       }
