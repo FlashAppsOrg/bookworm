@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { User } from "../utils/db.ts";
 
 interface Props {
@@ -7,6 +7,23 @@ interface Props {
 
 export default function AdminHeader({ user }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -18,7 +35,7 @@ export default function AdminHeader({ user }: Props) {
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <a href="/admin" class="text-2xl font-bold text-primary">BookWorm Admin</a>
-          <div class="relative">
+          <div class="relative" ref={menuRef}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors"

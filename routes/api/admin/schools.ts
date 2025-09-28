@@ -96,6 +96,99 @@ export const handler: Handlers = {
     });
   },
 
+  async PATCH(req) {
+    const user = await getUserFromSession(req);
+    if (!user || !isSuperAdmin(user)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const { schoolId, updates } = await req.json();
+
+    if (!schoolId) {
+      return new Response(JSON.stringify({ error: "School ID is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const kv = await getKv();
+    const schoolResult = await kv.get<School>(["schools:id", schoolId]);
+
+    if (!schoolResult.value) {
+      return new Response(JSON.stringify({ error: "School not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const school = schoolResult.value;
+    const oldSlug = school.slug;
+    const oldDomain = school.domain;
+
+    if (updates.name !== undefined && updates.name !== school.name) {
+      if (!updates.name.trim()) {
+        return new Response(JSON.stringify({ error: "School name cannot be empty" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const newSlug = generateSlug(updates.name);
+      if (newSlug !== oldSlug) {
+        const existingSchool = await kv.get(["schools:slug", newSlug]);
+        if (existingSchool.value) {
+          return new Response(JSON.stringify({ error: "A school with this name already exists" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      school.name = updates.name.trim();
+      school.slug = newSlug;
+    }
+
+    if (updates.domain !== undefined) {
+      const newDomain = updates.domain && updates.domain.trim() ? updates.domain.trim().toLowerCase() : null;
+
+      if (newDomain && newDomain !== oldDomain) {
+        const existingDomain = await kv.get(["schools:domain", newDomain]);
+        if (existingDomain.value && existingDomain.value !== schoolId) {
+          return new Response(JSON.stringify({ error: "A school with this domain already exists" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      school.domain = newDomain;
+    }
+
+    await kv.set(["schools:id", schoolId], school);
+
+    if (school.slug !== oldSlug) {
+      await kv.delete(["schools:slug", oldSlug]);
+      await kv.set(["schools:slug", school.slug], schoolId);
+    }
+
+    if (school.domain !== oldDomain) {
+      if (oldDomain) {
+        await kv.delete(["schools:domain", oldDomain]);
+      }
+      if (school.domain) {
+        await kv.set(["schools:domain", school.domain], schoolId);
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, school }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+
   async DELETE(req) {
     const user = await getUserFromSession(req);
     if (!user || !isSuperAdmin(user)) {

@@ -15,6 +15,9 @@ export default function SchoolManagement() {
   const [newSchoolDomain, setNewSchoolDomain] = useState("");
   const [message, setMessage] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDomain, setEditDomain] = useState("");
 
   async function loadSchools() {
     try {
@@ -65,6 +68,51 @@ export default function SchoolManagement() {
       setMessage("✗ Failed to create school");
     } finally {
       setIsAdding(false);
+    }
+  }
+
+  function startEdit(school: School) {
+    setEditingSchool(school);
+    setEditName(school.name);
+    setEditDomain(school.domain || "");
+    setMessage("");
+  }
+
+  function cancelEdit() {
+    setEditingSchool(null);
+    setEditName("");
+    setEditDomain("");
+    setMessage("");
+  }
+
+  async function saveEdit() {
+    if (!editingSchool) return;
+
+    try {
+      const updates: any = {};
+      if (editName !== editingSchool.name) {
+        updates.name = editName;
+      }
+      if (editDomain !== (editingSchool.domain || "")) {
+        updates.domain = editDomain || null;
+      }
+
+      const response = await fetch("/api/admin/schools", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolId: editingSchool.id, updates }),
+      });
+
+      if (response.ok) {
+        setMessage("✓ School updated successfully");
+        await loadSchools();
+        cancelEdit();
+      } else {
+        const data = await response.json();
+        setMessage(`✗ ${data.error}`);
+      }
+    } catch (error) {
+      setMessage("✗ Failed to update school");
     }
   }
 
@@ -175,24 +223,68 @@ export default function SchoolManagement() {
                 {schools.map((school) => (
                   <tr key={school.id} class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                      {school.name}
+                      {editingSchool?.id === school.id ? (
+                        <input
+                          type="text"
+                          value={editName}
+                          onInput={(e) => setEditName((e.target as HTMLInputElement).value)}
+                          class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white text-sm"
+                        />
+                      ) : (
+                        school.name
+                      )}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-mono">
                       {school.slug}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-mono">
-                      {school.domain || "-"}
+                      {editingSchool?.id === school.id ? (
+                        <input
+                          type="text"
+                          value={editDomain}
+                          onInput={(e) => setEditDomain((e.target as HTMLInputElement).value)}
+                          placeholder="-"
+                          class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white text-sm"
+                        />
+                      ) : (
+                        school.domain || "-"
+                      )}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                       {new Date(school.createdAt).toLocaleDateString()}
                     </td>
                     <td class="px-6 py-4 text-sm text-right">
-                      <button
-                        onClick={() => deleteSchool(school.id, school.name)}
-                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-semibold"
-                      >
-                        Delete
-                      </button>
+                      {editingSchool?.id === school.id ? (
+                        <div class="flex gap-2 justify-end">
+                          <button
+                            onClick={saveEdit}
+                            class="text-green-600 hover:text-green-800 dark:text-green-400 font-semibold"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            class="text-gray-600 hover:text-gray-800 dark:text-gray-400 font-semibold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div class="flex gap-3 justify-end">
+                          <button
+                            onClick={() => startEdit(school)}
+                            class="text-primary hover:text-primary-dark dark:text-primary-light font-semibold"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteSchool(school.id, school.name)}
+                            class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-semibold"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
