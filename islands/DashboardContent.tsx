@@ -608,12 +608,14 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
                         class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg"
                       >
                         <div class="flex-1 min-w-0">
-                          <p class="text-lg font-bold text-gray-900 dark:text-white">
-                            {delegate.displayName || "Name not set"}
+                          <p class="text-xl font-bold text-gray-900 dark:text-white">
+                            {delegate.displayName || delegate.email}
                           </p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {delegate.email}
-                          </p>
+                          {delegate.displayName && (
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              {delegate.email}
+                            </p>
+                          )}
                         </div>
                         <button
                           onClick={() => removeDelegate(delegate.id, delegate.displayName || delegate.email)}
