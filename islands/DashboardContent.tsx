@@ -11,9 +11,10 @@ interface Props {
   schoolName?: string;
   availableTeachers?: Array<{ id: string; name: string }>;
   selectedTeacherId?: string;
+  selectedTeacher?: User;
 }
 
-export default function DashboardContent({ user, initialBooks, teacherName, schoolName, availableTeachers, selectedTeacherId }: Props) {
+export default function DashboardContent({ user, initialBooks, teacherName, schoolName, availableTeachers, selectedTeacherId, selectedTeacher }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [books, setBooks] = useState<ClassroomBook[]>(initialBooks);
   const [currentBook, setCurrentBook] = useState<BookInfo | null>(null);
@@ -29,6 +30,10 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [exporting, setExporting] = useState(false);
+  const [teacherEmail, setTeacherEmail] = useState("");
+  const [invitingTeacher, setInvitingTeacher] = useState(false);
+  const [inviteTeacherError, setInviteTeacherError] = useState("");
+  const [inviteTeacherSuccess, setInviteTeacherSuccess] = useState(false);
 
   useEffect(() => {
     if (user.role === "teacher" || (user.role === "super_admin" && user.schoolId)) {
@@ -324,6 +329,42 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
     }
   };
 
+  const handleInviteTeacher = async (e: Event) => {
+    e.preventDefault();
+    if (!selectedTeacherId || !teacherEmail.trim()) return;
+
+    setInvitingTeacher(true);
+    setInviteTeacherError("");
+    setInviteTeacherSuccess(false);
+
+    try {
+      const response = await fetch("/api/delegates/invite-teacher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacherId: selectedTeacherId,
+          email: teacherEmail.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setInviteTeacherSuccess(true);
+        setTeacherEmail("");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setInviteTeacherError(data.error || "Failed to send invite");
+      }
+    } catch (err) {
+      setInviteTeacherError("Network error. Please try again.");
+    } finally {
+      setInvitingTeacher(false);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
@@ -474,6 +515,55 @@ export default function DashboardContent({ user, initialBooks, teacherName, scho
 
       <main class="flex-1 container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
+          {(user.role === "delegate" || user.role === "super_admin") && selectedTeacher && selectedTeacher.isPlaceholder && (
+            <div class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+              <h3 class="text-xl font-bold text-yellow-900 dark:text-yellow-100 mb-2">
+                📧 Invite Teacher to Claim Classroom
+              </h3>
+              <p class="text-yellow-800 dark:text-yellow-200 mb-4">
+                This classroom was created for <strong>{teacherName}</strong>, but they haven't been invited yet.
+                Enter their email address to send them an invitation to claim and manage this classroom.
+              </p>
+              <form onSubmit={handleInviteTeacher} class="space-y-3">
+                <div>
+                  <label class="block text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-2">
+                    Teacher's Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={teacherEmail}
+                    onInput={(e) => setTeacherEmail((e.target as HTMLInputElement).value)}
+                    placeholder="teacher@school.edu"
+                    required
+                    disabled={invitingTeacher}
+                    class="w-full px-4 py-2 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg focus:outline-none focus:border-yellow-500 dark:bg-yellow-950 dark:text-white"
+                  />
+                  {selectedTeacher.schoolId && (
+                    <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                      Note: Email domain must match the school domain
+                    </p>
+                  )}
+                </div>
+                {inviteTeacherError && (
+                  <p class="text-sm text-red-600 dark:text-red-400">
+                    ✗ {inviteTeacherError}
+                  </p>
+                )}
+                {inviteTeacherSuccess && (
+                  <p class="text-sm text-green-600 dark:text-green-400">
+                    ✓ Invitation sent! The teacher will receive an email to claim this classroom.
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={invitingTeacher || !teacherEmail.trim()}
+                  class="px-6 py-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {invitingTeacher ? "Sending Invitation..." : "Send Invitation"}
+                </button>
+              </form>
+            </div>
+          )}
           <div class="flex flex-col gap-4 mb-6">
             <div class="flex flex-col gap-3">
               <div class="flex-1">

@@ -12,6 +12,7 @@ interface DashboardData {
   schoolName?: string;
   availableTeachers?: Array<{ id: string; name: string }>;
   selectedTeacherId?: string;
+  selectedTeacher?: User;
 }
 
 export const handler: Handlers<DashboardData> = {
@@ -114,7 +115,13 @@ export const handler: Handlers<DashboardData> = {
       schoolName = school?.name;
     }
 
-    return ctx.render({ user, books, teacherName, schoolName, availableTeachers, selectedTeacherId });
+    // Get full teacher object for delegates/super_admin
+    let selectedTeacher: User | undefined;
+    if (selectedTeacherId && selectedTeacherId !== user.id) {
+      selectedTeacher = await getUserById(selectedTeacherId) || undefined;
+    }
+
+    return ctx.render({ user, books, teacherName, schoolName, availableTeachers, selectedTeacherId, selectedTeacher });
   },
 };
 
@@ -131,6 +138,7 @@ export default function DashboardPage({ data }: PageProps<DashboardData>) {
         schoolName={data.schoolName}
         availableTeachers={data.availableTeachers}
         selectedTeacherId={data.selectedTeacherId}
+        selectedTeacher={data.selectedTeacher}
       />
     </>
   );
