@@ -45,7 +45,7 @@ export const handler: Handlers = {
       const kv = await getKv();
 
       // Get teacher name for invitation
-      const { getUserById } = await import("../../../utils/db-helpers.ts");
+      const { getUserById, getUserByEmail } = await import("../../../utils/db-helpers.ts");
       const targetTeacher = await getUserById(targetTeacherId);
       if (!targetTeacher) {
         return new Response(JSON.stringify({ error: "Teacher not found" }), {
@@ -105,7 +105,11 @@ export const handler: Handlers = {
       const appUrl = Deno.env.get("APP_URL") || "http://localhost:8000";
       const inviteUrl = `${appUrl}/delegate-signup?token=${token}`;
 
-      const emailResult = await sendInvitationEmail(email, targetTeacher.displayName, inviteUrl);
+      // Check if this email belongs to an existing delegate
+      const existingUser = await getUserByEmail(email);
+      const isExistingDelegate = existingUser?.role === "delegate";
+
+      const emailResult = await sendInvitationEmail(email, targetTeacher.displayName, inviteUrl, isExistingDelegate);
 
       if (!emailResult.success) {
         await kv.delete(["invitations", token]);

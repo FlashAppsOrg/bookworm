@@ -143,7 +143,8 @@ export async function sendVerificationEmail(
 export async function sendInvitationEmail(
   email: string,
   teacherName: string,
-  inviteUrl: string
+  inviteUrl: string,
+  isExistingDelegate: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
   const limitCheck = await checkEmailLimit();
   if (!limitCheck.allowed) {
@@ -161,11 +162,27 @@ export async function sendInvitationEmail(
   const resend = new Resend(apiKey);
   const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
 
+  const subject = isExistingDelegate
+    ? `${teacherName} added you to their BookWorm classroom`
+    : `${teacherName} invited you to help with BookWorm`;
+
+  const bodyText = isExistingDelegate
+    ? `<strong>${teacherName}</strong> has added you as a helper for their classroom in BookWorm.`
+    : `<strong>${teacherName}</strong> has invited you to help catalog their classroom books using BookWorm.`;
+
+  const additionalText = isExistingDelegate
+    ? `You can now scan and add books to their classroom library. Click the button below to access their classroom.`
+    : `As a helper, you'll be able to scan and add books to their classroom library. Click the button below to get started.`;
+
+  const buttonText = isExistingDelegate
+    ? `Go to Classroom`
+    : `Join as Helper`;
+
   try {
     await resend.emails.send({
       from: `BookWorm <${fromEmail}>`,
       to: email,
-      subject: `${teacherName} invited you to help with BookWorm`,
+      subject,
       html: `
         <!DOCTYPE html>
         <html>
@@ -179,18 +196,18 @@ export async function sendInvitationEmail(
             </div>
 
             <div style="background: #f9fafb; border-radius: 8px; padding: 30px; margin: 20px 0;">
-              <h2 style="margin-top: 0; color: #111827;">You're Invited!</h2>
+              <h2 style="margin-top: 0; color: #111827;">${isExistingDelegate ? 'New Classroom Added' : "You're Invited!"}</h2>
               <p style="color: #4b5563; font-size: 16px;">
-                <strong>${teacherName}</strong> has invited you to help catalog their classroom books using BookWorm.
+                ${bodyText}
               </p>
               <p style="color: #4b5563; font-size: 16px;">
-                As a helper, you'll be able to scan and add books to their classroom library. Click the button below to get started.
+                ${additionalText}
               </p>
 
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${inviteUrl}"
                    style="display: inline-block; background: #0D9488; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                  Join as Helper
+                  ${buttonText}
                 </a>
               </div>
 
