@@ -67,6 +67,7 @@ import * as $api_settings_update_school from "./routes/api/settings/update-schoo
 import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
 import * as $api_teachers_list from "./routes/api/teachers/list.ts";
 import * as $challenge_book from "./routes/challenge-book.tsx";
+import * as $challenge_books from "./routes/challenge-books.tsx";
 import * as $claim_classroom from "./routes/claim-classroom.tsx";
 import * as $dashboard from "./routes/dashboard.tsx";
 import * as $delegate_signup from "./routes/delegate-signup.tsx";
@@ -92,6 +93,7 @@ import * as $ClassroomBrowser from "./islands/ClassroomBrowser.tsx";
 import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
+import * as $MultipleChallengeForm from "./islands/MultipleChallengeForm.tsx";
 import * as $ParentSignupForm from "./islands/ParentSignupForm.tsx";
 import * as $ParentVerification from "./islands/ParentVerification.tsx";
 import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
@@ -174,6 +176,7 @@ const manifest = {
     "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
     "./routes/api/teachers/list.ts": $api_teachers_list,
     "./routes/challenge-book.tsx": $challenge_book,
+    "./routes/challenge-books.tsx": $challenge_books,
     "./routes/claim-classroom.tsx": $claim_classroom,
     "./routes/dashboard.tsx": $dashboard,
     "./routes/delegate-signup.tsx": $delegate_signup,
@@ -202,6 +205,7 @@ const manifest = {
     "./islands/DashboardContent.tsx": $DashboardContent,
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
+    "./islands/MultipleChallengeForm.tsx": $MultipleChallengeForm,
     "./islands/ParentSignupForm.tsx": $ParentSignupForm,
     "./islands/ParentVerification.tsx": $ParentVerification,
     "./islands/PublicClassroom.tsx": $PublicClassroom,

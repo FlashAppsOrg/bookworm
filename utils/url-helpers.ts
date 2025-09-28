@@ -19,8 +19,12 @@ export function getAppUrl(req?: Request): string {
   const appUrl = Deno.env.get("APP_URL");
   if (appUrl) {
     // Fix common mistakes in the URL
+    if (appUrl.includes("bookworm.flashapps.deno.net") || appUrl.includes("bookworm.flashapps.deno.dev")) {
+      // Replace with the correct custom domain
+      return "https://bookworm.flashapps.org";
+    }
     if (appUrl.includes(".deno.net")) {
-      // If someone accidentally used .deno.net, correct it to .deno.dev
+      // Generic fix: .deno.net doesn't exist, use .deno.dev
       return appUrl.replace(".deno.net", ".deno.dev");
     }
     return appUrl;
@@ -59,7 +63,12 @@ export function getPreferredDomain(): string {
   const appUrl = Deno.env.get("APP_URL");
   if (appUrl) {
     // Fix common mistakes in the URL
+    if (appUrl.includes("bookworm.flashapps.deno.net") || appUrl.includes("bookworm.flashapps.deno.dev")) {
+      // Replace with the correct custom domain
+      return "https://bookworm.flashapps.org";
+    }
     if (appUrl.includes(".deno.net")) {
+      // Generic fix: .deno.net doesn't exist, use .deno.dev
       return appUrl.replace(".deno.net", ".deno.dev");
     }
     return appUrl;

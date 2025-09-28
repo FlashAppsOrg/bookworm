@@ -126,6 +126,29 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
             {selectedBooks.size === filteredBooks.length ? "Deselect All" : "Select All"}
           </button>
           <button
+            onClick={() => {
+              const selectedBookData = filteredBooks
+                .filter(b => selectedBooks.has(b.id))
+                .map(b => ({
+                  bookId: b.id,
+                  userId: b.teacherId,
+                  title: b.title
+                }));
+
+              if (selectedBookData.length === 1) {
+                // Single book - use existing route
+                const book = selectedBookData[0];
+                window.location.href = `/challenge-book?bookId=${book.bookId}&userId=${book.userId}`;
+              } else {
+                // Multiple books - use new route
+                const params = new URLSearchParams();
+                selectedBookData.forEach(book => {
+                  params.append('bookId', book.bookId);
+                  params.append('userId', book.userId);
+                });
+                window.location.href = `/challenge-books?${params.toString()}`;
+              }
+            }}
             class="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm font-semibold transition-colors"
           >
             Challenge Selected

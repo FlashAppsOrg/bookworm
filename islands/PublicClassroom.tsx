@@ -65,7 +65,13 @@ export default function PublicClassroom({ books, teacherName, schoolName }: Prop
       const book = selectedBooksList[0];
       window.location.href = `/challenge-book?bookId=${book.id}&userId=${book.userId}`;
     } else {
-      alert("Challenge multiple books feature coming soon!");
+      // Multiple books - use new route
+      const params = new URLSearchParams();
+      selectedBooksList.forEach(book => {
+        params.append('bookId', book.id);
+        params.append('userId', book.userId);
+      });
+      window.location.href = `/challenge-books?${params.toString()}`;
     }
   };
 
