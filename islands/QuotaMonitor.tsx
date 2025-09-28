@@ -63,10 +63,14 @@ export default function QuotaMonitor() {
         throw new Error(data.error || "Validation failed");
       }
 
-      setValidationMessage(`Validated ${data.validated} books, ${data.failed} failed`);
+      if (data.validated === 0 && data.failed > 0) {
+        setValidationMessage(`⚠️ Validation failed for all ${data.failed} books. Check server logs for details.`);
+      } else {
+        setValidationMessage(`✓ Validated ${data.validated} books${data.failed > 0 ? `, ${data.failed} failed` : ''}`);
+      }
       fetchStats(showUnvalidated); // Refresh stats after validation
     } catch (err) {
-      setValidationMessage(err instanceof Error ? err.message : "Validation error");
+      setValidationMessage(`❌ ${err instanceof Error ? err.message : "Validation error"}`);
     } finally {
       setValidating(false);
     }
