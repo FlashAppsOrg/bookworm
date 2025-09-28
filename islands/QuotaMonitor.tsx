@@ -76,6 +76,54 @@ export default function QuotaMonitor() {
     }
   };
 
+  const deleteBook = async (isbn: string) => {
+    if (!isbn) {
+      if (!confirm("This book has no ISBN. Delete anyway?")) return;
+    } else {
+      if (!confirm(`Delete cached book with ISBN ${isbn}?`)) return;
+    }
+
+    try {
+      const response = await fetch("/api/admin/delete-cache", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isbn }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete book");
+      }
+
+      setValidationMessage(`✓ Deleted cached book: ${isbn || 'unknown'}`);
+      fetchStats(showUnvalidated); // Refresh stats
+    } catch (err) {
+      setValidationMessage(`❌ Failed to delete book`);
+    }
+  };
+
+  const clearAllUnvalidated = async () => {
+    if (!confirm(`Clear ALL ${stats?.cache.unvalidated || 0} unvalidated books from cache? This cannot be undone.`)) return;
+
+    try {
+      const response = await fetch("/api/admin/delete-cache", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clearAllUnvalidated: true }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to clear unvalidated books");
+      }
+
+      setValidationMessage(`✓ ${data.message}`);
+      fetchStats(showUnvalidated); // Refresh stats
+    } catch (err) {
+      setValidationMessage(`❌ ${err instanceof Error ? err.message : "Failed to clear"}`);
+    }
+  };
+
   useEffect(() => {
     fetchStats(showUnvalidated);
   }, [showUnvalidated]);
@@ -246,7 +294,7 @@ export default function QuotaMonitor() {
             {stats.cache.unvalidated} unvalidated book{stats.cache.unvalidated === 1 ? '' : 's'} from bulk imports pending validation.
           </p>
 
-          <div class="flex gap-4 mb-4">
+          <div class="flex flex-wrap gap-4 mb-4">
             <button
               onClick={triggerValidation}
               disabled={validating || stats.quota.remaining < 10}
@@ -265,6 +313,15 @@ export default function QuotaMonitor() {
             >
               {showUnvalidated ? "Hide Queue" : "Show Queue"}
             </button>
+
+            {stats.cache.unvalidated > 0 && (
+              <button
+                onClick={clearAllUnvalidated}
+                class="px-6 py-2 rounded font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors"
+              >
+                Clear All Unvalidated
+              </button>
+            )}
           </div>
 
           {stats.quota.remaining < 10 && (
@@ -293,13 +350,14 @@ export default function QuotaMonitor() {
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Title</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Authors</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Publisher</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Actions</th>
                       </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {stats.unvalidatedBooks.map((book) => (
                         <tr key={book.isbn} class="hover:bg-gray-50 dark:hover:bg-gray-700">
                           <td class="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">
-                            {book.isbn}
+                            {book.isbn || <span class="text-red-500">Missing ISBN</span>}
                           </td>
                           <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
                             {book.data?.title || "Unknown"}
@@ -309,6 +367,14 @@ export default function QuotaMonitor() {
                           </td>
                           <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                             {book.data?.publisher || "—"}
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <button
+                              onClick={() => deleteBook(book.isbn)}
+                              class="px-3 py-1 text-sm rounded bg-red-100 hover:bg-red-200 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-semibold transition-colors"
+                            >
+                              Delete
+                            </button>
                           </td>
                         </tr>
                       ))}

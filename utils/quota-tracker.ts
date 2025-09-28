@@ -75,7 +75,7 @@ export async function getUnvalidatedBooks(limit: number = 100): Promise<Array<{
 
   for await (const entry of entries) {
     if (!entry.value?.validated && unvalidated.length < limit) {
-      const isbn = entry.key[2] as string;
+      const isbn = entry.key[1] as string; // Key structure is ["books:isbn", isbn]
       unvalidated.push({
         isbn,
         data: entry.value?.data,
