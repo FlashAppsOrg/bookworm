@@ -77,22 +77,12 @@ export const handler: Handlers<DashboardData> = {
       // If multiple classrooms, need to pick one
       if (delegateToIds.length > 1) {
         const url = new URL(req.url);
-        selectedTeacherId = url.searchParams.get("teacherId") || undefined;
-
-        if (!selectedTeacherId) {
-          // Redirect to picker
-          return new Response(null, {
-            status: 302,
-            headers: { Location: "/select-classroom" },
-          });
-        }
+        selectedTeacherId = url.searchParams.get("teacherId") || delegateToIds[0]; // Default to first teacher
 
         // Verify they have access to this teacher
         if (!delegateToIds.includes(selectedTeacherId)) {
-          return new Response(null, {
-            status: 302,
-            headers: { Location: "/select-classroom" },
-          });
+          // If invalid teacher selected, default to first
+          selectedTeacherId = delegateToIds[0];
         }
       } else if (delegateToIds.length === 1) {
         selectedTeacherId = delegateToIds[0];

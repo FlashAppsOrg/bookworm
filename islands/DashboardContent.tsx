@@ -435,15 +435,15 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
                 </h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
                   {books.length} book{books.length !== 1 ? "s" : ""} cataloged
-                  {user.role === "delegate" && teacherName && (
+                  {user.role === "delegate" && teacherName && (!availableTeachers || availableTeachers.length <= 1) && (
                     <span class="ml-2 text-sm">• Helping: {teacherName}</span>
                   )}
                 </p>
               </div>
-              {user.role === "super_admin" && availableTeachers && availableTeachers.length > 0 && (
+              {((user.role === "super_admin" || user.role === "delegate") && availableTeachers && availableTeachers.length > 1) && (
                 <div class="flex items-center gap-2">
                   <label class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    Viewing:
+                    {user.role === "super_admin" ? "Viewing:" : "Helping:"}
                   </label>
                   <select
                     value={selectedTeacherId || user.id}
@@ -463,17 +463,6 @@ export default function DashboardContent({ user, initialBooks, teacherName, avai
               )}
             </div>
             <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
-              {user.role === "delegate" && availableTeachers && availableTeachers.length > 1 && (
-                <a
-                  href="/select-classroom"
-                  class="px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition-all text-sm whitespace-nowrap flex items-center justify-center gap-2"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01" />
-                  </svg>
-                  Switch
-                </a>
-              )}
               <button
                 onClick={() => setScannerMode(scannerMode === 'camera' ? null : 'camera')}
                 class="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold transition-all text-sm whitespace-nowrap"
