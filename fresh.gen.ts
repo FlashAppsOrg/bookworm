@@ -41,6 +41,7 @@ import * as $api_auth_parent_student_verification from "./routes/api/auth/parent
 import * as $api_auth_resend_verification from "./routes/api/auth/resend-verification.ts";
 import * as $api_auth_reset_password from "./routes/api/auth/reset-password.ts";
 import * as $api_auth_signup from "./routes/api/auth/signup.ts";
+import * as $api_auth_teacher_signup from "./routes/api/auth/teacher-signup.ts";
 import * as $api_auth_update_password from "./routes/api/auth/update-password.ts";
 import * as $api_auth_verify from "./routes/api/auth/verify.ts";
 import * as $api_challenges_submit from "./routes/api/challenges/submit.ts";
@@ -68,6 +69,7 @@ import * as $api_school_admin_staff_import from "./routes/api/school-admin/staff
 import * as $api_schools from "./routes/api/schools.ts";
 import * as $api_settings_update_school from "./routes/api/settings/update-school.ts";
 import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
+import * as $api_students_claim from "./routes/api/students/claim.ts";
 import * as $api_teachers_list from "./routes/api/teachers/list.ts";
 import * as $challenge_book from "./routes/challenge-book.tsx";
 import * as $challenge_books from "./routes/challenge-books.tsx";
@@ -85,6 +87,7 @@ import * as $select_classroom from "./routes/select-classroom.tsx";
 import * as $settings from "./routes/settings.tsx";
 import * as $setup from "./routes/setup.tsx";
 import * as $signup from "./routes/signup.tsx";
+import * as $teacher_signup from "./routes/teacher-signup.tsx";
 import * as $verify from "./routes/verify.tsx";
 import * as $AdminHeader from "./islands/AdminHeader.tsx";
 import * as $App from "./islands/App.tsx";
@@ -110,6 +113,8 @@ import * as $SettingsPanel from "./islands/SettingsPanel.tsx";
 import * as $SetupForm from "./islands/SetupForm.tsx";
 import * as $SignupForm from "./islands/SignupForm.tsx";
 import * as $StaffImport from "./islands/StaffImport.tsx";
+import * as $StudentClaimForm from "./islands/StudentClaimForm.tsx";
+import * as $TeacherSignupForm from "./islands/TeacherSignupForm.tsx";
 import * as $UsageStats from "./islands/UsageStats.tsx";
 import * as $UserManagement from "./islands/UserManagement.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -156,6 +161,7 @@ const manifest = {
     "./routes/api/auth/resend-verification.ts": $api_auth_resend_verification,
     "./routes/api/auth/reset-password.ts": $api_auth_reset_password,
     "./routes/api/auth/signup.ts": $api_auth_signup,
+    "./routes/api/auth/teacher-signup.ts": $api_auth_teacher_signup,
     "./routes/api/auth/update-password.ts": $api_auth_update_password,
     "./routes/api/auth/verify.ts": $api_auth_verify,
     "./routes/api/challenges/submit.ts": $api_challenges_submit,
@@ -183,6 +189,7 @@ const manifest = {
     "./routes/api/schools.ts": $api_schools,
     "./routes/api/settings/update-school.ts": $api_settings_update_school,
     "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
+    "./routes/api/students/claim.ts": $api_students_claim,
     "./routes/api/teachers/list.ts": $api_teachers_list,
     "./routes/challenge-book.tsx": $challenge_book,
     "./routes/challenge-books.tsx": $challenge_books,
@@ -201,6 +208,7 @@ const manifest = {
     "./routes/settings.tsx": $settings,
     "./routes/setup.tsx": $setup,
     "./routes/signup.tsx": $signup,
+    "./routes/teacher-signup.tsx": $teacher_signup,
     "./routes/verify.tsx": $verify,
   },
   islands: {
@@ -228,6 +236,8 @@ const manifest = {
     "./islands/SetupForm.tsx": $SetupForm,
     "./islands/SignupForm.tsx": $SignupForm,
     "./islands/StaffImport.tsx": $StaffImport,
+    "./islands/StudentClaimForm.tsx": $StudentClaimForm,
+    "./islands/TeacherSignupForm.tsx": $TeacherSignupForm,
     "./islands/UsageStats.tsx": $UsageStats,
     "./islands/UserManagement.tsx": $UserManagement,
   },

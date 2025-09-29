@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { GoogleAuthService } from "../../../utils/google-auth.ts";
-import { getKv, User } from "../../../utils/db.ts";
+import { getOrCreateGoogleUser, sharedToLegacyUser } from "../../../utils/auth-shared.ts";
 import { createSession } from "../../../utils/session.ts";
 
 export const handler: Handlers = {
@@ -37,44 +37,11 @@ export const handler: Handlers = {
       // Get user info from Google
       const googleUser = await authService.getUserInfo(accessToken);
 
-      const kv = await getKv();
+      // Get or create user in shared database
+      const sharedUser = await getOrCreateGoogleUser(googleUser);
 
-      // Check if user already exists
-      let existingUser = await kv.get<User>(["users:email", googleUser.email.toLowerCase()]);
-      let user: User;
-
-      if (existingUser.value) {
-        user = existingUser.value;
-
-        // Update user info from Google if needed
-        if (user.displayName !== googleUser.name) {
-          user.displayName = googleUser.name;
-          await kv.set(["users:id", user.id], user);
-          await kv.set(["users:email", user.email], user);
-        }
-      } else {
-        // Create new parent user
-        const userId = crypto.randomUUID();
-        user = {
-          id: userId,
-          email: googleUser.email.toLowerCase(),
-          passwordHash: "", // No password for Google Auth users
-          displayName: googleUser.name,
-          username: "", // Parents don't need usernames
-          schoolId: "", // Will be set during student verification
-          verified: true, // Google email is already verified
-          role: "parent",
-          delegatedToUserIds: [],
-          googleBooksApiKey: null,
-          googleSheetUrl: null,
-          isPlaceholder: false,
-          createdAt: new Date().toISOString(),
-        };
-
-        // Save new user
-        await kv.set(["users:id", userId], user);
-        await kv.set(["users:email", googleUser.email.toLowerCase()], user);
-      }
+      // Convert to legacy format for session (temporary compatibility)
+      const user = sharedToLegacyUser(sharedUser);
 
       // Create session
       const sessionCookie = await createSession(user);
