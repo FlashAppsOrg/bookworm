@@ -1,6 +1,7 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { getKv, ClassroomBook, User, School } from "../utils/db.ts";
 import { getUserFromSession } from "../utils/session.ts";
+import { getTeachersBySchoolId } from "../utils/db-helpers.ts";
 import MultipleChallengeForm from "../islands/MultipleChallengeForm.tsx";
 import { Head } from "$fresh/runtime.ts";
 
@@ -12,6 +13,7 @@ interface BookWithTeacher extends ClassroomBook {
 interface MultipleChallengePageData {
   books: BookWithTeacher[];
   school: School;
+  schoolTeachers: Array<{id: string; name: string;}>;
   parent: User | null;
   needsAuth: boolean;
 }
@@ -76,6 +78,13 @@ export const handler: Handlers<MultipleChallengePageData> = {
       return new Response("School not found", { status: 404 });
     }
 
+    // Get all teachers from this school for the dropdown
+    const teachers = await getTeachersBySchoolId(school.id);
+    const schoolTeachers = teachers.map(t => ({
+      id: t.id,
+      name: t.displayName
+    }));
+
     // Check if parent is logged in
     const parent = await getUserFromSession(req);
 
@@ -85,6 +94,7 @@ export const handler: Handlers<MultipleChallengePageData> = {
     return ctx.render({
       books,
       school,
+      schoolTeachers,
       parent,
       needsAuth,
     });
@@ -128,6 +138,7 @@ export default function MultipleChallengeBooks({ data }: PageProps<MultipleChall
             <MultipleChallengeForm
               books={books}
               schoolName={school.name}
+              schoolTeachers={schoolTeachers}
               parentId={parent?.id}
               parentName={parent?.displayName}
               parentEmail={parent?.email}

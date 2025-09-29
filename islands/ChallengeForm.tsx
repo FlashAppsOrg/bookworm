@@ -6,6 +6,7 @@ interface Props {
   bookTitle: string;
   teacherName: string;
   schoolName: string;
+  schoolTeachers: Array<{id: string; name: string;}>;
   parentId?: string;
   parentName?: string;
   parentEmail?: string;
@@ -17,12 +18,14 @@ export default function ChallengeForm({
   bookTitle,
   teacherName,
   schoolName,
+  schoolTeachers,
   parentId: propParentId,
   parentName: propParentName,
   parentEmail: propParentEmail
 }: Props) {
   const [parentName, setParentName] = useState(propParentName || "");
   const [parentEmail, setParentEmail] = useState(propParentEmail || "");
+  const [selectedTeacherId, setSelectedTeacherId] = useState(userId);
   const [studentName, setStudentName] = useState("");
   const [studentId, setStudentId] = useState("");
   const [reason, setReason] = useState("");
@@ -41,7 +44,7 @@ export default function ChallengeForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bookId,
-          userId,
+          userId: selectedTeacherId,
           parentId: propParentId || null,
           parentName,
           parentEmail,
@@ -112,14 +115,31 @@ export default function ChallengeForm({
             <dd class="text-gray-900 dark:text-white">{bookTitle}</dd>
           </div>
           <div class="flex">
-            <dt class="font-medium text-gray-700 dark:text-gray-300 w-24">Teacher:</dt>
-            <dd class="text-gray-900 dark:text-white">{teacherName}</dd>
-          </div>
-          <div class="flex">
             <dt class="font-medium text-gray-700 dark:text-gray-300 w-24">School:</dt>
             <dd class="text-gray-900 dark:text-white">{schoolName}</dd>
           </div>
         </dl>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Your Child's Teacher <span class="text-red-600">*</span>
+        </label>
+        <select
+          value={selectedTeacherId}
+          onChange={(e) => setSelectedTeacherId((e.target as HTMLSelectElement).value)}
+          required
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+        >
+          {schoolTeachers.map(teacher => (
+            <option key={teacher.id} value={teacher.id}>
+              {teacher.name}
+            </option>
+          ))}
+        </select>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Select your child's main teacher or homeroom teacher
+        </p>
       </div>
 
       <div>
@@ -131,8 +151,7 @@ export default function ChallengeForm({
           value={parentName}
           onInput={(e) => setParentName((e.target as HTMLInputElement).value)}
           required
-          disabled={!!propParentId}
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
         />
       </div>
 
@@ -145,8 +164,7 @@ export default function ChallengeForm({
           value={parentEmail}
           onInput={(e) => setParentEmail((e.target as HTMLInputElement).value)}
           required
-          disabled={!!propParentId}
-          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+          class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
         />
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           You will be contacted at this email regarding your challenge

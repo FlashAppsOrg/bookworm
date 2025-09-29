@@ -9,6 +9,7 @@ interface BookWithTeacher extends ClassroomBook {
 interface Props {
   books: BookWithTeacher[];
   schoolName: string;
+  schoolTeachers: Array<{id: string; name: string;}>;
   parentId?: string;
   parentName?: string;
   parentEmail?: string;
@@ -17,12 +18,14 @@ interface Props {
 export default function MultipleChallengeForm({
   books,
   schoolName,
+  schoolTeachers,
   parentId: propParentId,
   parentName: propParentName,
   parentEmail: propParentEmail
 }: Props) {
   const [parentName, setParentName] = useState(propParentName || "");
   const [parentEmail, setParentEmail] = useState(propParentEmail || "");
+  const [selectedTeacherId, setSelectedTeacherId] = useState(books[0]?.teacherId || "");
   const [studentName, setStudentName] = useState("");
   const [studentId, setStudentId] = useState("");
   const [reason, setReason] = useState("");
@@ -36,14 +39,14 @@ export default function MultipleChallengeForm({
     setSubmitting(true);
 
     try {
-      // Submit a challenge for each book
+      // Submit a challenge for each book using the selected teacher
       const promises = books.map(book =>
         fetch("/api/challenges/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             bookId: book.id,
-            userId: book.teacherId,
+            userId: selectedTeacherId,
             parentId: propParentId || null,
             parentName,
             parentEmail,
@@ -160,6 +163,27 @@ export default function MultipleChallengeForm({
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Your Child's Teacher <span class="text-red-600">*</span>
+            </label>
+            <select
+              value={selectedTeacherId}
+              onChange={(e) => setSelectedTeacherId((e.target as HTMLSelectElement).value)}
+              required
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
+            >
+              {schoolTeachers.map(teacher => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.name}
+                </option>
+              ))}
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Select your child's main teacher or homeroom teacher
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Your Name <span class="text-red-600">*</span>
             </label>
             <input
@@ -167,8 +191,7 @@ export default function MultipleChallengeForm({
               value={parentName}
               onInput={(e) => setParentName((e.target as HTMLInputElement).value)}
               required
-              disabled={!!propParentId}
-              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -181,8 +204,7 @@ export default function MultipleChallengeForm({
               value={parentEmail}
               onInput={(e) => setParentEmail((e.target as HTMLInputElement).value)}
               required
-              disabled={!!propParentId}
-              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+              class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
               You will be contacted at this email regarding your challenges

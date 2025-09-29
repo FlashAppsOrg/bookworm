@@ -1,6 +1,7 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { getKv, ClassroomBook, User, School } from "../utils/db.ts";
 import { getUserFromSession } from "../utils/session.ts";
+import { getTeachersBySchoolId } from "../utils/db-helpers.ts";
 import ChallengeForm from "../islands/ChallengeForm.tsx";
 import { Head } from "$fresh/runtime.ts";
 
@@ -8,6 +9,7 @@ interface ChallengePageData {
   book: ClassroomBook;
   teacher: User;
   school: School;
+  schoolTeachers: Array<{id: string; name: string;}>;
   parent: User | null;
   needsAuth: boolean;
 }
@@ -46,6 +48,13 @@ export const handler: Handlers<ChallengePageData> = {
       return new Response("School not found", { status: 404 });
     }
 
+    // Get all teachers from this school for the dropdown
+    const teachers = await getTeachersBySchoolId(teacher.schoolId);
+    const schoolTeachers = teachers.map(t => ({
+      id: t.id,
+      name: t.displayName
+    }));
+
     // Check if parent is logged in
     const parent = await getUserFromSession(req);
 
@@ -57,6 +66,7 @@ export const handler: Handlers<ChallengePageData> = {
       book: bookResult.value,
       teacher: teacherResult.value,
       school: schoolResult.value,
+      schoolTeachers,
       parent,
       needsAuth,
     });
@@ -126,6 +136,7 @@ export default function ChallengePage({ data }: PageProps<ChallengePageData>) {
               bookTitle={data.book.title}
               teacherName={data.teacher.displayName}
               schoolName={data.school.name}
+              schoolTeachers={data.schoolTeachers}
               parentId={data.parent?.id}
               parentName={data.parent?.displayName}
               parentEmail={data.parent?.email}
