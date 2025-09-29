@@ -1,7 +1,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { setCookie } from "$std/http/cookie.ts";
+import { authClient } from "../../../utils/auth-client.ts";
 import { getUserByEmail } from "../../../utils/db-helpers.ts";
-import { verifyPassword } from "../../../utils/password.ts";
 
 export const handler: Handlers = {
   async POST(req) {
@@ -16,33 +16,41 @@ export const handler: Handlers = {
         });
       }
 
-      const user = await getUserByEmail(email);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Invalid email or password" }), {
+      // Authenticate with auth service
+      const authResult = await authClient.login(email, password, "bookworm");
+
+      if (!authResult.success) {
+        return new Response(JSON.stringify({ error: authResult.error || "Invalid email or password" }), {
           status: 401,
           headers: { "Content-Type": "application/json" },
         });
       }
 
-      const passwordValid = await verifyPassword(password, user.passwordHash);
-      if (!passwordValid) {
-        return new Response(JSON.stringify({ error: "Invalid email or password" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      if (!user.verified) {
-        return new Response(JSON.stringify({ error: "Please verify your email first" }), {
+      // Check if user has BookWorm access
+      if (!authResult.user.platforms?.bookworm) {
+        return new Response(JSON.stringify({ error: "No BookWorm access" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
       }
 
+      // Get or sync local user data
+      let localUser = await getUserByEmail(email);
+      if (!localUser) {
+        // User exists in auth but not locally, sync them
+        // For now just return error - full sync would be implemented later
+        return new Response(JSON.stringify({ error: "User not found in BookWorm" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       const sessionData = {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
+        userId: localUser.id,
+        email: localUser.email,
+        role: localUser.role,
+        authToken: authResult.tokens.accessToken,
+        refreshToken: authResult.tokens.refreshToken,
       };
 
       const headers = new Headers({
@@ -62,11 +70,11 @@ export const handler: Handlers = {
       return new Response(JSON.stringify({
         success: true,
         user: {
-          id: user.id,
-          email: user.email,
-          displayName: user.displayName,
-          role: user.role,
-          schoolId: user.schoolId,
+          id: localUser.id,
+          email: localUser.email,
+          displayName: localUser.displayName,
+          role: localUser.role,
+          schoolId: localUser.schoolId,
         },
       }), {
         status: 200,
