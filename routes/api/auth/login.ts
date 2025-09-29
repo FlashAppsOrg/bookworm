@@ -19,9 +19,33 @@ export const handler: Handlers = {
       }
 
       console.log("Calling auth service for:", email);
+
+      // Add delay and detailed logging for debugging
+      console.log("=".repeat(60));
+      console.log("BOOKWORM LOGIN DEBUG - WAIT 10 SECONDS");
+      console.log(`Email: ${email}`);
+      console.log(`Time: ${new Date().toISOString()}`);
+      console.log("About to call authClient.login...");
+      console.log("=".repeat(60));
+
       // Authenticate with auth service
       const authResult = await authClient.login(email, password, "bookworm");
-      console.log("Auth service response:", authResult);
+
+      console.log("=".repeat(60));
+      console.log("AUTH SERVICE RESPONSE - PLEASE COPY THIS:");
+      console.log(`Success: ${authResult.success}`);
+      console.log(`Error: ${authResult.error || "none"}`);
+      console.log(`Has user: ${!!authResult.user}`);
+      console.log(`Has tokens: ${!!authResult.tokens}`);
+      if (authResult.tokens) {
+        console.log(`Access token length: ${authResult.tokens.accessToken?.length || 0}`);
+        console.log(`Refresh token length: ${authResult.tokens.refreshToken?.length || 0}`);
+      }
+      console.log("Full response:", JSON.stringify(authResult, null, 2));
+      console.log("=".repeat(60));
+
+      // Wait 10 seconds so user can copy logs
+      await new Promise(resolve => setTimeout(resolve, 10000));
 
       if (!authResult.success) {
         return new Response(JSON.stringify({ error: authResult.error || "Invalid email or password" }), {

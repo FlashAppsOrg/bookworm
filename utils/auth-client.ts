@@ -218,11 +218,39 @@ export const authClient = {
         };
       }
 
-      return {
-        success: true,
-        user: data.user,
-        tokens: data.tokens,
-      };
+      // Handle both auth code flow and direct token flow
+      if (data.authCode) {
+        // Auth code flow - exchange code for tokens
+        const exchangeResponse = await fetch(`${AUTH_SERVICE_URL}/api/auth/exchange`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code: data.authCode }),
+        });
+
+        if (!exchangeResponse.ok) {
+          const exchangeError = await exchangeResponse.json();
+          return {
+            success: false,
+            error: exchangeError.error || "Token exchange failed",
+          };
+        }
+
+        const exchangeData = await exchangeResponse.json();
+        return {
+          success: true,
+          user: data.user,
+          tokens: exchangeData.tokens,
+        };
+      } else {
+        // Direct token flow
+        return {
+          success: true,
+          user: data.user,
+          tokens: data.tokens,
+        };
+      }
     } catch (error) {
       console.error("Login error:", error);
       return {
