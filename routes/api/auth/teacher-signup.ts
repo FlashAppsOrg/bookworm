@@ -1,7 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { createSharedUser } from "../../../utils/auth-shared.ts";
-import { getBookwormKv } from "../../../utils/db-shared.ts";
-import { School } from "../../../utils/db.ts";
+import { getKv, School } from "../../../utils/db.ts";
 import { createSession } from "../../../utils/session.ts";
 
 export const handler: Handlers = {
@@ -26,7 +25,7 @@ export const handler: Handlers = {
       }
 
       // Validate school exists and check domain if applicable
-      const kv = await getBookwormKv();
+      const kv = await getKv();
       const schoolResult = await kv.get<School>(["schools:id", schoolId]);
 
       if (!schoolResult.value) {

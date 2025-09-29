@@ -2,8 +2,7 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getUserFromSession } from "../../utils/session.ts";
 import { getParentStudents } from "../../utils/auth-shared.ts";
-import { getBookwormKv } from "../../utils/db-shared.ts";
-import { School } from "../../utils/db.ts";
+import { getKv, School } from "../../utils/db.ts";
 import StudentClaimForm from "../../islands/StudentClaimForm.tsx";
 
 interface ClaimStudentsData {
@@ -46,7 +45,7 @@ export const handler: Handlers<ClaimStudentsData> = {
     const students = await getParentStudents(user.id);
 
     // Get all schools
-    const kv = await getBookwormKv();
+    const kv = await getKv();
     const schools: School[] = [];
     const iter = kv.list<School>({ prefix: ["schools:id"] });
     for await (const entry of iter) {

@@ -1,7 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getBookwormKv } from "../utils/db-shared.ts";
-import { School } from "../utils/db.ts";
+import { getKv, School } from "../utils/db.ts";
 import TeacherSignupForm from "../islands/TeacherSignupForm.tsx";
 
 interface TeacherSignupData {
@@ -15,7 +14,7 @@ export const handler: Handlers<TeacherSignupData> = {
     const redirect = url.searchParams.get("redirect") || "/dashboard";
 
     // Get all schools for dropdown
-    const kv = await getBookwormKv();
+    const kv = await getKv();
     const schools: School[] = [];
 
     const iter = kv.list<School>({ prefix: ["schools:id"] });

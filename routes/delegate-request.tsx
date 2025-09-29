@@ -1,7 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getBookwormKv } from "../utils/db-shared.ts";
-import { School } from "../utils/db.ts";
+import { getKv, School } from "../utils/db.ts";
 import DelegateRequestForm from "../islands/DelegateRequestForm.tsx";
 
 interface DelegateRequestData {
@@ -11,7 +10,7 @@ interface DelegateRequestData {
 export const handler: Handlers<DelegateRequestData> = {
   async GET(req, ctx) {
     // Get all schools for selection
-    const kv = await getBookwormKv();
+    const kv = await getKv();
     const schools: School[] = [];
 
     const iter = kv.list<School>({ prefix: ["schools:id"] });

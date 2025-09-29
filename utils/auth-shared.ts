@@ -3,7 +3,7 @@
  * Handles authentication across multiple platforms with shared users database
  */
 
-import { getUsersKv, getBookwormKv } from "./db-shared.ts";
+import { getKv } from "./db.ts";
 import { SharedUser, Student } from "./db.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
@@ -18,11 +18,10 @@ export async function createSharedUser(
   authProvider: "email" | "google" = "email",
   schoolId?: string
 ): Promise<SharedUser> {
-  const usersKv = await getUsersKv();
-  const bookwormKv = await getBookwormKv();
+  const kv = await getKv();
 
   // Check if user already exists
-  const existing = await usersKv.get(["users:email", email.toLowerCase()]);
+  const existing = await kv.get(["users:email", email.toLowerCase()]);
   if (existing.value) {
     throw new Error("User already exists");
   }
@@ -51,12 +50,12 @@ export async function createSharedUser(
     children: [],
   };
 
-  // Save to shared users database
-  await usersKv.set(["users:id", userId], user);
-  await usersKv.set(["users:email", email.toLowerCase()], user);
+  // Save to database
+  await kv.set(["users:id", userId], user);
+  await kv.set(["users:email", email.toLowerCase()], user);
 
   // Save platform-specific reference
-  await bookwormKv.set(["user_platform_data", userId], {
+  await kv.set(["user_platform_data", userId], {
     role,
     schoolId: schoolId || null,
   });
@@ -71,9 +70,9 @@ export async function authenticateUser(
   email: string,
   password: string
 ): Promise<SharedUser | null> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
-  const result = await usersKv.get<SharedUser>(["users:email", email.toLowerCase()]);
+  const result = await kv.get<SharedUser>(["users:email", email.toLowerCase()]);
   if (!result.value) return null;
 
   const user = result.value;
@@ -90,8 +89,8 @@ export async function authenticateUser(
       googleSheetUrl: null,
       isPlaceholder: false,
     };
-    await usersKv.set(["users:id", user.id], user);
-    await usersKv.set(["users:email", email.toLowerCase()], user);
+    await kv.set(["users:id", user.id], user);
+    await kv.set(["users:email", email.toLowerCase()], user);
   }
 
   // Verify password
@@ -112,10 +111,10 @@ export async function getOrCreateGoogleUser(
     picture?: string;
   }
 ): Promise<SharedUser> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
   // Check if user exists
-  const existing = await usersKv.get<SharedUser>(["users:email", googleUser.email.toLowerCase()]);
+  const existing = await kv.get<SharedUser>(["users:email", googleUser.email.toLowerCase()]);
 
   if (existing.value) {
     const user = existing.value;
@@ -123,8 +122,8 @@ export async function getOrCreateGoogleUser(
     // Update display name if changed
     if (user.displayName !== googleUser.name) {
       user.displayName = googleUser.name;
-      await usersKv.set(["users:id", user.id], user);
-      await usersKv.set(["users:email", user.email], user);
+      await kv.set(["users:id", user.id], user);
+      await kv.set(["users:email", user.email], user);
     }
 
     // Ensure bookworm platform access
@@ -138,8 +137,8 @@ export async function getOrCreateGoogleUser(
         googleSheetUrl: null,
         isPlaceholder: false,
       };
-      await usersKv.set(["users:id", user.id], user);
-      await usersKv.set(["users:email", user.email], user);
+      await kv.set(["users:id", user.id], user);
+      await kv.set(["users:email", user.email], user);
     }
 
     return user;
@@ -166,14 +165,14 @@ export async function createOrClaimStudent(
   teacherId?: string,
   studentId?: string
 ): Promise<Student> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
   // Check if student exists (by school ID if provided)
   let student: Student | null = null;
 
   if (studentId) {
     // Try to find existing student by school-provided ID
-    const result = await usersKv.get<Student>(["students:school_id", schoolId, studentId]);
+    const result = await kv.get<Student>(["students:school_id", schoolId, studentId]);
     if (result.value) {
       student = result.value;
     }
@@ -197,7 +196,7 @@ export async function createOrClaimStudent(
     // Add classroom assignment if teacher provided
     if (teacherId) {
       // Get teacher info
-      const teacherResult = await usersKv.get<SharedUser>(["users:id", teacherId]);
+      const teacherResult = await kv.get<SharedUser>(["users:id", teacherId]);
       if (teacherResult.value) {
         student.classrooms.bookworm = {
           teacherId,
@@ -208,35 +207,35 @@ export async function createOrClaimStudent(
       }
     }
 
-    await usersKv.set(["students:id", id], student);
+    await kv.set(["students:id", id], student);
     if (studentId) {
-      await usersKv.set(["students:school_id", schoolId, studentId], student);
+      await kv.set(["students:school_id", schoolId, studentId], student);
     }
   } else {
     // Add parent to existing student
     if (!student.parentIds.includes(parentId)) {
       student.parentIds.push(parentId);
-      await usersKv.set(["students:id", student.id], student);
+      await kv.set(["students:id", student.id], student);
       if (student.studentId) {
-        await usersKv.set(["students:school_id", schoolId, student.studentId], student);
+        await kv.set(["students:school_id", schoolId, student.studentId], student);
       }
     }
   }
 
   // Update parent's children list
-  const parentResult = await usersKv.get<SharedUser>(["users:id", parentId]);
+  const parentResult = await kv.get<SharedUser>(["users:id", parentId]);
   if (parentResult.value) {
     const parent = parentResult.value;
     parent.children = parent.children || [];
     if (!parent.children.includes(student.id)) {
       parent.children.push(student.id);
-      await usersKv.set(["users:id", parentId], parent);
-      await usersKv.set(["users:email", parent.email], parent);
+      await kv.set(["users:id", parentId], parent);
+      await kv.set(["users:email", parent.email], parent);
     }
   }
 
   // Create parent-student relationship for tracking
-  await usersKv.set(["parent_students", parentId, student.id], {
+  await kv.set(["parent_students", parentId, student.id], {
     parentId,
     studentId: student.id,
     createdAt: new Date().toISOString(),
@@ -249,13 +248,13 @@ export async function createOrClaimStudent(
  * Get all students for a parent
  */
 export async function getParentStudents(parentId: string): Promise<Student[]> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
   const students: Student[] = [];
-  const iter = usersKv.list<{ studentId: string }>({ prefix: ["parent_students", parentId] });
+  const iter = kv.list<{ studentId: string }>({ prefix: ["parent_students", parentId] });
 
   for await (const entry of iter) {
-    const studentResult = await usersKv.get<Student>(["students:id", entry.value.studentId]);
+    const studentResult = await kv.get<Student>(["students:id", entry.value.studentId]);
     if (studentResult.value) {
       students.push(studentResult.value);
     }
@@ -271,9 +270,9 @@ export async function verifyStudent(
   studentId: string,
   verifierId: string
 ): Promise<void> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
-  const result = await usersKv.get<Student>(["students:id", studentId]);
+  const result = await kv.get<Student>(["students:id", studentId]);
   if (!result.value) {
     throw new Error("Student not found");
   }
@@ -283,9 +282,9 @@ export async function verifyStudent(
   student.verifiedBy = verifierId;
   student.verifiedAt = new Date().toISOString();
 
-  await usersKv.set(["students:id", studentId], student);
+  await kv.set(["students:id", studentId], student);
   if (student.studentId && student.schoolId) {
-    await usersKv.set(["students:school_id", student.schoolId, student.studentId], student);
+    await kv.set(["students:school_id", student.schoolId, student.studentId], student);
   }
 }
 
@@ -297,14 +296,14 @@ export async function moveStudentClassroom(
   newTeacherId: string,
   platform: "bookworm" | "sightwords" = "bookworm"
 ): Promise<void> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
-  const studentResult = await usersKv.get<Student>(["students:id", studentId]);
+  const studentResult = await kv.get<Student>(["students:id", studentId]);
   if (!studentResult.value) {
     throw new Error("Student not found");
   }
 
-  const teacherResult = await usersKv.get<SharedUser>(["users:id", newTeacherId]);
+  const teacherResult = await kv.get<SharedUser>(["users:id", newTeacherId]);
   if (!teacherResult.value) {
     throw new Error("Teacher not found");
   }
@@ -330,9 +329,9 @@ export async function moveStudentClassroom(
     };
   }
 
-  await usersKv.set(["students:id", studentId], student);
+  await kv.set(["students:id", studentId], student);
   if (student.studentId && student.schoolId) {
-    await usersKv.set(["students:school_id", student.schoolId, student.studentId], student);
+    await kv.set(["students:school_id", student.schoolId, student.studentId], student);
   }
 }
 
@@ -343,9 +342,9 @@ export async function canActAsDelegate(
   delegateId: string,
   teacherId: string
 ): Promise<boolean> {
-  const usersKv = await getUsersKv();
+  const kv = await getKv();
 
-  const delegateResult = await usersKv.get<SharedUser>(["users:id", delegateId]);
+  const delegateResult = await kv.get<SharedUser>(["users:id", delegateId]);
   if (!delegateResult.value) return false;
 
   const delegate = delegateResult.value;
