@@ -79,12 +79,20 @@ export default function ChallengeForm({
           Your challenge has been submitted and will be reviewed by the school administration.
           You will be contacted at the email address you provided.
         </p>
-        <button
-          onClick={() => window.history.back()}
-          class="px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark"
-        >
-          Return to Catalog
-        </button>
+        <div class="flex gap-3">
+          <a
+            href="/parent-dashboard"
+            class="px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark"
+          >
+            View Dashboard
+          </a>
+          <button
+            onClick={() => window.history.back()}
+            class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600"
+          >
+            Return to Catalog
+          </button>
+        </div>
       </div>
     );
   }

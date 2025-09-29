@@ -8,12 +8,13 @@ export const handler: Handlers = {
     const bookId = url.searchParams.get("bookId");
     const userId = url.searchParams.get("userId");
     const schoolId = url.searchParams.get("schoolId");
+    const step = url.searchParams.get("step");
 
-    return ctx.render({ bookId, userId, schoolId });
+    return ctx.render({ bookId, userId, schoolId, step });
   },
 };
 
-export default function ParentSignupPage({ data }: { data: { bookId?: string; userId?: string; schoolId?: string } }) {
+export default function ParentSignupPage({ data }: { data: { bookId?: string; userId?: string; schoolId?: string; step?: string } }) {
   return (
     <>
       <Head>
@@ -47,6 +48,7 @@ export default function ParentSignupPage({ data }: { data: { bookId?: string; us
               bookId={data.bookId}
               userId={data.userId}
               schoolId={data.schoolId}
+              step={data.step}
             />
           </div>
         </main>

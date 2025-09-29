@@ -30,11 +30,14 @@ import * as $api_admin_usage from "./routes/api/admin/usage.ts";
 import * as $api_admin_users from "./routes/api/admin/users.ts";
 import * as $api_admin_validate_cache from "./routes/api/admin/validate-cache.ts";
 import * as $api_admin_verify_parent from "./routes/api/admin/verify-parent.ts";
+import * as $api_auth_callback from "./routes/api/auth/callback.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
 import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
+import * as $api_auth_google_login from "./routes/api/auth/google/login.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
 import * as $api_auth_parent_signup from "./routes/api/auth/parent-signup.ts";
+import * as $api_auth_parent_student_verification from "./routes/api/auth/parent-student-verification.ts";
 import * as $api_auth_resend_verification from "./routes/api/auth/resend-verification.ts";
 import * as $api_auth_reset_password from "./routes/api/auth/reset-password.ts";
 import * as $api_auth_signup from "./routes/api/auth/signup.ts";
@@ -74,6 +77,7 @@ import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $forgot_password from "./routes/forgot-password.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $parent_dashboard from "./routes/parent-dashboard.tsx";
 import * as $parent_signup from "./routes/parent-signup.tsx";
 import * as $reset_password from "./routes/reset-password.tsx";
 import * as $school_admin_staff_import_index from "./routes/school-admin/staff-import/index.tsx";
@@ -94,6 +98,7 @@ import * as $DashboardContent from "./islands/DashboardContent.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $MultipleChallengeForm from "./islands/MultipleChallengeForm.tsx";
+import * as $ParentDashboard from "./islands/ParentDashboard.tsx";
 import * as $ParentSignupForm from "./islands/ParentSignupForm.tsx";
 import * as $ParentVerification from "./islands/ParentVerification.tsx";
 import * as $PublicClassroom from "./islands/PublicClassroom.tsx";
@@ -139,11 +144,15 @@ const manifest = {
     "./routes/api/admin/users.ts": $api_admin_users,
     "./routes/api/admin/validate-cache.ts": $api_admin_validate_cache,
     "./routes/api/admin/verify-parent.ts": $api_admin_verify_parent,
+    "./routes/api/auth/callback.ts": $api_auth_callback,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
     "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
+    "./routes/api/auth/google/login.ts": $api_auth_google_login,
     "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
     "./routes/api/auth/parent-signup.ts": $api_auth_parent_signup,
+    "./routes/api/auth/parent-student-verification.ts":
+      $api_auth_parent_student_verification,
     "./routes/api/auth/resend-verification.ts": $api_auth_resend_verification,
     "./routes/api/auth/reset-password.ts": $api_auth_reset_password,
     "./routes/api/auth/signup.ts": $api_auth_signup,
@@ -183,6 +192,7 @@ const manifest = {
     "./routes/forgot-password.tsx": $forgot_password,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/parent-dashboard.tsx": $parent_dashboard,
     "./routes/parent-signup.tsx": $parent_signup,
     "./routes/reset-password.tsx": $reset_password,
     "./routes/school-admin/staff-import/index.tsx":
@@ -206,6 +216,7 @@ const manifest = {
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/MultipleChallengeForm.tsx": $MultipleChallengeForm,
+    "./islands/ParentDashboard.tsx": $ParentDashboard,
     "./islands/ParentSignupForm.tsx": $ParentSignupForm,
     "./islands/ParentVerification.tsx": $ParentVerification,
     "./islands/PublicClassroom.tsx": $PublicClassroom,
