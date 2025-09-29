@@ -3,8 +3,7 @@
  * Handles authentication across multiple platforms with shared users database
  */
 
-import { getKv } from "./db.ts";
-import { SharedUser, Student } from "./db.ts";
+import { getKv, SharedUser, Student } from "./db.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 /**

@@ -32,6 +32,7 @@ import * as $api_admin_validate_cache from "./routes/api/admin/validate-cache.ts
 import * as $api_admin_verify_parent from "./routes/api/admin/verify-parent.ts";
 import * as $api_auth_callback from "./routes/api/auth/callback.ts";
 import * as $api_auth_complete_setup from "./routes/api/auth/complete-setup.ts";
+import * as $api_auth_delegate_signup from "./routes/api/auth/delegate-signup.ts";
 import * as $api_auth_forgot_password from "./routes/api/auth/forgot-password.ts";
 import * as $api_auth_google_login from "./routes/api/auth/google/login.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
@@ -75,12 +76,14 @@ import * as $challenge_book from "./routes/challenge-book.tsx";
 import * as $challenge_books from "./routes/challenge-books.tsx";
 import * as $claim_classroom from "./routes/claim-classroom.tsx";
 import * as $dashboard from "./routes/dashboard.tsx";
+import * as $delegate_request from "./routes/delegate-request.tsx";
 import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $forgot_password from "./routes/forgot-password.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
 import * as $parent_dashboard from "./routes/parent-dashboard.tsx";
 import * as $parent_signup from "./routes/parent-signup.tsx";
+import * as $parent_claim_students from "./routes/parent/claim-students.tsx";
 import * as $reset_password from "./routes/reset-password.tsx";
 import * as $school_admin_staff_import_index from "./routes/school-admin/staff-import/index.tsx";
 import * as $select_classroom from "./routes/select-classroom.tsx";
@@ -98,6 +101,7 @@ import * as $ChallengeReview from "./islands/ChallengeReview.tsx";
 import * as $ClaimClassroom from "./islands/ClaimClassroom.tsx";
 import * as $ClassroomBrowser from "./islands/ClassroomBrowser.tsx";
 import * as $DashboardContent from "./islands/DashboardContent.tsx";
+import * as $DelegateRequestForm from "./islands/DelegateRequestForm.tsx";
 import * as $DelegateSignupForm from "./islands/DelegateSignupForm.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $MultipleChallengeForm from "./islands/MultipleChallengeForm.tsx";
@@ -151,6 +155,7 @@ const manifest = {
     "./routes/api/admin/verify-parent.ts": $api_admin_verify_parent,
     "./routes/api/auth/callback.ts": $api_auth_callback,
     "./routes/api/auth/complete-setup.ts": $api_auth_complete_setup,
+    "./routes/api/auth/delegate-signup.ts": $api_auth_delegate_signup,
     "./routes/api/auth/forgot-password.ts": $api_auth_forgot_password,
     "./routes/api/auth/google/login.ts": $api_auth_google_login,
     "./routes/api/auth/login.ts": $api_auth_login,
@@ -195,12 +200,14 @@ const manifest = {
     "./routes/challenge-books.tsx": $challenge_books,
     "./routes/claim-classroom.tsx": $claim_classroom,
     "./routes/dashboard.tsx": $dashboard,
+    "./routes/delegate-request.tsx": $delegate_request,
     "./routes/delegate-signup.tsx": $delegate_signup,
     "./routes/forgot-password.tsx": $forgot_password,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
     "./routes/parent-dashboard.tsx": $parent_dashboard,
     "./routes/parent-signup.tsx": $parent_signup,
+    "./routes/parent/claim-students.tsx": $parent_claim_students,
     "./routes/reset-password.tsx": $reset_password,
     "./routes/school-admin/staff-import/index.tsx":
       $school_admin_staff_import_index,
@@ -221,6 +228,7 @@ const manifest = {
     "./islands/ClaimClassroom.tsx": $ClaimClassroom,
     "./islands/ClassroomBrowser.tsx": $ClassroomBrowser,
     "./islands/DashboardContent.tsx": $DashboardContent,
+    "./islands/DelegateRequestForm.tsx": $DelegateRequestForm,
     "./islands/DelegateSignupForm.tsx": $DelegateSignupForm,
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/MultipleChallengeForm.tsx": $MultipleChallengeForm,
