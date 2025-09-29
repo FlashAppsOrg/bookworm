@@ -187,6 +187,53 @@ export function clearTokens() {
 }
 
 /**
+ * Auth client for login
+ */
+export const authClient = {
+  async login(email: string, password: string, app: string = "bookworm"): Promise<{
+    success: boolean;
+    error?: string;
+    user?: any;
+    tokens?: {
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number;
+    };
+  }> {
+    try {
+      const response = await fetch(`${AUTH_SERVICE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, app }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || "Login failed",
+        };
+      }
+
+      return {
+        success: true,
+        user: data.user,
+        tokens: data.tokens,
+      };
+    } catch (error) {
+      console.error("Login error:", error);
+      return {
+        success: false,
+        error: "Network error",
+      };
+    }
+  },
+};
+
+/**
  * Extract BookWorm-specific permissions from user platforms
  */
 export function getBookWormPermissions(user: {
