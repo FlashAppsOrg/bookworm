@@ -47,7 +47,7 @@ export const handler: Handlers = {
       const sessionCookie = await createSession(user);
 
       // Parse state to get redirect info
-      let redirectUrl = "/parent-signup?step=student";
+      let redirectUrl = "/parent-dashboard"; // Default for authenticated parents
       if (state) {
         try {
           const stateData = JSON.parse(atob(state));
@@ -55,12 +55,15 @@ export const handler: Handlers = {
             redirectUrl = stateData.redirect;
           } else if (stateData.bookId && stateData.userId) {
             redirectUrl = `/challenge-book?bookId=${stateData.bookId}&userId=${stateData.userId}&registered=true`;
-          } else if (stateData.schoolId) {
-            redirectUrl = `/parent-signup?step=student&schoolId=${stateData.schoolId}`;
           }
         } catch {
           // If state parsing fails, use default
         }
+      }
+
+      // For new Google users, redirect to student claiming
+      if (!sharedUser.children || sharedUser.children.length === 0) {
+        redirectUrl = "/parent/claim-students";
       }
 
       return new Response(null, {

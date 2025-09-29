@@ -128,16 +128,16 @@ export default function SignupPage(props: PageProps) {
 
               <div class="space-y-3">
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  You'll need an invitation from a teacher to become a delegate
+                  Request access to help teachers organize their libraries
                 </p>
                 <a
-                  href="/delegate-signup"
+                  href="/delegate-request"
                   class="block text-center w-full py-3 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
                 >
-                  Join as Delegate
+                  Request Delegate Access
                 </a>
                 <p class="text-xs text-center text-gray-500 dark:text-gray-400">
-                  Ask your teacher for an invitation link
+                  Select a teacher and they'll be notified of your request
                 </p>
               </div>
             </div>

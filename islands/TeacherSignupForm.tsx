@@ -57,8 +57,8 @@ export default function TeacherSignupForm({ schools, redirect }: Props) {
       });
 
       if (res.ok) {
-        // Redirect to email verification notice
-        window.location.href = "/verify-email?email=" + encodeURIComponent(email);
+        // Redirect to dashboard after successful signup
+        window.location.href = redirect || "/dashboard";
       } else {
         const data = await res.json();
         setError(data.error || "Failed to create account");

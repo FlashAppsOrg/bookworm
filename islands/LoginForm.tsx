@@ -1,6 +1,11 @@
 import { useState } from "preact/hooks";
 
-export default function LoginForm() {
+interface Props {
+  redirectUrl?: string;
+  showTitle?: boolean;
+}
+
+export default function LoginForm({ redirectUrl = "/", showTitle = true }: Props = {}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,11 +37,13 @@ export default function LoginForm() {
         return;
       }
 
-      // Redirect based on user setup status
-      if (!data.user.schoolId) {
+      // Redirect based on user role and setup status
+      if (data.user.role === "parent") {
+        window.location.href = redirectUrl || "/parent-dashboard";
+      } else if (!data.user.schoolId) {
         window.location.href = "/setup";
       } else {
-        window.location.href = "/dashboard";
+        window.location.href = redirectUrl || "/dashboard";
       }
     } catch (err) {
       setError("Network error. Please try again.");
