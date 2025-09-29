@@ -1,6 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getUserFromSession } from "../utils/session.ts";
+import { getUserFromToken } from "../utils/session-jwt.ts";
 import { getUserBooks, getUserById, getSchoolById } from "../utils/db-helpers.ts";
 import { User, ClassroomBook } from "../utils/db.ts";
 import DashboardContent from "../islands/DashboardContent.tsx";
@@ -17,7 +17,7 @@ interface DashboardData {
 
 export const handler: Handlers<DashboardData> = {
   async GET(req, ctx) {
-    const user = await getUserFromSession(req);
+    const user = await getUserFromToken(req);
 
     if (!user) {
       return new Response(null, {

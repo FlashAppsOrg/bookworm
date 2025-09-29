@@ -72,6 +72,7 @@ import * as $api_settings_update_school from "./routes/api/settings/update-schoo
 import * as $api_settings_update_sheet_url from "./routes/api/settings/update-sheet-url.ts";
 import * as $api_students_claim from "./routes/api/students/claim.ts";
 import * as $api_teachers_list from "./routes/api/teachers/list.ts";
+import * as $auth_callback from "./routes/auth/callback.ts";
 import * as $challenge_book from "./routes/challenge-book.tsx";
 import * as $challenge_books from "./routes/challenge-books.tsx";
 import * as $claim_classroom from "./routes/claim-classroom.tsx";
@@ -81,6 +82,7 @@ import * as $delegate_signup from "./routes/delegate-signup.tsx";
 import * as $forgot_password from "./routes/forgot-password.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $logout from "./routes/logout.ts";
 import * as $parent_dashboard from "./routes/parent-dashboard.tsx";
 import * as $parent_signup from "./routes/parent-signup.tsx";
 import * as $parent_claim_students from "./routes/parent/claim-students.tsx";
@@ -196,6 +198,7 @@ const manifest = {
     "./routes/api/settings/update-sheet-url.ts": $api_settings_update_sheet_url,
     "./routes/api/students/claim.ts": $api_students_claim,
     "./routes/api/teachers/list.ts": $api_teachers_list,
+    "./routes/auth/callback.ts": $auth_callback,
     "./routes/challenge-book.tsx": $challenge_book,
     "./routes/challenge-books.tsx": $challenge_books,
     "./routes/claim-classroom.tsx": $claim_classroom,
@@ -205,6 +208,7 @@ const manifest = {
     "./routes/forgot-password.tsx": $forgot_password,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/logout.ts": $logout,
     "./routes/parent-dashboard.tsx": $parent_dashboard,
     "./routes/parent-signup.tsx": $parent_signup,
     "./routes/parent/claim-students.tsx": $parent_claim_students,
