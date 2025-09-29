@@ -28,9 +28,14 @@ export default function LoginForm({ redirectUrl = "/", showTitle = true }: Props
       });
 
       const data = await response.json();
+      console.log("Login response:", response.status, data);
 
       if (!response.ok) {
+        console.error("Login failed:", data);
         setError(data.error || "Login failed");
+        if (data.details) {
+          console.error("Error details:", data.details);
+        }
         if (data.error && data.error.includes("verify")) {
           setShowResend(true);
         }
@@ -38,6 +43,7 @@ export default function LoginForm({ redirectUrl = "/", showTitle = true }: Props
       }
 
       // Redirect based on user role and setup status
+      console.log("Login success, user data:", data.user);
       if (data.user.role === "parent") {
         window.location.href = redirectUrl || "/parent-dashboard";
       } else if (!data.user.schoolId) {

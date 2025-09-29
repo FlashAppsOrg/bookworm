@@ -7,6 +7,7 @@ import { getKv } from "../../../utils/db.ts";
 export const handler: Handlers = {
   async POST(req) {
     try {
+      console.log("BookWorm login endpoint hit");
       const body = await req.json();
       const { email, password } = body;
 
@@ -17,8 +18,10 @@ export const handler: Handlers = {
         });
       }
 
+      console.log("Calling auth service for:", email);
       // Authenticate with auth service
       const authResult = await authClient.login(email, password, "bookworm");
+      console.log("Auth service response:", authResult);
 
       if (!authResult.success) {
         return new Response(JSON.stringify({ error: authResult.error || "Invalid email or password" }), {
@@ -37,8 +40,12 @@ export const handler: Handlers = {
       }
 
       // Get or sync local user data
+      console.log("Looking for local user:", email);
       let localUser = await getUserByEmail(email);
+      console.log("Local user found:", !!localUser, localUser?.id);
+
       if (!localUser) {
+        console.log("Creating new local user for:", email);
         // Create a minimal local user record for auth service users
         // This allows migrated users to log in
         const kv = await getKv();
@@ -81,7 +88,7 @@ export const handler: Handlers = {
         sameSite: "Lax",
       });
 
-      return new Response(JSON.stringify({
+      const responseData = {
         success: true,
         user: {
           id: localUser.id,
@@ -90,14 +97,22 @@ export const handler: Handlers = {
           role: localUser.role,
           schoolId: localUser.schoolId,
         },
-      }), {
+      };
+
+      console.log("Sending response:", responseData);
+
+      return new Response(JSON.stringify(responseData), {
         status: 200,
         headers,
       });
 
     } catch (error) {
       console.error("Login error:", error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
+      console.error("Full error details:", error.stack || error);
+      return new Response(JSON.stringify({
+        error: "Internal server error",
+        details: error.message || String(error)
+      }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
