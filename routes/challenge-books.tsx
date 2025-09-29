@@ -102,7 +102,7 @@ export const handler: Handlers<MultipleChallengePageData> = {
 };
 
 export default function MultipleChallengeBooks({ data }: PageProps<MultipleChallengePageData>) {
-  const { books, school, parent, needsAuth } = data;
+  const { books, school, schoolTeachers, parent, needsAuth } = data;
 
   return (
     <>
