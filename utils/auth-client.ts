@@ -14,7 +14,7 @@ const getAuthServiceUrl = () => {
   } else {
     // Server-side: check Deno env
     const env = Deno.env.get("DENO_ENV");
-    if (env === "development" || !env) {
+    if (env === "development") {
       return "http://localhost:8001";
     }
     return "https://auth.flashapps.org";
