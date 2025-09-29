@@ -3,11 +3,11 @@ import { getKv, User } from "../../../utils/db.ts";
 
 export const handler: Handlers = {
   async GET(req) {
-    // Check for admin token
-    const token = req.headers.get("X-Admin-Token");
-    const expectedToken = Deno.env.get("ADMIN_TOKEN");
+    // Check for migration token (same one used everywhere)
+    const token = req.headers.get("X-Migration-Token");
+    const MIGRATION_TOKEN = Deno.env.get("MIGRATION_TOKEN");
 
-    if (!expectedToken || token !== expectedToken) {
+    if (!MIGRATION_TOKEN || token !== MIGRATION_TOKEN) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -15,18 +15,7 @@ export const handler: Handlers = {
     }
 
     try {
-      // Get migration token for auth service
-      const MIGRATION_TOKEN = Deno.env.get("MIGRATION_TOKEN");
       const AUTH_SERVICE_URL = "https://auth.flashapps.org";
-
-      if (!MIGRATION_TOKEN) {
-        return new Response(JSON.stringify({
-          error: "MIGRATION_TOKEN not configured in environment"
-        }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
 
       // Get all BookWorm users from the database
       const kv = await getKv();
