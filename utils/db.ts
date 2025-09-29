@@ -100,8 +100,8 @@ export interface BookChallenge {
   parentEmail: string;
   parentStudentId: string | null; // Link to parent_student association
   studentName: string;
-  studentId: string; // School student ID
-  reason: string;
+  studentId: string | null; // School student ID (optional)
+  reason: string | null; // Challenge reason (optional)
   status: "pending" | "under_review" | "approved" | "denied";
   reviewedBy: string | null;
   reviewedAt: string | null;

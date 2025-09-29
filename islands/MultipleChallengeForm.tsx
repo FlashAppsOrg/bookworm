@@ -208,18 +208,17 @@ export default function MultipleChallengeForm({
 
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Student ID <span class="text-red-600">*</span>
+              Student ID (Optional)
             </label>
             <input
               type="text"
               value={studentId}
               onInput={(e) => setStudentId((e.target as HTMLInputElement).value)}
-              required
               class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-700 dark:text-white"
-              placeholder="School-provided student ID number"
+              placeholder="School-provided student ID (if known)"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Required for verification. Contact the school if you don't know this ID.
+              If you know your child's student ID, it helps verify the relationship faster.
             </p>
           </div>
 

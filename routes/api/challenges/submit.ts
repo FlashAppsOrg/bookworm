@@ -6,9 +6,9 @@ export const handler: Handlers = {
   async POST(req) {
     try {
       const body = await req.json();
-      const { bookId, userId, parentName, parentEmail, studentName, reason } = body;
+      const { bookId, userId, parentId, parentName, parentEmail, studentName, studentId, reason } = body;
 
-      if (!bookId || !userId || !parentName || !parentEmail || !reason) {
+      if (!bookId || !userId || !parentName || !parentEmail || !studentName) {
         return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -72,10 +72,13 @@ export const handler: Handlers = {
         teacherName: teacher.displayName,
         schoolId: teacher.schoolId,
         schoolName: school.name,
+        parentId: parentId || null,
         parentName: parentName.trim(),
         parentEmail: parentEmail.toLowerCase().trim(),
-        studentName: studentName?.trim(),
-        reason: reason.trim(),
+        parentStudentId: null, // To be filled when parent-student association is created
+        studentName: studentName.trim(),
+        studentId: studentId?.trim() || null,
+        reason: reason?.trim() || null,
         status: "pending",
         reviewedBy: null,
         reviewedAt: null,
