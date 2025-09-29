@@ -18,6 +18,7 @@ import * as $admin_users_index from "./routes/admin/users/index.tsx";
 import * as $api_admin_bulk_import from "./routes/api/admin/bulk-import.ts";
 import * as $api_admin_challenges from "./routes/api/admin/challenges.ts";
 import * as $api_admin_check_admins from "./routes/api/admin/check-admins.ts";
+import * as $api_admin_check_db from "./routes/api/admin/check-db.ts";
 import * as $api_admin_classrooms from "./routes/api/admin/classrooms.ts";
 import * as $api_admin_delete_cache from "./routes/api/admin/delete-cache.ts";
 import * as $api_admin_force_promote from "./routes/api/admin/force-promote.ts";
@@ -144,6 +145,7 @@ const manifest = {
     "./routes/api/admin/bulk-import.ts": $api_admin_bulk_import,
     "./routes/api/admin/challenges.ts": $api_admin_challenges,
     "./routes/api/admin/check-admins.ts": $api_admin_check_admins,
+    "./routes/api/admin/check-db.ts": $api_admin_check_db,
     "./routes/api/admin/classrooms.ts": $api_admin_classrooms,
     "./routes/api/admin/delete-cache.ts": $api_admin_delete_cache,
     "./routes/api/admin/force-promote.ts": $api_admin_force_promote,
