@@ -23,6 +23,8 @@ export const handler: Handlers<MultipleChallengePageData> = {
     const userIds = url.searchParams.getAll("userId");
     const registered = url.searchParams.get("registered");
 
+    console.log("Challenge-books: bookIds:", bookIds, "userIds:", userIds);
+
     if (bookIds.length === 0 || userIds.length === 0 || bookIds.length !== userIds.length) {
       return new Response("Invalid parameters", { status: 400 });
     }
@@ -36,11 +38,18 @@ export const handler: Handlers<MultipleChallengePageData> = {
       const bookId = bookIds[i];
       const userId = userIds[i];
 
+      console.log(`Looking up book: ["classroomBooks", "${userId}", "${bookId}"]`);
       const bookResult = await kv.get<ClassroomBook>(["classroomBooks", userId, bookId]);
-      if (!bookResult.value) continue;
+      if (!bookResult.value) {
+        console.log(`Book not found for userId: ${userId}, bookId: ${bookId}`);
+        continue;
+      }
 
       const teacherResult = await kv.get<User>(["users:id", userId]);
-      if (!teacherResult.value) continue;
+      if (!teacherResult.value) {
+        console.log(`Teacher not found for userId: ${userId}`);
+        continue;
+      }
 
       const teacher = teacherResult.value;
 

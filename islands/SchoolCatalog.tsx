@@ -131,7 +131,7 @@ export default function SchoolCatalog({ books, schoolSlug }: Props) {
                 .filter(b => selectedBooks.has(b.id))
                 .map(b => ({
                   bookId: b.id,
-                  userId: b.teacherId,
+                  userId: b.userId,  // Fixed: use userId not teacherId
                   title: b.title
                 }));
 
