@@ -21,6 +21,7 @@ import * as $api_admin_check_admins from "./routes/api/admin/check-admins.ts";
 import * as $api_admin_classrooms from "./routes/api/admin/classrooms.ts";
 import * as $api_admin_delete_cache from "./routes/api/admin/delete-cache.ts";
 import * as $api_admin_force_promote from "./routes/api/admin/force-promote.ts";
+import * as $api_admin_migrate_users from "./routes/api/admin/migrate-users.ts";
 import * as $api_admin_parent_associations from "./routes/api/admin/parent-associations.ts";
 import * as $api_admin_promote_first from "./routes/api/admin/promote-first.ts";
 import * as $api_admin_quota_stats from "./routes/api/admin/quota-stats.ts";
@@ -146,6 +147,7 @@ const manifest = {
     "./routes/api/admin/classrooms.ts": $api_admin_classrooms,
     "./routes/api/admin/delete-cache.ts": $api_admin_delete_cache,
     "./routes/api/admin/force-promote.ts": $api_admin_force_promote,
+    "./routes/api/admin/migrate-users.ts": $api_admin_migrate_users,
     "./routes/api/admin/parent-associations.ts": $api_admin_parent_associations,
     "./routes/api/admin/promote-first.ts": $api_admin_promote_first,
     "./routes/api/admin/quota-stats.ts": $api_admin_quota_stats,
