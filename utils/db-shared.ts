@@ -19,14 +19,13 @@ export async function getUsersKv(): Promise<Deno.Kv> {
   const isDenoDeploy = Deno.env.get("DENO_DEPLOYMENT_ID");
 
   if (isDenoDeploy) {
-    // Production: Connect to remote shared users KV
-    const kvId = Deno.env.get("FLASHAPPS_USERS_KV_ID");
-    if (!kvId) {
-      throw new Error("FLASHAPPS_USERS_KV_ID not set");
+    // Production: Connect to named database "users-db"
+    try {
+      usersKv = await Deno.openKv("users-db");
+    } catch (error) {
+      console.error("Failed to connect to users-db, falling back to default:", error);
+      usersKv = await Deno.openKv();
     }
-
-    const kvUrl = `https://api.deno.com/databases/${kvId}/connect`;
-    usersKv = await Deno.openKv(kvUrl);
   } else {
     // Development: Use local KV with namespace
     usersKv = await Deno.openKv("./flashapps_users.db");
@@ -44,14 +43,12 @@ export async function getBookwormKv(): Promise<Deno.Kv> {
   const isDenoDeploy = Deno.env.get("DENO_DEPLOYMENT_ID");
 
   if (isDenoDeploy) {
-    // Production: Connect to bookworm-specific KV
-    const kvId = Deno.env.get("BOOKWORM_KV_ID");
-    if (!kvId) {
-      // Fallback to default KV if not configured
+    // Production: Connect to named database "bookworm-db"
+    try {
+      bookwormKv = await Deno.openKv("bookworm-db");
+    } catch (error) {
+      console.error("Failed to connect to bookworm-db, falling back to default:", error);
       bookwormKv = await Deno.openKv();
-    } else {
-      const kvUrl = `https://api.deno.com/databases/${kvId}/connect`;
-      bookwormKv = await Deno.openKv(kvUrl);
     }
   } else {
     // Development: Use local KV

@@ -3,32 +3,34 @@
 ## Overview
 We're separating databases to have a shared users database across all FlashApps and platform-specific databases for each app.
 
-## Step 1: Create Databases in Deno Deploy
+## Step 1: Database Setup in Deno Deploy
 
-1. Go to https://dash.deno.com/account#kv
-2. Create two KV databases:
-   - `flashapps-users` (shared across all apps)
-   - `bookworm-data` (bookworm-specific)
+Your databases are already created:
+- `users-db` - Shared users database (for all FlashApps)
+- `bookworm-db` - Bookworm-specific data
+- `sightwords-db` - Sightwords-specific data
 
-3. Note the database IDs (they look like: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+## Step 2: Assign Databases to Apps
 
-## Step 2: Configure Environment Variables
+In Deno Deploy dashboard:
+1. Click "Assign" on `users-db` → Select BOTH `bookworm` and `sightwords` apps
+2. Keep `bookworm-db` assigned to `bookworm` app only
+3. Assign `sightwords-db` to `sightwords` app only
 
-In your Deno Deploy project settings, add:
+This allows both apps to share the users database while keeping their data separate.
 
+## Step 3: Environment Variables
+
+Your existing variables remain the same:
 ```bash
-# Shared users database
-FLASHAPPS_USERS_KV_ID=your-users-db-id-here
-
-# Bookworm-specific database
-BOOKWORM_KV_ID=your-bookworm-db-id-here
-
-# Your existing variables
+# Your existing variables (no database IDs needed anymore!)
 GOOGLE_CLIENT_ID=xxx
 GOOGLE_CLIENT_SECRET=xxx
 CUSTOM_BOOKWORM_DOMAIN=bookworm.flashapps.org
 # etc...
 ```
+
+The app will automatically connect to the assigned databases by name.
 
 ## Step 3: Run Migration
 

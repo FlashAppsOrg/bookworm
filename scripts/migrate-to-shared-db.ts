@@ -24,9 +24,10 @@ if (!isDryRun && !shouldExecute) {
 console.log(`Starting migration in ${isDryRun ? "DRY RUN" : "EXECUTE"} mode...`);
 
 async function migrate() {
-  const oldKv = await getKv();
-  const usersKv = await getUsersKv();
-  const bookwormKv = await getBookwormKv();
+  // Get connections
+  const oldKv = await getKv(); // Current database with all data
+  const usersKv = await getUsersKv(); // New shared users database
+  const bookwormKv = await getBookwormKv(); // New bookworm-specific database
 
   let userCount = 0;
   let schoolCount = 0;
