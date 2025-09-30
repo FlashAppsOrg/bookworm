@@ -154,11 +154,16 @@ export default function AuthCallback({ data }: PageProps<CallbackData>) {
             <div class="text-center">
               <h2 class="text-2xl font-bold text-red-600 mb-4">Authentication Error</h2>
               <p class="text-gray-600 mb-6">{data.error}</p>
+              <div class="mt-4 p-4 bg-gray-100 rounded text-sm">
+                <p class="font-bold">Debug Info:</p>
+                <p>Error: {data.error}</p>
+                <p>URL: {typeof window !== "undefined" ? window.location.href : "N/A"}</p>
+              </div>
               <a
-                href="/login"
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                href="/"
+                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
-                Try Again
+                Go to Home
               </a>
             </div>
           </div>
