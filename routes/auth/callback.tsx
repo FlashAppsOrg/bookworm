@@ -110,18 +110,23 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
         await kv.set(["users:email", user.email.toLowerCase()], localUser);
       }
 
-      const sessionData = {
-        userId: localUser.id,
-        email: localUser.email,
-        role: localUser.role,
-        authToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-      };
-
       const headers = new Headers();
+
+      // Set auth_token cookie
       setCookie(headers, {
-        name: "session",
-        value: btoa(JSON.stringify(sessionData)),
+        name: "auth_token",
+        value: tokens.accessToken,
+        maxAge: 60 * 60 * 24, // 1 day
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+      });
+
+      // Set refresh_token cookie
+      setCookie(headers, {
+        name: "refresh_token",
+        value: tokens.refreshToken,
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: "/",
         httpOnly: true,
