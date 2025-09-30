@@ -78,13 +78,16 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
       }
 
       const { tokens, user } = await response.json();
+      console.log("BookWorm: Exchange successful, user:", user.email);
 
       // Check if user has BookWorm access
       if (!user.platforms?.bookworm) {
         // For now, skip this check since migrated users might not have it set
+        console.log("BookWorm: User doesn't have bookworm platform set, continuing anyway");
       }
 
       // Get or sync local user data
+      console.log("BookWorm: Getting local user for:", user.email);
       let localUser = await getUserByEmail(user.email);
 
       if (!localUser) {
@@ -139,6 +142,7 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
         }
       }
 
+      console.log("BookWorm: Session created, redirecting to:", redirectTo);
       return new Response("", {
         status: 302,
         headers: {
