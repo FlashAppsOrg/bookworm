@@ -32,9 +32,15 @@ export const handler: Handlers<CallbackData> = {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Exchange failed:", errorData);
+
+        // Include debug info in error display if available
+        const debugInfo = errorData.debug ?
+          ` (Debug: requested=${errorData.debug.requestedCode}, existing=${errorData.debug.existingCodes?.join(', ') || 'none'})` : '';
+
         return ctx.render({
           success: false,
-          error: errorData.error || "Failed to exchange authorization code"
+          error: errorData.error + debugInfo || "Failed to exchange authorization code"
         });
       }
 
