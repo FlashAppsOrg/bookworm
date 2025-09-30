@@ -43,13 +43,11 @@ export const handler: Handlers<CallbackData> = {
 
 async function processAuthCode(code: string, ctx: any, _req: Request) {
     const url = new URL(_req.url);
-    console.log("BookWorm: Processing auth code:", code);
 
     try {
       // Exchange code for tokens with auth service
       const authServiceUrl = Deno.env.get("AUTH_SERVICE_URL") || "https://auth.flashapps.org";
       const exchangeUrl = `${authServiceUrl}/api/auth/exchange`;
-      console.log("BookWorm: Calling exchange endpoint:", exchangeUrl);
 
       const response = await fetch(exchangeUrl, {
         method: "POST",
@@ -60,8 +58,6 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
         },
         body: JSON.stringify({ code }),
       });
-
-      console.log("BookWorm: Exchange response status:", response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -78,16 +74,13 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
       }
 
       const { tokens, user } = await response.json();
-      console.log("BookWorm: Exchange successful, user:", user.email);
 
       // Check if user has BookWorm access
       if (!user.platforms?.bookworm) {
         // For now, skip this check since migrated users might not have it set
-        console.log("BookWorm: User doesn't have bookworm platform set, continuing anyway");
       }
 
       // Get or sync local user data
-      console.log("BookWorm: Getting local user for:", user.email);
       let localUser = await getUserByEmail(user.email);
 
       if (!localUser) {
@@ -146,9 +139,6 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
           redirectTo = "/setup";
         }
       }
-
-      console.log("BookWorm: Session created, redirecting to:", redirectTo);
-      console.log("BookWorm: Cookie headers being set:", headers.get("Set-Cookie"));
 
       // Add Location header
       headers.set("Location", redirectTo);
