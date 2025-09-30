@@ -93,12 +93,17 @@ export const handler: Handlers<CallbackData> = {
         sameSite: "Lax",
       });
 
+      // Check if there's a returnTo parameter from the original login request
+      const returnTo = url.searchParams.get("returnTo");
+
       // Redirect based on user role and setup status
-      let redirectTo = "/dashboard";
-      if (localUser.role === "parent") {
-        redirectTo = "/parent-dashboard";
-      } else if (!localUser.schoolId) {
-        redirectTo = "/setup";
+      let redirectTo = returnTo || "/dashboard";
+      if (!returnTo) {
+        if (localUser.role === "parent") {
+          redirectTo = "/parent-dashboard";
+        } else if (!localUser.schoolId) {
+          redirectTo = "/setup";
+        }
       }
 
       return new Response("", {

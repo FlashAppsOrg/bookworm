@@ -30,16 +30,18 @@ export function redirectToLogin(redirect?: string) {
   const loginUrl = new URL(`${AUTH_SERVICE_URL}/login`);
   loginUrl.searchParams.set("app", "bookworm");
 
-  if (redirect) {
-    const currentUrl = typeof window !== "undefined"
-      ? window.location.origin
-      : "https://bookworm.flashapps.org";
-    loginUrl.searchParams.set("redirect", `${currentUrl}${redirect}`);
-  } else {
-    const currentUrl = typeof window !== "undefined"
-      ? window.location.origin
-      : "https://bookworm.flashapps.org";
-    loginUrl.searchParams.set("redirect", `${currentUrl}/auth/callback`);
+  // ALWAYS use /auth/callback as the redirect target
+  // The callback will then redirect to the final destination
+  const currentUrl = typeof window !== "undefined"
+    ? window.location.origin
+    : "https://bookworm.flashapps.org";
+
+  // Always redirect to callback first
+  loginUrl.searchParams.set("redirect", `${currentUrl}/auth/callback`);
+
+  // If a final redirect was specified, pass it as a query param
+  if (redirect && redirect !== "/auth/callback") {
+    loginUrl.searchParams.set("returnTo", redirect);
   }
 
   if (typeof window !== "undefined") {
