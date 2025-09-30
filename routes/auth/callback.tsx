@@ -53,7 +53,11 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
 
       const response = await fetch(exchangeUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        mode: "cors",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ code }),
       });
 
