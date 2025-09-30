@@ -43,14 +43,21 @@ export const handler: Handlers<CallbackData> = {
 
 async function processAuthCode(code: string, ctx: any, _req: Request) {
     const url = new URL(_req.url);
+    console.log("BookWorm: Processing auth code:", code);
+
     try {
       // Exchange code for tokens with auth service
       const authServiceUrl = Deno.env.get("AUTH_SERVICE_URL") || "https://auth.flashapps.org";
-      const response = await fetch(`${authServiceUrl}/api/auth/exchange`, {
+      const exchangeUrl = `${authServiceUrl}/api/auth/exchange`;
+      console.log("BookWorm: Calling exchange endpoint:", exchangeUrl);
+
+      const response = await fetch(exchangeUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
       });
+
+      console.log("BookWorm: Exchange response status:", response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
