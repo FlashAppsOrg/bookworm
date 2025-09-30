@@ -10,7 +10,23 @@ interface CallbackData {
 }
 
 export const handler: Handlers<CallbackData> = {
-  async GET(req, ctx) {
+  async POST(req, ctx) {
+    // Handle POST from auth app
+    const formData = await req.formData();
+    const code = formData.get("code") as string;
+
+    if (!code) {
+      return ctx.render({
+        success: false,
+        error: "No authorization code provided"
+      });
+    }
+
+    // Process the code same as GET
+    return processAuthCode(code, ctx, req);
+  },
+
+  GET(req, ctx) {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
 
@@ -21,6 +37,12 @@ export const handler: Handlers<CallbackData> = {
       });
     }
 
+    return processAuthCode(code, ctx, req);
+  },
+};
+
+async function processAuthCode(code: string, ctx: any, _req: Request) {
+    const url = new URL(_req.url);
     try {
       // Exchange code for tokens with auth service
       const authServiceUrl = Deno.env.get("AUTH_SERVICE_URL") || "https://auth.flashapps.org";
@@ -121,8 +143,7 @@ export const handler: Handlers<CallbackData> = {
         error: "Authentication failed. Please try again."
       });
     }
-  },
-};
+}
 
 export default function AuthCallback({ data }: PageProps<CallbackData>) {
   if (!data.success) {
