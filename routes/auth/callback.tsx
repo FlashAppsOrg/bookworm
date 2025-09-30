@@ -148,12 +148,14 @@ async function processAuthCode(code: string, ctx: any, _req: Request) {
       }
 
       console.log("BookWorm: Session created, redirecting to:", redirectTo);
+      console.log("BookWorm: Cookie headers being set:", headers.get("Set-Cookie"));
+
+      // Add Location header
+      headers.set("Location", redirectTo);
+
       return new Response("", {
         status: 302,
-        headers: {
-          ...headers,
-          "Location": redirectTo,
-        },
+        headers,
       });
 
     } catch (error) {
